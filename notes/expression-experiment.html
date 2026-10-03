@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>立ち絵の表情・手振り差分を、画像生成AIで元絵を崩さずに作る（研究ノート）｜CouollD</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 立ち絵と画像生成</nav>
+  <article class="note">
+    <header><h1>立ち絵の表情・手振り差分を、画像生成AIで元絵を崩さずに作る（研究ノート）</h1><div class="meta">作成 2026-10-03</div></header>
+<p>関連：<a href="expression-methods.html">表情差分の作り方（調査）</a>、<a href="expression-prompt-test.html">表情差分テスト</a>（実験1の詳しい記録）</p>
+<h2>1. やりたいこと</h2>
+<ul>
+<li>合コンゲーム『今夜のスタメン』の試作に出る5人（あおい・ゆな・めい・けいた・けんた）の立ち絵に、<strong>表情差分</strong>を足す（困り顔・退屈・ぽやっと・真顔・笑）</li>
+<li>できれば<strong>手振り差分</strong>も足す（例：グラスを持つ。気づきの合図に使える）</li>
+<li>条件：<ul>
+<li>元絵（全身・背景透過・1枚）の顔立ち・服・線・塗りを崩さない</li>
+<li>手元は Intel Mac（GPU無し）なので、ブラウザで使える <strong>ChatGPT / Gemini の無料枠</strong>だけで作る</li>
+</ul>
+</li>
+</ul>
+<h2>2. 先行研究（要旨）</h2>
+<p>調査はサブエージェント（Sonnet）。URLは開いて確かめたものだけ。「→」は、この実験への示唆。</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>問い</th>
+<th>研究</th>
+<th>要旨 → 示唆</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>表情だけ変える</td>
+<td>GPT-ImgEval（2025）</td>
+<td>GPT-4o の編集は、触っていない所の質感・色・細部まで変わる → <strong>編集する範囲を物理的に切り出す</strong>のが理にかなう</td>
+</tr>
+<tr>
+<td></td>
+<td>Talking Head(?) Anime 4（2023）</td>
+<td>1枚のアニメ絵から表情・頭の向きをパラメータで動かす → 学習とGPUが要る</td>
+</tr>
+<tr>
+<td></td>
+<td>AnimeAdapter（2026）</td>
+<td>参照1枚でアニメキャラを固定する SD 用アダプタ → ローカルGPUが要る</td>
+</tr>
+<tr>
+<td>三面図・多視点</td>
+<td>CharacterGen（2024）、StdGEN（2024）</td>
+<td>1枚から多視点を作って3D化する → 3D生成では標準の手順</td>
+</tr>
+<tr>
+<td></td>
+<td>Animate Anyone（2023）</td>
+<td>参照1枚＋ポーズで動かす。<strong>見えない部分の生成は不良設定</strong>と自ら書いている</td>
+</tr>
+<tr>
+<td></td>
+<td>Pose-correlated Reference Selection（2024）</td>
+<td>複数の参照画像で、視点が変わったときの細部の欠落を補う（実写で検証）</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>→ <strong>「三面図を渡すと服・髪が安定する」を直接確かめた論文は見つからなかった</strong>。仮説として実験する</td>
+</tr>
+<tr>
+<td>パーツ分け</td>
+<td>See-through（2026）、Bunraku（2026）</td>
+<td>アニメ絵を、隠れた部分も補ったレイヤーに分解する（Live2D 向け） → GPUが要る。フリルや顔にかかる手は苦手との解説がある</td>
+</tr>
+<tr>
+<td></td>
+<td>Qwen-Image-Layered（2025）、LayerDiffuse（2024）</td>
+<td>画像を透過レイヤーに分けて別々に編集する</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>→ <strong>分けた場合と分けない場合の精度比較は見つからなかった</strong></td>
+</tr>
+<tr>
+<td>破綻しやすい服</td>
+<td>Garments2Look（2026）、GarDiff（2024）、FIT（2026）</td>
+<td>実写の試着研究では次が崩れる：重ね着、文字、ボタンの数、アクセサリー、細かい柄・ストライプ、ゆったりした服 → アニメにも当てはまるかを見る</td>
+</tr>
+</tbody>
+</table></div>
+<h2>3. 試したことと条件</h2>
+<h3>共通の条件</h3>
+<ul>
+<li>モデル：Gemini（アプリ・Flash・無料）と ChatGPT（無料）。10/3 に実施</li>
+<li>毎回<strong>新しい会話</strong>で、元絵から作る（前の出力を直させない）</li>
+<li>取り込み：生成画像を画面に表示して撮る。Gemini の出力は 1024px 前後</li>
+<li>貼り戻しは自作の Python で行う<ul>
+<li>位置合わせ：特徴点（SIFT）で拡大・回転・ずらしを求める。表情で変わる目・口の点は外れ値として捨てられ、髪・輪郭で合う</li>
+<li>色合わせ：変わらない外周で、生成と元絵の同じ画素を比べ、色の写し方（3×3行列＋ずらし）を最小二乗で求める</li>
+<li>重ね方：表情は顔の中心の楕円だけ。手振りは「元絵との差が大きい所」だけを、ぼかして重ねる</li>
+</ul>
+</li>
+</ul>
+<h3>実験1：プロンプト5案 × 2モデル（めい・困り顔）</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>案</th>
+<th>渡すもの</th>
+<th>中身</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>全身</td>
+<td>変えない所を全部並べる</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>全身</td>
+<td>変える部位（眉・目・口）だけを細かく書く</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>顔の切り出し</td>
+<td>貼り戻す前提を伝える（英語）</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>顔の切り出し</td>
+<td>3表情を1枚に並べさせる</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>顔の切り出し</td>
+<td>P3 の日本語版</td>
+</tr>
+</tbody>
+</table></div>
+<h3>実験2：全員の表情差分（12枚）</h3>
+<ul>
+<li>P3 を土台にした最終プロンプトで、Gemini で作る</li>
+<li>表情の内訳：<ul>
+<li>あおい：真顔・困り顔・退屈</li>
+<li>ゆな：困り顔・退屈</li>
+<li>めい：困り顔・退屈・ぽやっと</li>
+<li>けいた・けんた：笑・困り顔</li>
+</ul>
+</li>
+</ul>
+<h3>実験3：手振り（グラスを持つ）× 3条件 × 服の違う3人（Gemini）</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>条件</th>
+<th>渡すもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>全身1枚</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>全身＋三面図（同じモデルで先に作らせたもの）</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>上半身だけの切り出し（パーツ分けの代わりに、範囲を分ける）</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>人</th>
+<th>服の特徴</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>けんた</td>
+<td>ジャージ上下（無地・ストライプ）、首にタオル。単純</td>
+</tr>
+<tr>
+<td>めい</td>
+<td>ケーブル編みのカーディガン、ボタン、柄タイツ</td>
+</tr>
+<tr>
+<td>けいた</td>
+<td>カーディガン、文字入りTシャツ、斜めがけバッグ、ネックレス・指輪。元絵が小さい（245×745）</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. 結果</h2>
+<h3>実験1</h3>
+<p><img alt="実験1_5案の比較" src="fig/f1.webp" /></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>案</th>
+<th>Gemini</th>
+<th>ChatGPT</th>
+<th>外周のずれ（G / C）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 全身</td>
+<td>14</td>
+<td>16</td>
+<td>6.8 / 11.3</td>
+</tr>
+<tr>
+<td>P2 全身</td>
+<td>13</td>
+<td>15</td>
+<td>7.1 / 9.9</td>
+</tr>
+<tr>
+<td><strong>P3 顔・英語</strong></td>
+<td><strong>21</strong></td>
+<td><strong>22</strong></td>
+<td>7.1 / 8.2</td>
+</tr>
+<tr>
+<td>P4 3表情シート</td>
+<td>18</td>
+<td>19</td>
+<td>10.9 / 12.8</td>
+</tr>
+<tr>
+<td><strong>P5 顔・日本語</strong></td>
+<td><strong>21</strong></td>
+<td><strong>22</strong></td>
+<td>7.3 / 8.6</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>点数は25点満点（5項目×5点、目視）</li>
+<li>外周のずれは、位置合わせ後の髪・輪郭の画素差。小さいほど元絵のまま</li>
+<li>全身を渡すと顔が小さくてぼやける。Gemini は汗やしわ線を足した</li>
+<li>顔だけ渡すと、どちらのモデルもくっきり返る。英語と日本語の差はない</li>
+</ul>
+<h3>実験2</h3>
+<p><img alt="実験2_全員の表情差分" src="fig/f2.webp" /></p>
+<ul>
+<li>一覧の図は 10/4 に作り直した。前の図は切り出しを縦横比を合わせずに縮めていて、全員が縦に約1.17倍伸びていた（あおい・ゆなで目立った）</li>
+<li>12枚すべて、顔立ち・髪・眼鏡・手（ゆなの指）を保ったまま表情だけ変わった。位置合わせは全部成功（特徴点の一致 123〜658点）</li>
+<li>最初の色合わせ（ヒストグラム合わせ）では、頬の赤みが減る表情（あおいの真顔・退屈）で肌がまだらになった。画素どうしの対応で色を合わせる方法に変えて直った
+  <img alt="実験2_色合わせの失敗" src="fig/f3.webp" />
+  <img alt="実験2_色合わせの修正後" src="fig/f4.webp" /></li>
+</ul>
+<h3>実験3</h3>
+<p><img alt="実験3_手振り_全身" src="fig/f5.webp" />
+<img alt="実験3_手振り_拡大" src="fig/f6.webp" /></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th>C1 全身</th>
+<th>C2 三面図つき</th>
+<th>C3 上半身</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>けんた（単純）</td>
+<td>◎ 指示どおり。ジャージ・タオルも保たれた</td>
+<td>◎ C1 とほぼ同じ（差は見えない）</td>
+<td>◎ 指示どおり（「親指を立てている腕」と動作で指定）</td>
+</tr>
+<tr>
+<td>めい（編み柄）</td>
+<td>○ 指示どおり。ただし上げた袖のケーブル編みが消えた</td>
+<td>× 1枚目ではなく三面図の方を編集して返した</td>
+<td>△ <strong>反対の腕</strong>にグラスを持たせた。編み柄は保たれた</td>
+</tr>
+<tr>
+<td>けいた（文字・バッグ）</td>
+<td>△ 指示どおり。ただしバッグの位置が動き、Tシャツの文字が崩れた</td>
+<td>△ 指示どおり。崩れ方は C1 と同じ</td>
+<td>△ <strong>反対の腕</strong>。切り出しの下端が手にかかり、境目が出た</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>元絵から描き直された量（変わった所以外の画素差）：<ul>
+<li>C1：7〜9</li>
+<li>C2：8〜11（めいは三面図の方を編集した）</li>
+<li>C3：5〜9</li>
+<li>「変わった所だけ貼り戻す」と、ここは元絵に戻せる</li>
+</ul>
+</li>
+<li>三面図の作成でも誤解が起きた。けんたの髪の内側の青い色を、ヘアバンドとして描いた</li>
+<li>待ち時間は1枚あたり、送信から完成まで約60〜90秒（画像の取り込み待ちを含む）</li>
+</ul>
+<h2>5. 分析</h2>
+<h3>うまくいったこと</h3>
+<ul>
+<li><strong>編集範囲を切り出して渡し、元絵に貼り戻す</strong>のが最も効く。先行研究（全体を作り直す編集は触っていない所も変わる）と合っている</li>
+<li>表情差分は無料枠だけで量産できる。1枚あたり約1.5分。モデルの差は小さい</li>
+<li>貼り戻しの位置合わせは特徴点で自動化できた。手振りも「差が大きい所だけ」を戻せば、服の柄やボタンは元絵のまま残る</li>
+<li>単純な服（無地・ストライプ）は、手振りでもほぼ崩れない</li>
+</ul>
+<h3>うまくいかなかったこと</h3>
+<ul>
+<li><strong>左右の取り違え</strong>：上半身の切り出しで「見る人から見て左の腕」と書くと、2/3 で反対の腕を変えた<ul>
+<li>全身では 3/3 正しかった</li>
+<li>「親指を立てている腕」のように動作で指定すると正しかった</li>
+</ul>
+</li>
+<li><strong>三面図は効かなかった</strong>：<ul>
+<li>けんた・けいたは C1 と差が出なかった</li>
+<li>めいは、どちらの画像を編集するかを取り違えた</li>
+<li>三面図そのものに誤解（髪色→ヘアバンド）が入り、参照にすると誤りが伝わる恐れがある</li>
+<li>研究側にも、効くという直接の根拠は無かった</li>
+</ul>
+</li>
+<li><strong>服の破綻</strong>：<ul>
+<li>動かした袖の編み柄が消えた</li>
+<li>文字は判読できない線になった</li>
+<li>斜めがけバッグの位置が動いた</li>
+<li>試着研究の「文字・柄・小物・重ね着が崩れる」と同じ傾向</li>
+</ul>
+</li>
+<li>元絵が小さい（けいた）と、生成側も貼り戻しも粗くなる</li>
+<li>色合わせは、表情で色の量が変わる所（頬の赤み）に引っ張られやすい。変わらない所だけで合わせる必要がある</li>
+</ul>
+<h3>今後できそうなこと</h3>
+<ul>
+<li>手振りは「動かす腕を動作で指定」＋「全身を渡す」＋「変わった所だけ貼り戻す」を標準にする。三面図は使わない</li>
+<li>手振りを作るキャラは服を単純に寄せる。動かす側の袖には柄・小物を置かない。文字入りの服は避ける（キャラデザの段階で決める）</li>
+<li>1枚の手振り差分に表情差分を重ねる「ポーズ×表情」の構成にする（顔は今の貼り戻しをそのまま使う）</li>
+<li>パーツ分けを本気でやるなら、See-through 系のレイヤー分解を、クラウドGPU（ComfyUI 等）で試すのが次の一手。手元の Mac では無理</li>
+<li>同じ条件で ChatGPT でも手振りを試し、左右の取り違えがモデル固有かを見る（今回は Gemini のみ）</li>
+</ul>
+<h2>追記（10/3 夜）：実験4　パーツ分け（See-through）</h2>
+<ul>
+<li><strong>やりたいこと</strong>：生成した顔を貼る方式は、絵柄が元絵と少しずつ違って「微妙」だった。元絵そのものを層に分け、パーツを動かして表情を作れないかを見る（Live2D の簡易版）</li>
+<li><strong>条件</strong><ul>
+<li>See-through 公式デモ（Hugging Face、無料のGPU枠、解像度768、seed 42）</li>
+<li>めいの頭と肩を正方形に切り出して渡した（全身だと正方形に足されて顔が小さくなるため）</li>
+<li>待ち時間は約80秒</li>
+</ul>
+</li>
+<li><strong>結果</strong><ul>
+<li>12層に分かれた：後ろ髪・首・上着・耳・顔（肌）・鼻・口・白目・黒目・まつ毛・眉・前髪</li>
+<li>顔の肌は目・眉・口の下まで描き足されていた（ただし、閉じた目のような線が薄く残っていた → 消してから使った）</li>
+<li>「鼻」の層には顔全体が入っていた → 鼻は元絵から小さく切って載せた
+  <img alt="実験4_See-throughの層" src="fig/f7.webp" /></li>
+</ul>
+</li>
+<li><strong>パーツで作った表情</strong>（試作ページ「めいの表情パーツ」）<ul>
+<li>動かし方：黒目を白目の中でずらす（目線）／まつ毛を下げて上を隠す（目の開き）／眉を外側を軸に回す</li>
+<li>口は、前に生成した表情差分から切り出して足した</li>
+<li>作れた表情：困り顔・退屈・ぽやっと・ジト目・目を閉じる。まばたきも自動でできる
+  <img alt="実験4_パーツで作った表情" src="fig/f8.webp" /></li>
+</ul>
+</li>
+<li><strong>分析</strong><ul>
+<li>うまくいったこと：目・眉・前髪は元絵の画素なので、<strong>絵柄が変わらない</strong>。組み合わせで表情が増え、まばたき・目線が安く作れる</li>
+<li>うまくいかなかったこと：口を大きく開ける・笑い目のように、<strong>形そのものが変わる表情</strong>はパーツを動かすだけでは作れない（絵が要る）。肌の色が元絵よりわずかに明るい</li>
+<li>今後：<ul>
+<li>他のキャラも同じ手順で分ける（指が顔にかかる ゆな は苦手）</li>
+<li>開いた口・笑い目だけ、生成か手描きで足す</li>
+<li>ゲームでは <code>&lt;img&gt;</code> を重ねて表示する</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>実験4の課題と手直し（10/4 追記）</h3>
+<ul>
+<li><strong>課題1：半目が白目をむいて見える</strong>（確認ボードの指摘）<ul>
+<li>原因：黒目は上が濃く下が薄い。まぶたで上を隠すと、薄い下半分だけが残る</li>
+<li>切り分け：同じジト目で ①そのまま ②黒目をまぶたと一緒に少し下げる ③まぶたの下に影の帯を重ねる ④②＋③ を並べた。②で白目に見えなくなった。③の影の帯は灰色のにじみになって使えなかった
+  <img alt="実験4_白目の切り分け" src="fig/f9.webp" /></li>
+<li>v5 では、半目のときに黒目をまぶたの下げ幅の3〜4割だけ下げる
+  <img alt="実験4_パーツで作った表情_v5" src="fig/f10.webp" /></li>
+</ul>
+</li>
+<li><strong>課題2：ズレて見える、可愛くない</strong><ul>
+<li>動くのが上まつ毛だけで、二重の線・目の影・下まつ毛は元の位置に残る。半目では二重の線がまぶたから離れて浮く</li>
+<li>ジト目・ぽやっと・閉じ目は、開いた目と閉じた目の途中の形にはならない。Live2D でも、閉じ目や笑い目は別の絵で用意することが多い</li>
+<li>前例と先行研究の調査：<a href="expression-rig-survey.html">表情の作り方（パーツ分けとリグの調査）</a></li>
+<li>次の手：状態ごとに目まわりを手で詰める → 閉じ目・笑い目・ジト目は目まわりだけ描き足す（生成で目だけ作って重ねる案もある）</li>
+</ul>
+</li>
+</ul>
+<h2>付録</h2>
+<h3>使ったプロンプト（クリックで開く）</h3>
+<p>実験1（めい・困り顔）</p>
+<details><summary>P1 保持列挙型（全身を渡す）</summary><pre>Edit this character sprite. Change ONLY the facial expression to a troubled, slightly worried look: inner ends of the eyebrows raised, eyes glancing down a little, mouth small, closed and slightly wavy. Keep everything else exactly identical: face shape, eye color and size, hair and buns, outfit, pose, hands, line art thickness, coloring and shading, canvas size, framing and the plain white background. Do not redraw or restyle the image.</pre></details>
+<details><summary>P2 変更点細分型（全身を渡す）</summary><pre>Same image, same character. Modify only these facial parts: (1) eyebrows: inner ends raised, slight furrow; (2) eyes: same shape and color, pupils looking slightly down-left; (3) mouth: small, closed, slightly downturned wavy line. Leave the bangs, face outline, blush, hair, clothes, body and background unchanged.</pre></details>
+<details><summary>P3 顔クロップ型（顔の切り出しを渡す）</summary><pre>This is a head crop cut from my game sprite. I will paste your result back onto the original body, so keep the crop size, head position, angle, outline, hair and colors exactly the same. Change only the expression to troubled: eyebrows raised at the inner ends, worried eyes, small wavy closed mouth. Same art style and line weight, white background.</pre></details>
+<details><summary>P4 表情シート型（3つ一度に）</summary><pre>From this head crop, create a 3x1 sheet (three equal panels side by side): troubled, bored, tipsy. In every panel keep exactly the same head position, angle, hair, outline, colors and art style as the input; only the eyebrows, eyelids, eyes, mouth and blush change. Troubled: inner eyebrows raised, small wavy mouth. Bored: half-closed eyes looking aside, flat brows, straight mouth. Tipsy: pink flushed cheeks, unfocused half-closed eyes, small loose smile. White background.</pre></details>
+<details><summary>P5 日本語型（顔の切り出しを渡す）</summary><pre>これはゲームの立ち絵から切り出した顔の画像です。生成した画像を元の体に貼り戻すので、構図・大きさ・顔の向き・輪郭・髪・色・線の太さ・塗りは一切変えないでください。変えるのは表情だけです。表情：困り顔（眉の内側を上げた八の字眉、少し不安そうな目、小さく波打った閉じた口）。背景は白のまま。</pre></details>
+
+<p>実験2</p>
+<details><summary>最終プロンプト（実験2）</summary><pre>This is a head crop cut from my game sprite. I will paste your result back onto the original body, so keep the crop size, head position, angle, outline, hair and colors exactly the same. Change only the expression to {表情}. Same art style and line weight, white background. Do not add text, symbols, sweat drops or wrinkle lines.
+
+{表情} の例
+困り顔：troubled: eyebrows raised at the inner ends, worried eyes, small wavy closed mouth
+退屈：bored: half-closed eyes looking aside, flat eyebrows, small straight closed mouth</pre></details>
+
+<p>実験3（手振り）。C2・C3 は他のキャラも同じ形で、服の細部の列挙だけ変えた</p>
+<details><summary>C1 全身（めい）</summary><pre>Edit this character sprite. Change ONLY the pose of the arm on the viewer&#x27;s left: the character now holds a clear drinking glass at chest height with that hand. Keep everything else exactly identical: face, expression, hair, outfit details (buttons, knit pattern, prints, accessories), the other arm, legs, line art thickness, coloring, canvas size, framing and the plain white background. Do not redraw or restyle the image.</pre></details>
+<details><summary>C1 全身（けんた）</summary><pre>Edit this character sprite. Change ONLY the pose of the arm on the viewer&#x27;s left: instead of the thumbs-up, the character now holds a clear drinking glass at chest height with that hand. Keep everything else exactly identical: face, expression, hair, outfit details (zipper, stripes, towel), the other arm, legs, shoes, line art thickness, coloring, canvas size, framing and the plain white background. Do not redraw or restyle the image.</pre></details>
+<details><summary>C1 全身（けいた）</summary><pre>Edit this character sprite. Change ONLY the pose of the arm on the viewer&#x27;s left: the character now holds a clear drinking glass at chest height with that hand. Keep everything else exactly identical: face, expression, hair, outfit details (cardigan buttons, printed text on the T-shirt, crossbody bag and strap, necklace, rings), the other arm, legs, shoes, line art thickness, coloring, canvas size, framing and the plain white background. Do not redraw or restyle the image.</pre></details>
+<details><summary>三面図を作る（C2の準備）</summary><pre>Create a character turnaround sheet of this exact character: front view, side view and back view standing side by side, full body, same outfit with every detail (buttons, knit pattern, tights pattern, shoes), same colors and same art style, plain white background. No text or labels.</pre></details>
+<details><summary>C2 全身＋三面図（めい）</summary><pre>The first image is my game sprite. The second image is a turnaround sheet of the same character, for reference only (how the sleeves, knit pattern and back look). Edit the FIRST image. Change ONLY the pose of the arm on the viewer&#x27;s left: the character now holds a clear drinking glass at chest height with that hand. Keep everything else exactly identical: face, expression, hair, outfit details (buttons, knit pattern, tights pattern), the other arm, legs, line art thickness, coloring, canvas size, framing and the plain white background. Output one full-body image only.</pre></details>
+<details><summary>C3 上半身（めい）</summary><pre>This is the upper body cut from my game sprite. I will paste your result back onto the original, so keep the crop size, position, face, expression, hair, outfit details (buttons, knit pattern) and colors exactly the same. Change only the arm on the viewer&#x27;s left: the hand now holds a clear drinking glass at chest height. Same art style and line weight, white background. Do not add text or symbols.</pre></details>
+<details><summary>C3 上半身（けんた、動作で指定）</summary><pre>This is the upper body cut from my game sprite. I will paste your result back onto the original, so keep the crop size, position, face, expression, hair, outfit details (zipper, stripes, towel) and colors exactly the same. Change only the arm doing the thumbs-up: instead, that hand now holds a clear drinking glass at chest height. Same art style and line weight, white background. Do not add text or symbols.</pre></details>
+
+<h3>ファイル</h3>
+<ul>
+<li>プロンプトの元：<a href="expression-prompt-test.html">表情差分テスト</a>、<code>表情差分テスト/00 テスト計画とプロンプト.md</code></li>
+<li>スクリプト：<ul>
+<li><code>paste_back.py</code>（表情の貼り戻し）</li>
+<li><code>make_all.py</code>（全員分の貼り戻しと一覧）</li>
+<li><code>手振り実験/gesture_paste.py</code>（変わった所だけの貼り戻し）</li>
+</ul>
+</li>
+</ul>
+<h3>出典</h3>
+<ul>
+<li>https://arxiv.org/html/2504.02782v1</li>
+<li>https://arxiv.org/html/2311.17409v1</li>
+<li>https://arxiv.org/abs/2605.20237</li>
+<li>https://arxiv.org/abs/2402.17214</li>
+<li>https://arxiv.org/html/2411.05738v1</li>
+<li>https://arxiv.org/html/2311.17117v2</li>
+<li>https://arxiv.org/abs/2412.17290</li>
+<li>https://arxiv.org/abs/2602.03749</li>
+<li>https://arxiv.org/abs/2607.27348</li>
+<li>https://arxiv.org/abs/2512.15603</li>
+<li>https://arxiv.org/html/2402.17113v3</li>
+<li>https://arxiv.org/html/2603.14153v1</li>
+<li>https://arxiv.org/pdf/2409.08258</li>
+<li>https://arxiv.org/html/2604.08526v1</li>
+</ul>
+  </article>
+  <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
+</div>
+</body>
+</html>

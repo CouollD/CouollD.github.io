@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>今夜のスタメン、君に決めた！</title>
+<link rel="stylesheet" href="css/app.css">
+<style>
+/* トップ固有スタイル(共通は css/app.css) */
+/* 端末シェルを画面高に固定 → 低い端末では .home が内部スクロール(はみ出し到達不能を根絶) */
+.phone { height: 100dvh; }
+.home {
+  flex: 1;
+  min-height: 0;                 /* flex子がスクロールできるように */
+  overflow-y: auto;              /* 低い画面(SE等)でも下のメニューまで届く安全網 */
+  -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 22px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 22px 100%,
+    var(--board);
+  padding: 0 0 16px;
+  display: flex; flex-direction: column;
+}
+
+/* タイトルロゴ — SE幅では上余白とロゴを詰めて収まりを良くする */
+.title-wrap { position: relative; padding: clamp(24px, 6vh, 46px) 24px clamp(20px, 4vh, 30px); text-align: center; }
+.eyebrow {
+  font-family: var(--font-pop);
+  font-size: 10px; color: var(--cyan); letter-spacing: .14em;
+  margin-bottom: 14px;
+}
+.logo { font-family: var(--font-title); line-height: 1.02; }
+.logo .l1, .logo .l2 {
+  display: inline-block;
+  font-size: clamp(42px, 13vw, 52px);
+  color: #fff;
+  -webkit-text-stroke: 2px var(--ink);
+  text-shadow:
+    -3px -3px 0 var(--ink), 3px -3px 0 var(--ink),
+    -3px 3px 0 var(--ink), 3px 3px 0 var(--ink),
+    6px 8px 0 rgba(52,48,74,.22);
+}
+.logo .l1 { color: var(--cyan); transform: rotate(-3deg); }
+.logo .l2 { color: var(--pink); transform: rotate(2deg); margin-top: 6px; }
+.logo-sub {
+  display: inline-block;
+  margin-top: 20px;
+  font-family: var(--font-pop);
+  font-size: 13px; color: var(--ink);
+  background: var(--yellow);
+  border: 2.5px solid var(--ink);
+  border-radius: 20px;
+  padding: 5px 16px;
+  box-shadow: var(--shadow);
+  transform: rotate(-1.5deg);
+}
+.sticker-memo {
+  position: absolute; top: 40px; right: 18px;
+  font-family: var(--font-pop); font-size: 12px; color: #fff;
+  background: var(--pink); border: 2.5px solid var(--ink);
+  border-radius: 12px; padding: 6px 10px;
+  transform: rotate(8deg);
+  box-shadow: var(--shadow);
+  line-height: 1.4; text-align: center;
+}
+.tagline {
+  margin: 14px 20px 0;
+  font-size: 12px; color: var(--ink2); font-weight: 500;
+  line-height: 1.7; text-align: center;
+}
+
+/* メニュー */
+.menu-wrap { padding: 16px 22px 0; display: flex; flex-direction: column; gap: 10px; }
+.menu-btn { padding: 12px 16px; }        /* SEで4項目が収まるよう縦を圧縮 */
+.menu-btn-icon {
+  font-size: 22px; flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: 12px;
+  background: var(--cyan-soft); border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  transform: rotate(-3deg);
+}
+.menu-btn.primary .menu-btn-icon { background: #fff; }
+.menu-btn-body { flex: 1; }
+.menu-btn-title { font-family: var(--font-pop); font-size: 15px; margin-bottom: 2px; }
+.menu-btn-desc { font-size: 10px; color: var(--ink2); font-weight: 500; }
+.menu-btn.primary .menu-btn-desc { color: rgba(255,255,255,.85); }
+.menu-btn-arrow { font-size: 18px; font-weight: 800; color: var(--pink); }
+.menu-btn.primary .menu-btn-arrow { color: #fff; }
+
+.version {
+  font-family: var(--font-pop);
+  font-size: 9px; color: var(--muted);
+  text-align: center; margin-top: 14px; letter-spacing: .18em;
+}
+
+/* ── SE(375×667)など低い画面向けの追加圧縮 ──
+   スクロールに頼らず主要ボタンまで一目で収まるように、
+   タイトル周りの余白とメニュー行の縦幅をさらに詰める。 */
+@media (max-height:700px){
+  .title-wrap{ padding:14px 24px 12px; }
+  .eyebrow{ margin-bottom:8px; }
+  .logo{ line-height:.98; }
+  .logo .l1, .logo .l2{ font-size:clamp(34px, 11vw, 52px); }
+  .logo .l2{ margin-top:2px; }
+  .logo-sub{ margin-top:10px; padding:4px 14px; }
+  .sticker-memo{ top:10px; }
+  .tagline{ margin-top:8px; line-height:1.5; }
+  .menu-wrap{ padding:10px 22px 0; gap:7px; }
+  .menu-btn{ padding:9px 14px; }
+  .menu-btn-icon{ width:36px; height:36px; font-size:19px; }
+  .menu-btn-title{ font-size:14px; }
+  .version{ margin-top:8px; }
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="home">
+
+    <div class="title-wrap">
+      <div class="sticker-memo">君に<br>決めた♥</div>
+      <div class="logo">
+        <span class="l1">今夜の</span><br>
+        <span class="l2">スタメン</span>
+      </div>
+      <div class="logo-sub">〜 連絡先ゲットだぜ 〜</div>
+      <div class="tagline">
+        誰を呼ぶか。誰を切るか。<br>
+        今夜の合コン、布陣が全てを決める。
+      </div>
+    </div>
+
+    <div class="menu-wrap">
+      <button class="pop-btn primary menu-btn" onclick="location.href='screens/chara_create.html'">
+        <div class="menu-btn-icon">📓</div>
+        <div class="menu-btn-body">
+          <div class="menu-btn-title">はじめから</div>
+          <div class="menu-btn-desc">キャラクター設定からスタート</div>
+        </div>
+        <div class="menu-btn-arrow">→</div>
+      </button>
+      <button class="pop-btn menu-btn" onclick="loadAndContinue()">
+        <div class="menu-btn-icon">📎</div>
+        <div class="menu-btn-body">
+          <div class="menu-btn-title">つづきから</div>
+          <div class="menu-btn-desc">セーブデータをロード</div>
+        </div>
+        <div class="menu-btn-arrow">→</div>
+      </button>
+      <button class="pop-btn menu-btn" onclick="location.href='screens/friends_v2.html'">
+        <div class="menu-btn-icon">👥</div>
+        <div class="menu-btn-body">
+          <div class="menu-btn-title">友達一覧</div>
+          <div class="menu-btn-desc">仲間を確認する</div>
+        </div>
+        <div class="menu-btn-arrow">→</div>
+      </button>
+      <button class="pop-btn menu-btn" onclick="location.href='screens/deck.html'">
+        <div class="menu-btn-icon">🃏</div>
+        <div class="menu-btn-body">
+          <div class="menu-btn-title">持ちネタ</div>
+          <div class="menu-btn-desc">合コンで出せる札を確認する</div>
+        </div>
+        <div class="menu-btn-arrow">→</div>
+      </button>
+      <button class="pop-btn menu-btn" onclick="location.href='screens/contacts.html'">
+        <div class="menu-btn-icon">📱</div>
+        <div class="menu-btn-body">
+          <div class="menu-btn-title">連絡先</div>
+          <div class="menu-btn-desc">連絡先を交換した子を確認する</div>
+        </div>
+        <div class="menu-btn-arrow">→</div>
+      </button>
+    </div>
+
+    <div class="version">v0.1 — prototype / 2026</div>
+
+  </div>
+</div>
+
+<script src="data/gamedata.js"></script>
+<script src="data/gamestate.js"></script>
+<script>
+function loadAndContinue() {
+  if (GameState.load()) {
+    const summary = GameState.summary;
+    if (confirm(`セーブデータが見つかりました。\n${summary}\nつづきから始めますか？`)) {
+      // 月の進行者は result.html と month.html だけ。formation直行は同月2回目の合コンを生む
+      location.href = 'screens/month.html';
+    }
+  } else {
+    alert('セーブデータがありません。\nはじめからプレイしてください。');
+  }
+}
+</script>
+</body>
+</html>

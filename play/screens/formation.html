@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>グループを作成 — 布陣</title>
+<link rel="stylesheet" href="../css/app.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  /* ポップ配色に再マッピング(クラス名・既存CSSは維持。共通トークンは css/app.css) */
+  --bg:     #ffffff;   /* サーフェス(白) */
+  --bg2:    #ffe3ed;   /* 微フィル(ピンク) */
+  --bg3:    #d8f4fa;   /* 微フィル(シアン) */
+  --ink:    #201d2b;
+  --ink2:   #7d788f;
+  --muted:  #b6b2c4;
+  --pencil: #7d788f;   /* 旧手書き色→副テキスト */
+  --red:    #ff5b8f;   /* アクセント=ピンク */
+  --red-t:  #ffe3ed;
+  --green:  #27c0dd;   /* 選択/確定=シアン */
+  --green-t: #d8f4fa;
+  --rule:   #e9eaf1;
+  --rule2:  #d7d9e4;
+}
+
+html, body { height: 100%; background: #e6e5ea; }
+
+.phone {
+  max-width: 390px;
+  height: 100dvh;
+  margin: 0 auto;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: var(--board);
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 20px 6px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font); font-size: 11px;
+  flex-shrink: 0;
+}
+.status-bar-time { font-weight: 600; letter-spacing: .05em; }
+.status-icons { display: flex; gap: 6px; align-items: center; }
+
+/* GROUP BANNER — 帯を薄く。友達選択リストに面積を譲る */
+.group-banner {
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule2);
+  padding: 7px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.group-back-btn {
+  background: none; border: none;
+  font-size: 20px; color: var(--green);
+  cursor: pointer; padding: 4px 6px;
+  flex-shrink: 0; line-height: 1;
+  /* タップ領域はHIG最小(44px)を確保しつつ視覚サイズだけ抑える */
+  min-width: 44px; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  margin: -4px -6px -4px -10px;
+}
+.group-icon {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0;
+}
+.group-info { flex: 1; }
+.group-name {
+  font-size: 15px; font-weight: 800;
+  font-family: var(--font-pop);
+  color: var(--ink); margin-bottom: 1px;
+}
+.group-desc {
+  font-family: var(--font); font-size: 9px; color: var(--pencil);
+}
+.group-count {
+  font-family: var(--font);
+  font-size: 18px; font-weight: 700; color: var(--green);
+  display: flex; flex-direction: column; align-items: center;
+}
+.group-count-label {
+  font-size: 7px; color: var(--muted); font-weight: 400; letter-spacing: .05em;
+}
+
+/* SELECTED MEMBERS ROW — LINEのグループ選択ヘッダー程度に圧縮 */
+.selected-row {
+  background: var(--bg);
+  border-bottom: 1.5px solid var(--rule2);
+  padding: 6px 20px;
+  display: flex; gap: 10px; align-items: center;
+  min-height: 0; overflow: hidden;   /* 中身が行を突き抜けないよう最後の砦 */
+}
+.sel-slot {
+  display: flex; flex-direction: row; align-items: center; gap: 6px;
+  cursor: pointer; position: relative;
+  /* 横長ピル化: 縦積みより行高を取らない */
+  min-height: 44px;
+}
+.sel-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-family: var(--font-pop); font-weight: 800;
+  color: var(--ink2); position: relative;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.sel-avatar.empty {
+  background: #f0ece4;
+  border: 2px dashed var(--rule2);
+}
+.sel-avatar.filled {
+  background: var(--bg2);
+  border: 2px solid var(--green);
+}
+.sel-avatar.filled:active { transform: scale(.93); }
+.sel-remove {
+  position: absolute; top: -3px; right: -3px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  font-size: 9px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font);
+}
+.sel-name {
+  font-size: 11px; color: var(--pencil);
+  font-family: var(--font); text-align: left;
+  max-width: 76px; min-width: 0; flex: 0 1 auto;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sel-plus {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #f0ece4; border: 2px dashed var(--rule2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--muted);
+}
+
+/* FILTER DROPDOWN */
+.filter-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--rule2);
+  padding: 5px 16px;
+  flex-shrink: 0;
+}
+#filter-select {
+  width: 100%;
+  padding: 6px 12px;
+  border: 1.5px solid var(--rule2);
+  border-radius: 8px;
+  font-family: var(--font); font-size: 12px;
+  color: var(--ink); background: #fff;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239a9080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+.ftab.active {
+  border-color: var(--green); background: var(--green);
+  color: #fff; font-weight: 700;
+}
+
+/* PARAMS PANEL — 折りたたみ時は1行のバーとして扱い、面積は友達リストに譲る */
+.params-panel{
+  background:var(--bg2); border-bottom:1.5px solid var(--rule2);
+  padding:6px 16px; flex-shrink:0;
+}
+.params-panel-hd{
+  display:flex; align-items:center; gap:6px; margin-bottom:0;
+  cursor:pointer; user-select:none;
+  min-height:32px;
+}
+.params-panel-hd.open{ margin-bottom:6px; }
+.params-panel-label{
+  font-family:var(--font); font-size:8.5px; font-weight:800; letter-spacing:.1em;
+  color:var(--ink2); flex:1;        /* ピンク地に薄グレーだと読めなかった */
+}
+.params-mini{
+  font-family:var(--font); font-size:9px; font-weight:700;
+  color:var(--pencil); flex-shrink:0; margin-right:2px;
+}
+.params-chevron{
+  font-size:8px; color:var(--muted);
+  display:inline-block; transition:transform .2s;
+  flex-shrink:0;
+}
+.params-chevron.open{ transform:rotate(0deg); }
+.params-chevron.closed{ transform:rotate(-90deg); }
+.params-body{ overflow:hidden; }
+.params-body.collapsed{ display:none; }
+.params-help-btn{
+  background:var(--bg3); border:1px solid var(--rule2);
+  border-radius:50%; width:18px; height:18px;
+  font-size:10px; color:var(--pencil);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  /* 視覚サイズは18pxのまま、タップ領域だけHIG最小に近づける */
+  background-clip: padding-box;
+  position: relative;
+}
+.params-help-btn::after{
+  content:''; position:absolute;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  width:32px; height:32px;
+}
+.params-members{
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.params-member{
+  flex:1; min-width:0;
+  background:var(--bg); border:1px solid var(--rule); border-radius:8px;
+  padding:7px 8px;
+}
+.params-member-name{
+  font-family:var(--font); font-size:9px; color:var(--pencil);
+  margin-bottom:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.params-member.empty .params-member-name{ color:var(--rule2); }
+.params-row{
+  display:flex; gap:2px;
+}
+.p-chip{
+  flex:1; text-align:center;
+}
+.p-chip-name{
+  font-family:var(--font); font-size:6px; color:var(--muted);
+  display:block; margin-bottom:1px;
+}
+.p-chip-grade{ font-size:11px; font-weight:700; display:block; }
+
+/* PARTY TOTAL BAR */
+.party-total-row {
+  width: 100%;
+  margin-top: 0;
+  background: var(--bg3);
+  border: 1px solid var(--rule2);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.party-total-label {
+  font-family: var(--font);
+  font-size: 7px; letter-spacing: .1em; color: var(--muted);
+  margin-bottom: 5px;
+}
+.party-total-bars { display: flex; flex-direction: column; gap: 4px; }
+.ptb-row { display: flex; align-items: center; gap: 6px; }
+.ptb-name {
+  font-family: var(--font);
+  font-size: 7px; color: var(--muted); width: 26px; flex-shrink: 0;
+}
+.ptb-bar-wrap {
+  flex: 1; height: 6px;
+  background: var(--bg); border-radius: 3px; overflow: hidden;
+}
+.ptb-bar {
+  height: 100%; border-radius: 3px;
+  background: var(--green);
+  transition: width .3s ease;
+}
+.ptb-val {
+  font-family: var(--font);
+  font-size: 8px; color: var(--ink2); width: 22px; text-align: right; flex-shrink: 0;
+}
+/* 個別カードの自分との比較 */
+.params-member-cmp {
+  font-family: var(--font);
+  font-size: 8px; text-align: right; margin-bottom: 3px;
+}
+.cmp-up   { color: var(--green); }
+.cmp-down { color: var(--red); }
+.cmp-same { color: var(--muted); }
+
+/* TUTORIAL MODAL */
+.tutorial-overlay{
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.55); align-items:flex-end;
+  width:100%; max-width:390px; left:50%; transform:translateX(-50%);
+}
+.tutorial-overlay.show{ display:flex; }
+.tutorial-sheet{
+  background:var(--bg); width:100%;
+  border-radius:20px 20px 0 0;
+  padding:20px 20px 40px;
+  max-height:80dvh; overflow-y:auto;
+}
+.tutorial-title{
+  font-family:var(--font-pop); font-size:18px; font-weight:800;
+  margin-bottom:4px;
+}
+.tutorial-sub{
+  font-family:var(--font); font-size:11px; color:var(--pencil);
+  margin-bottom:16px;
+}
+.tutorial-item{
+  display:flex; gap:12px; margin-bottom:14px; align-items:flex-start;
+}
+.tutorial-badge{
+  width:36px; height:36px; border-radius:8px;
+  background:var(--bg2); border:1.5px solid var(--rule2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.tutorial-item-name{
+  font-size:13px; font-weight:700; margin-bottom:2px;
+}
+.tutorial-item-desc{
+  font-family:var(--font); font-size:11px; color:var(--pencil); line-height:1.6;
+}
+.tutorial-close{
+  width:100%; margin-top:8px; padding:13px;
+  background:var(--ink); color:var(--bg);
+  border:none; border-radius:10px;
+  font-family:var(--font-pop); font-size:14px; font-weight:700;
+  cursor:pointer;
+}
+
+/* CONTACT LIST — スクロール可視域を最大化する主役エリア */
+.screen {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 22px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 22px 100%,
+    var(--board);
+}
+
+/* .section-header は css/app.css のステッカータブを使用（ここだけ縦マージンを詰める） */
+.screen .section-header{ margin-top:10px; margin-bottom:5px; }
+
+/* LINEのトーク一覧に近い密度: 1行を細く・情報は横一列に圧縮。
+   タップ領域は行の高さ(padding込み)で44px前後を確保しつつ、
+   見た目の余白と装飾(角丸カード感)は最小限に抑える。 */
+.contact-row {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 8px 3px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  cursor: pointer; background: var(--board);
+  box-shadow: 1.5px 1.5px 0 rgba(52,48,74,.10);
+  transition: transform .1s, box-shadow .1s; position: relative;
+  min-height: 44px;
+}
+.contact-row:active { transform: translate(1px,1px); box-shadow: 0.5px 0.5px 0 rgba(52,48,74,.10); }
+.contact-row.selected-row-item { background: var(--green-t); }
+.contact-row.locked-row { opacity: .4; cursor: default; }
+
+.contact-avatar {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: var(--pink-soft); border: 1.5px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-family: var(--font-pop); font-weight: 800;
+  color: var(--ink); flex-shrink: 0; transform: rotate(-3deg);
+}
+.contact-avatar.selected-av { border-color: var(--green); }
+
+.contact-info { flex: 1; min-width: 0; }
+.contact-name {
+  font-size: 13px; font-weight: 700;
+  font-family: var(--font-pop); color: var(--ink);
+  margin-bottom: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.contact-sub {
+  font-family: var(--font); font-size: 9px; color: var(--pencil);
+  margin-bottom: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* パラメータは1行に抑える(はみ出しは省略)。詳細は › から全項目を確認できる */
+.contact-params {
+  display: flex; gap: 3px; flex-wrap: nowrap; overflow: hidden;
+}
+.param-tag {
+  font-family: var(--font); font-size: 7px; flex-shrink: 0;
+  padding: 1px 4px; border-radius: 6px;
+  border: 1px solid var(--rule2); color: var(--muted); background: var(--bg);
+}
+.param-tag.ss { border-color: var(--red);   color: var(--red);   background: rgba(192,57,43,0.05); }
+.param-tag.s  { border-color: var(--ink2); color: var(--ink2); background: transparent; }
+.param-tag.a  { border-color: var(--rule2); color: var(--pencil); }
+.param-tag.b  { border-color: var(--rule);  color: var(--muted); }
+.contact-warn { font-family: var(--font); font-size: 8px; color: var(--red); margin-top: 1px; }
+
+.contact-right { display: flex; flex-direction: row; align-items: center; gap: 4px; flex-shrink: 0; }
+.contact-check {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--rule2); background: #f0f0f0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: transparent; transition: all .15s;
+  flex-shrink: 0;
+}
+.contact-check.checked {
+  border-color: var(--green); background: var(--green);
+  color: #fff;
+}
+.detail-arrow {
+  font-size: 19px; font-weight: 700; color: var(--ink2);
+  background: none; border: none; cursor: pointer;
+  /* 視覚は控えめ、タップ領域はHIG最小に近づける。
+     以前は margin:-12px -4px で親の右端から4pxはみ出していた（右だけ相殺をやめる） */
+  padding: 12px 6px;
+  margin: -12px 0 -12px -6px;
+  flex: 0 0 auto; line-height: 1;
+}
+.contact-row.locked-row .detail-arrow{ color: var(--muted); }
+
+/* BOTTOM CONFIRM */
+.confirm-bar {
+  background: var(--bg);
+  border-top: 1px solid var(--rule2);
+  padding: 10px 20px calc(14px + env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+.confirm-btn {
+  width: 100%;
+  background: var(--green); border: none; border-radius: 30px;
+  padding: 15px;
+  color: #fff;
+  font-family: var(--font); font-size: 15px; letter-spacing: .08em;
+  cursor: pointer; transition: all .15s;
+}
+.confirm-btn:not(:disabled):active { opacity: .85; transform: scale(.98); }
+.confirm-btn:disabled {
+  background: var(--bg3); color: var(--muted); cursor: not-allowed;
+}
+
+/* DETAIL OVERLAY */
+#detail-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; pointer-events: none;
+  width: 100%; max-width: 390px; left: 50%; transform: translateX(-50%);
+}
+.detail-screen {
+  position: absolute; inset: 0; background: #fff;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  pointer-events: auto; overflow-y: auto;
+}
+.detail-screen.open { transform: translateX(0); }
+
+.detail-nav {
+  background: var(--bg); border-bottom: 1px solid var(--rule2);
+  padding: 12px 20px 10px;
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 5;
+}
+.detail-select-btn {
+  background: var(--green); border: none; border-radius: 16px;
+  padding: 6px 16px; color: #fff;
+  font-family: var(--font); font-size: 12px;
+  cursor: pointer; transition: all .15s;
+}
+.detail-select-btn.sel { background: var(--red); }
+.detail-select-btn:disabled { background: var(--bg3); color: var(--muted); cursor: not-allowed; }
+
+.detail-avatar-wrap {
+  background: var(--bg); padding: 28px 0 20px;
+  display: flex; flex-direction: column; align-items: center;
+  border-bottom: 1px solid var(--rule2);
+}
+.detail-avatar-big {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--bg2); border: 2px solid var(--rule2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-family: var(--font-pop); font-weight: 800;
+  color: var(--ink2); margin-bottom: 10px;
+}
+/* ── 男子の立ち絵（2026-09-23）────────────────────────
+   卓の友達は影絵のままにする（座って背を向けているので正面立ち絵は使わない）。
+   顔を見て選ぶ画面＝編成だけに入れる。 */
+.av-art {
+  width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%;
+  border-radius: 50%; display: block;
+}
+.sel-avatar.has-art, .contact-avatar.has-art { overflow: hidden; padding: 0; background: var(--bg2); }
+.av-glyph { width: 62%; height: 62%; display: block; }
+.detail-avatar-big .av-glyph { width: 46px; height: 46px; }
+.detail-avatar-big.has-art {
+  width: 104px; height: 128px; border-radius: 10px 10px 4px 4px;
+  overflow: hidden; padding: 0; background: linear-gradient(180deg,#f3efe6,#e6e0d4);
+  border: 2px solid var(--rule2);
+}
+.detail-avatar-big.has-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 6%; display: block; }
+
+.detail-dname { font-size: 20px; font-weight: 800; margin-bottom: 2px; font-family: var(--font-pop); }
+.detail-dtype { font-family: var(--font); font-size: 11px; color: var(--pencil); }
+
+.detail-body { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+
+.detail-card {
+  background: #fff; border: 1.5px solid var(--rule2);
+  border-radius: 12px; padding: 12px 16px;
+}
+.detail-card-title {
+  font-family: var(--font);
+  font-size: 8px; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px;
+}
+.params-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.param-cell { text-align: center; }
+.param-name { font-family: var(--font); font-size: 7px; color: var(--muted); display: block; margin-bottom: 2px; }
+.param-grade { font-size: 13px; font-weight: 700; display: block; }
+.grade-ss { color: var(--red); }
+.grade-s  { color: var(--ink); }
+.grade-a  { color: var(--ink2); }
+.grade-b  { color: var(--pencil); }
+.grade-x  { color: var(--muted); }
+.detail-traits { display: flex; flex-wrap: wrap; gap: 6px; }
+.trait { font-family: var(--font); font-size: 9px; padding: 3px 9px; border-radius: 20px; background: var(--bg2); border: 1.5px solid var(--rule2); color: var(--ink2); }
+.trait.danger { background: rgba(192,57,43,.08); color: var(--red); border-color: var(--red); }
+.trait.safe   { background: rgba(46,125,66,.08); color: var(--green); border-color: var(--green); }
+.detail-note {
+  font-family: var(--font); font-size: 11px; color: var(--pencil); line-height: 1.8;
+  background: #fff; border-left: 3px solid var(--rule2); border-radius: 0 8px 8px 0; padding: 10px 14px;
+}
+.detail-note.warn { border-color: var(--red); }
+.detail-hitokoto {
+  background: #fff; border: 1.5px solid var(--rule2);
+  border-radius: 12px; padding: 14px 16px;
+  border-left: 4px solid var(--green);
+}
+.detail-hitokoto-label {
+  font-family: var(--font);
+  font-size: 8px; letter-spacing: .1em; color: var(--green);
+  margin-bottom: 8px;
+}
+.detail-hitokoto-text {
+  font-family: var(--font-pop);
+  font-size: 14px; color: var(--ink); line-height: 1.7;
+}
+
+.intro-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(42,138,74,.06); border: 1.5px solid var(--green);
+  border-radius: 10px; padding: 8px 12px; margin-bottom: 4px;
+}
+.intro-chip-name { font-size: 12px; font-weight: 700; color: var(--green); flex: 1; font-family: var(--font-pop); }
+.intro-chip-cond { font-family: var(--font); font-size: 9px; color: var(--pencil); }
+
+/* SYNERGY CHIPS（params-panel 内に統合） */
+.synergy-chips {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 6px;
+}
+.syn-chip {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 20px;
+  background: var(--green-t); border: 1.5px solid var(--green);
+  font-family: var(--font); font-size: 9px; color: var(--green);
+  animation: chipIn .2s ease-out;
+}
+@keyframes chipIn { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+
+/* 旧 SYNERGY PANEL（互換のため残す、非表示）*/
+.synergy-panel { display: none !important; }
+.synergy-panel-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font);
+  font-size: 8px; letter-spacing: .1em; color: var(--muted);
+  margin-bottom: 8px;
+}
+.synergy-list { display: flex; flex-direction: column; gap: 7px; }
+.synergy-item {
+  background: #fff;
+  border: 1.5px solid var(--rule2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex; gap: 10px; align-items: flex-start;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.synergy-item.show { opacity: 1; transform: translateX(0); }
+.synergy-item.active { border-color: var(--green); background: var(--green-t); }
+.synergy-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.synergy-text { flex: 1; min-width: 0; }
+.synergy-label {
+  font-family: var(--font-pop);
+  font-size: 12px; font-weight: 700; color: var(--ink);
+  margin-bottom: 2px;
+}
+.synergy-flavor {
+  font-family: var(--font);
+  font-size: 10px; color: var(--pencil); line-height: 1.5;
+  margin-bottom: 3px;
+}
+.synergy-effect {
+  font-family: var(--font);
+  font-size: 9px; color: var(--green); font-weight: 600;
+}
+.synergy-inactive .synergy-label { color: var(--muted); }
+.synergy-inactive .synergy-effect { color: var(--muted); }
+
+/* SYNERGY HELP OVERLAY */
+.synergy-help-overlay{
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.55); align-items:flex-end;
+  max-width:390px; width:100%; left:50%; transform:translateX(-50%);
+}
+.synergy-help-overlay.show{ display:flex; }
+.synergy-help-sheet{
+  background:var(--bg); width:100%;
+  border-radius:20px 20px 0 0;
+  padding:20px 20px 40px;
+  max-height:80dvh; overflow-y:auto;
+}
+.synergy-help-title{
+  font-family:var(--font-pop); font-size:18px; font-weight:800;
+  margin-bottom:4px;
+}
+.synergy-help-sub{
+  font-family:var(--font); font-size:11px; color:var(--pencil);
+  margin-bottom:16px; line-height:1.6;
+}
+.synergy-help-item{
+  display:flex; gap:12px; margin-bottom:12px; align-items:flex-start;
+  padding:10px 12px; border-radius:10px;
+  border:1.5px solid var(--rule2); background:#fff;
+}
+.synergy-help-icon{ font-size:20px; flex-shrink:0; }
+.synergy-help-label{
+  font-size:13px; font-weight:700; margin-bottom:2px;
+  font-family:var(--font-pop);
+}
+.synergy-help-flavor{
+  font-family:var(--font); font-size:10px; color:var(--pencil); line-height:1.5;
+  margin-bottom:2px;
+}
+.synergy-help-effect{
+  font-family:var(--font); font-size:9px;
+  color:var(--green); letter-spacing:.03em;
+}
+.synergy-help-cond{
+  font-family:var(--font); font-size:9px; color:var(--muted);
+  margin-top:2px;
+}
+
+/* シナジーアイコン（アバター右下） */
+/* シナジーバッジ: 選択行の中に横一列で収める。
+   以前は avatar に position:absolute + wrap-reverse で重ねており、3個並ぶと
+   50px高になって33pxの行を突き抜け、上のバナーに被っていた（画面崩れの原因）。 */
+.syn-badge {
+  display: flex; flex-wrap: nowrap; gap: 2px;
+  flex: 0 0 auto; margin-left: 2px;
+}
+.syn-badge-icon {
+  font-size: 9px; line-height: 1;
+  background: #fff; border-radius: 50%;
+  border: 1px solid var(--green);
+  width: 14px; height: 14px; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── 短い画面(iPhone SE = 375×667 など)専用の追加圧縮 ──
+   ベースは既にLINE風の高密度だが、下限667px高の端末ではさらに一段詰めて
+   友達リスト(.screen)の可視行数を稼ぐ。背の高い端末には一切影響しない。 */
+@media (max-height:680px){
+  .group-banner{ padding-top:5px; padding-bottom:5px; }
+  .group-icon{ width:32px; height:32px; font-size:16px; border-radius:9px; }
+  .group-name{ font-size:14px; }
+  .group-desc{ font-size:8px; }
+  .selected-row{ padding:4px 20px; }
+  .sel-slot{ min-height:36px; }
+  .sel-avatar{ width:26px; height:26px; font-size:12px; }
+  .params-panel{ padding:4px 16px; }
+  .params-panel-hd{ min-height:26px; }
+  .filter-bar{ padding:3px 16px; }
+  #filter-select{ padding:5px 12px; }
+  /* 友達行をさらに詰めて、1画面に多く並べる(LINE風の密度) */
+  .contact-row{ padding:4px 8px; margin:0 8px 2px; min-height:40px; }
+  .contact-avatar{ width:26px; height:26px; font-size:12px; }
+}
+</style>
+<script src="../data/gamedata.js"></script>
+<script src="../data/gamestate.js"></script>
+<script src="../data/flags.js"></script>
+</head>
+<body>
+<div class="phone">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span class="status-bar-time" id="status-time">9:41</span>
+    <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+  </div>
+
+  <!-- GROUP BANNER -->
+  <div class="group-banner">
+    <button class="group-back-btn" onclick="history.back()">←</button>
+    <div class="group-icon">🍺</div>
+    <div class="group-info">
+      <div class="group-name">合コン！</div>
+      <div class="group-desc">今夜のスタメンを選ぼう · 2人まで</div>
+    </div>
+    <div class="group-count">
+      <span id="count-num">0</span>
+      <span class="group-count-label">/ 2人</span>
+        <a href="deck.html" style="display:block;margin-top:4px;font-size:9px;font-weight:800;color:var(--cyan);text-decoration:none;white-space:nowrap">🃏 持ちネタ</a>
+    </div>
+  </div>
+
+  <!-- SELECTED MEMBERS ROW -->
+  <div class="selected-row" id="selected-row">
+    <div class="sel-slot" id="sel-0" onclick="removeSlot(0)">
+      <div class="sel-avatar empty" id="sel-av-0"><span style="font-size:20px;color:var(--rule2)">+</span></div>
+      <div class="sel-name" id="sel-name-0">メンバー1</div>
+    </div>
+    <div class="sel-slot" id="sel-1" onclick="removeSlot(1)">
+      <div class="sel-avatar empty" id="sel-av-1"><span style="font-size:20px;color:var(--rule2)">+</span></div>
+      <div class="sel-name" id="sel-name-1">メンバー2</div>
+    </div>
+  </div>
+
+  <!-- PARAMS PANEL（デフォルト折りたたみ: メンバー選択リストを主役に） -->
+  <div class="params-panel">
+    <div class="params-panel-hd" id="params-hd" onclick="toggleParamsPanel()">
+      <div class="params-panel-label">FORMATION POWER — 布陣の力</div>
+      <span class="params-mini" id="params-mini"></span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button class="params-help-btn" onclick="showSynergyHelp();event.stopPropagation()" title="シナジー一覧">⚡</button>
+        <button class="params-help-btn" onclick="showTutorial();event.stopPropagation()" title="パラメータ解説">?</button>
+        <span class="params-chevron closed" id="params-chevron">▼</span>
+      </div>
+    </div>
+    <div class="params-body collapsed" id="params-body">
+      <div class="params-members" id="params-members"><!-- JS で生成 --></div>
+      <div class="synergy-chips" id="synergy-chips"><!-- シナジーチップ: JS で生成 --></div>
+    </div>
+  </div>
+
+  <!-- FILTER DROPDOWN -->
+  <div class="filter-bar">
+    <select id="filter-select" onchange="setFilterVal(this.value)">
+    </select>
+  </div>
+
+  <!-- CONTACT LIST -->
+  <div class="screen" id="screen"></div>
+
+  <!-- CONFIRM -->
+  <div class="confirm-bar">
+    <button class="confirm-btn" id="confirm-btn" disabled onclick="confirmFormation()">
+      🍻 この布陣で行く！
+    </button>
+  </div>
+
+</div>
+
+<!-- TUTORIAL OVERLAY -->
+<div class="tutorial-overlay" id="tutorial-overlay" onclick="hideTutorial()">
+  <div class="tutorial-sheet" onclick="event.stopPropagation()">
+    <div class="tutorial-title">📊 パラメータ解説</div>
+    <div class="tutorial-sub">各ステータスが合コンに与える影響</div>
+
+    <div class="tutorial-item">
+      <div class="tutorial-badge">💬</div>
+      <div>
+        <div class="tutorial-item-name">コミュ（コミュニケーション）</div>
+        <div class="tutorial-item-desc">会話力の高さ。共感・深掘りのアクション効果に直結する。コミュの高い友達を連れて行くと全体の好感度が上がりやすい。</div>
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <div class="tutorial-badge">✨</div>
+      <div>
+        <div class="tutorial-item-name">ビジュ（ビジュアル）</div>
+        <div class="tutorial-item-desc">見た目の良さ。第一印象（空気ゲージ初期値）を左右する。高いほど序盤が有利になるが、依存しすぎると後半に課題が出ることも。</div>
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <div class="tutorial-badge">🧠</div>
+      <div>
+        <div class="tutorial-item-name">頭（知力・観察力）</div>
+        <div class="tutorial-item-desc">場の状況を読む力。頭が高いと「観察ヒント」が多く表示され、友達や女の子の動きを先読みできる。</div>
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <div class="tutorial-badge">⚡</div>
+      <div>
+        <div class="tutorial-item-name">手際（立ち回り）</div>
+        <div class="tutorial-item-desc">機転の速さと段取り力。席取りバトルの順番に影響する。早く席を取れると、狙っているヒロインの隣に座れる可能性が上がる。</div>
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <div class="tutorial-badge">🎵</div>
+      <div>
+        <div class="tutorial-item-name">空気（場の空気力）</div>
+        <div class="tutorial-item-desc">その場の雰囲気を作る力。ノリ・飲もうぜアクションの効果に影響する。空気が高い友達がいると空気ゲージが落ちにくい。</div>
+      </div>
+    </div>
+    <div class="tutorial-item">
+      <div class="tutorial-badge">💪</div>
+      <div>
+        <div class="tutorial-item-name">心（メンタル）</div>
+        <div class="tutorial-item-desc">精神的な安定感。深掘り失敗時のダメージを軽減し、早とちり（タイミングミス）からの回復が早くなる。</div>
+      </div>
+    </div>
+
+    <button class="tutorial-close" onclick="hideTutorial()">わかった！</button>
+  </div>
+</div>
+
+<!-- SYNERGY HELP OVERLAY -->
+<div class="synergy-help-overlay" id="synergy-help-overlay" onclick="hideSynergyHelp()">
+  <div class="synergy-help-sheet" onclick="event.stopPropagation()">
+    <div class="synergy-help-title">⚡ シナジーとは？</div>
+    <div class="synergy-help-sub">自分・友達の属性（サークル・バイト・住まい）が2人以上一致するとシナジー発動。合コン中ずっとボーナスがかかる。</div>
+    <div id="synergy-help-list"></div>
+    <button class="tutorial-close" onclick="hideSynergyHelp()">わかった！</button>
+  </div>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div id="detail-overlay">
+  <div class="detail-screen" id="detail-screen" style="display:none;">
+    <div class="detail-nav">
+      <button class="nav-back" onclick="closeDetail()">← もどる</button>
+      <div class="nav-title" id="detail-nav-name" style="font-size:16px;">—</div>
+      <button class="detail-select-btn" id="detail-select-btn" onclick="toggleDetailSelect()">追加</button>
+    </div>
+    <div class="detail-avatar-wrap">
+      <div class="detail-avatar-big" id="detail-avatar">—</div>
+      <div class="detail-dname" id="detail-name">—</div>
+      <div class="detail-dtype" id="detail-type">—</div>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+<script>
+const PARAMS = ['comm','visu','head','tact','air','mental'];
+let selected = [];
+let currentFilter = 'all';
+let detailCharId = null;
+
+// キャラクターアバター: 苗字の頭文字を表示（emojiフィールドがない場合の代替）
+function charAvatar(c){ return c.emoji || c.name.charAt(0); }
+
+// 立ち絵がある男子（2026-09-23）。無い子は今まで通り頭文字のまま＝混ざっても崩れない
+const MALE_ART = { 1:true, 2:true, 12:true };
+function hasArt(c){ return !!(c && MALE_ART[c.id]); }
+
+// 立ち絵が無い子は頭文字ではなく「その人の居場所」の線画を出す（2026-09-23）。
+// 頭文字は佐・田・木・松…がどれも同じ形に見えて、一覧で見分けがつかない。
+// バイト先＞サークル＞住まい の順に、その人を一番よく言い表すものを1つ選ぶ。
+// 札の紋章と同じ描き方（48枠・線だけ・塗りなし）で揃えてある。
+const AV_GLYPH = {
+  izakaya: ['M9 17h16v20a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3z','M25 22h4a4 4 0 0 1 0 8h-4','M9 23h16'],
+  cafe:    ['M11 15h26l-3 21a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4z','M18 24a3.2 3.2 0 0 1 6-1.6 3.2 3.2 0 0 1 6 1.6c0 3.4-6 6.8-6 6.8s-6-3.4-6-6.8z'],
+  juku:    ['M9 31h30a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z','M13 20h22a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H13a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z','M18 9h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z'],
+  sports:  ['M6 31h36M15 31a9 9 0 0 1 18 0','M24 9v5M11 15l3.5 3.5M37 15l-3.5 3.5','M11 39h10M27 39h10'],
+  culture: ['M6 12c6-3 12-3 18 0v26c-6-3-12-3-18 0z','M42 12c-6-3-12-3-18 0v26c6-3 12-3 18 0z'],
+  home:    ['M8 24L24 10l16 14','M12 22v17h24V22'],
+  alone:   ['M14 26l10-9 10 9','M17 24v14h14V24','M22 38v-8h4v8'],
+};
+const AV_TONE = {
+  izakaya:'#d98b3d', cafe:'#b07a4e', juku:'#4f8fd9',
+  sports:'#e0574f', culture:'#6b7fd9', home:'#7a9a6b', alone:'#8a7fa8',
+};
+function avKey(c){
+  if (c.part && c.part !== 'none') return c.part;
+  if (c.circle && c.circle !== 'none') return c.circle;
+  return (c.living === 'home') ? 'home' : 'alone';
+}
+function avGlyph(c){
+  const k = avKey(c);
+  const paths = AV_GLYPH[k] || AV_GLYPH.alone;
+  const col = AV_TONE[k] || '#8a7fa8';
+  return `<svg class="av-glyph" viewBox="0 0 48 48" fill="none" stroke="${col}" stroke-width="3"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${
+      paths.map(d => `<path d="${d}"></path>`).join('')}</svg>`;
+}
+
+function charAvatarHtml(c){
+  return hasArt(c)
+    ? `<img class="av-art" src="../images/m${c.id}_face.png" alt="">`
+    : avGlyph(c);
+}
+
+// clock
+function updateClock(){
+  const n = new Date();
+  const el = document.getElementById('status-time');
+  if(el) el.textContent = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+updateClock(); setInterval(updateClock, 30000);
+
+// env locks
+function applyEnvironmentLocks(){
+  const config = loadConfig();
+  if(!config) return;
+  const discovered = GameState._data?.discoveredFriends || [];
+  CHARACTERS.forEach(c => {
+    if(c.locked){ c._envLocked = true; return; }
+    if(c.discoverable){
+      // 同じバイト先・サークルのキャラは出会えている扱い
+      const sameEnv = (config.part !== 'none' && c.part === config.part)
+                   || (config.circle !== 'none' && c.circle === config.circle);
+      c._envLocked = !discovered.includes(c.id) && !sameEnv;
+      return;
+    }
+    const ok = (config.circle !== 'none' && c.circle === config.circle)
+             || (config.part   !== 'none' && c.part   === config.part)
+             || c.group === 'old' || c.group === 'class'
+             || discovered.includes(c.id);
+    c._envLocked = !ok;
+  });
+}
+
+function isAvailable(c){
+  if(c.locked || c._envLocked) return false;
+  const r = GameState._data?.friendRelation?.[c.id];
+  const used = r?.used || 0;
+  const lim = c.limit || '';
+  const month = GameState.month;
+  if(lim.includes('テスト期間不可') && (month===1||month===7)) return false;
+  if(lim.includes('繁忙期不可') && (month===12||month===1||month===3)) return false;
+  if(lim.includes('月1') && used>=1) return false;
+  if(lim.includes('月2') && used>=2) return false;
+  if(lim.includes('学期2') && used>=2) return false;
+  return true;
+}
+
+// filter dropdown
+function renderFilterTabs(){
+  const config = loadConfig();
+  const tabs = [{ f:'all', label:'全員' }];
+  if(config?.part==='izakaya') tabs.push({ f:'env_part_izakaya', label:'🍶 居酒屋バイト' });
+  if(config?.part==='cafe')    tabs.push({ f:'env_part_cafe',    label:'☕ カフェバイト' });
+  if(config?.part==='juku')    tabs.push({ f:'env_part_juku',    label:'📚 塾バイト' });
+  tabs.push({ f:'group_circle', label:'⚽ サークル' });
+  tabs.push({ f:'env_class',    label:'📖 ゼミ' });
+  tabs.push({ f:'env_old',      label:'🏠 幼馴染' });
+  const sel = document.getElementById('filter-select');
+  sel.innerHTML = tabs.map(t => `<option value="${t.f}">${t.label}</option>`).join('');
+  sel.value = 'all';
+}
+
+function setFilterVal(val){
+  currentFilter = val;
+  renderList();
+}
+
+function getSections(){
+  const config = loadConfig();
+  const secs = [];
+  if(currentFilter === 'all'){
+    secs.push({ label:'CIRCLE — サークル仲間', members: CHARACTERS.filter(c=>c.group==='circle'&&!c._envLocked&&!c.locked) });
+    secs.push({ label:'CLASS — ゼミ仲間',     members: CHARACTERS.filter(c=>c.group==='class' &&!c._envLocked&&!c.locked) });
+    secs.push({ label:'PART — バイト仲間',    members: CHARACTERS.filter(c=>c.group==='part'  &&!c._envLocked&&!c.locked) });
+    secs.push({ label:'OLD — 幼馴染',         members: CHARACTERS.filter(c=>c.group==='old'   &&!c.locked) });
+  } else if(currentFilter==='env_class'){
+    secs.push({ label:'CLASS — ゼミ仲間', members: CHARACTERS.filter(c=>c.group==='class'&&!c.locked) });
+  } else if(currentFilter==='env_old'){
+    secs.push({ label:'OLD — 幼馴染', members: CHARACTERS.filter(c=>c.group==='old'&&!c.locked) });
+  } else if(currentFilter==='group_circle'){
+    const sp = CHARACTERS.filter(c=>c.group==='circle'&&c.circle==='sports' &&!c.locked&&!c._envLocked);
+    const cu = CHARACTERS.filter(c=>c.group==='circle'&&c.circle==='culture'&&!c.locked&&!c._envLocked);
+    if(sp.length) secs.push({ label:'SPORTS — 体育会', members: sp });
+    if(cu.length) secs.push({ label:'CULTURE — 文化系', members: cu });
+  } else {
+    const parts = currentFilter.split('_');
+    const envKey = parts[1], envVal = parts.slice(2).join('_');
+    // 同じ場所の仲間は envLock 関係なく表示
+    const members = CHARACTERS.filter(c=>!c.locked&&c[envKey]===envVal);
+    const lbl = { 'part_izakaya':'🍶 居酒屋バイト', 'part_cafe':'☕ カフェバイト', 'part_juku':'📚 塾バイト' }[`${envKey}_${envVal}`]||'MEMBERS';
+    if(members.length) secs.push({ label: lbl, members });
+  }
+  return secs;
+}
+
+// render list
+function renderList(){
+  const wrap = document.getElementById('screen');
+  wrap.innerHTML = '';
+  getSections().forEach(sec => {
+    if(!sec.members.length) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'section-header';
+    hdr.textContent = sec.label;
+    wrap.appendChild(hdr);
+
+    sec.members.forEach(c => {
+      const isSel   = selected.includes(c.id);
+      const avail   = isAvailable(c);
+      const isFull  = selected.length >= 2 && !isSel;
+      const disabled = !avail || (isFull && !isSel);
+      const intimacy = GameState._data?.friendRelation?.[c.id]?.intimacy || 0;
+
+      const SHORT = {comm:'コミュ',visu:'ビジュ',head:'頭',tact:'手際',air:'空気',mental:'心'};
+      const topChips = PARAMS.map(p => {
+        const v = c.params[p] || 0;
+        const g = v >= 90 ? 'ss' : v >= 75 ? 's' : v >= 60 ? 'a' : 'b';
+        return `<span class="param-tag ${g}">${SHORT[p]}:${GRADE(v)}</span>`;
+      }).join('');
+
+      const warnText = (!avail && !c.locked && !c._envLocked) ? `⚠ ${c.limit}` : '';
+
+      const row = document.createElement('div');
+      row.className = 'contact-row' + (isSel?' selected-row-item':'') + (disabled&&!isSel?' locked-row':'');
+      row.innerHTML = `
+        <div class="contact-avatar${isSel?' selected-av':''}${hasArt(c)?' has-art':''}">${charAvatarHtml(c)}</div>
+        <div class="contact-info">
+          <div class="contact-name">${c.name}</div>
+          <div class="contact-sub">${c.tag}${intimacy>0?` · 親密度${intimacy}`:''}</div>
+          <div class="contact-params">${topChips}</div>
+          ${warnText?`<div class="contact-warn">${warnText}</div>`:''}
+        </div>
+        <div class="contact-right">
+          <div class="contact-check${isSel?' checked':''}">${isSel?'✓':''}</div>
+          <button class="detail-arrow" onclick="event.stopPropagation();openDetail(${c.id})">›</button>
+        </div>`;
+      row.onclick = () => { if(!disabled) toggleFriend(c.id); };
+      wrap.appendChild(row);
+    });
+  });
+}
+
+// selected row
+function renderSelectedRow(){
+  selected.forEach((id, i) => {
+    const c = CHARACTERS.find(x => x.id === id);
+    const av   = document.getElementById('sel-av-'+i);
+    const name = document.getElementById('sel-name-'+i);
+    av.className = 'sel-avatar filled';
+    // シナジーバッジ
+    const badges = getSynBadgeIcons(c);
+    const badgeHtml = badges.length ? `<div class="syn-badge">${badges.map(ic=>`<span class="syn-badge-icon">${ic}</span>`).join('')}</div>` : '';
+    av.className = 'sel-avatar filled' + (hasArt(c) ? ' has-art' : '');
+    av.innerHTML = `${charAvatarHtml(c)}<div class="sel-remove">×</div>`;
+    name.textContent = c.name;
+    // シナジーバッジは名前の右に横一列で置く（アバターに重ねると行をはみ出すため）
+    const slot = av.parentElement;
+    const old  = slot && slot.querySelector('.syn-badge');
+    if (old) old.remove();
+    if (badgeHtml) name.insertAdjacentHTML('afterend', badgeHtml);
+  });
+  for(let i = selected.length; i < 2; i++){
+    const av   = document.getElementById('sel-av-'+i);
+    const name = document.getElementById('sel-name-'+i);
+    av.className = 'sel-avatar empty';
+    av.innerHTML = `<span style="font-size:20px;color:var(--rule2)">+</span>`;
+    const slot0 = av.parentElement;
+    const b0 = slot0 && slot0.querySelector('.syn-badge');
+    if (b0) b0.remove();
+    name.textContent = `メンバー${i+1}`;
+  }
+  document.getElementById('count-num').textContent = selected.length;
+  const ready = selected.length === 2;
+  document.getElementById('confirm-btn').disabled = !ready;
+  renderParamsPanel();
+  renderSynergyPanel();
+}
+
+function toggleFriend(id){
+  if(selected.includes(id)) selected = selected.filter(x=>x!==id);
+  else {
+    if(selected.length>=2) return;
+    selected.push(id);
+  }
+  renderSelectedRow();
+  renderList();
+  if(detailCharId!==null) updateDetailBtn();
+}
+
+function removeSlot(i){
+  if(selected[i]){ selected.splice(i,1); renderSelectedRow(); renderList(); }
+}
+
+// DETAIL
+function openDetail(id){
+  detailCharId = id;
+  const c = CHARACTERS.find(x => x.id === id);
+  if(!c) return;
+
+  document.getElementById('detail-nav-name').textContent = c.name;
+  // 詳細は半身で見せる（顔を見て選ぶ画面なので、ここだけは大きく）
+  const dav = document.getElementById('detail-avatar');
+  if (hasArt(c)) {
+    dav.className = 'detail-avatar-big has-art';
+    dav.innerHTML = `<img src="../images/m${c.id}_bust.png" alt="">`;
+  } else {
+    dav.className = 'detail-avatar-big';
+    dav.innerHTML = avGlyph(c);
+  }
+  document.getElementById('detail-name').textContent  = c.name;
+  document.getElementById('detail-type').textContent  = c.type || c.tag;
+  updateDetailBtn();
+
+  const intimacy = GameState._data?.friendRelation?.[c.id]?.intimacy || 0;
+  const used     = GameState._data?.friendRelation?.[c.id]?.used || 0;
+
+  const paramsHtml = `<div class="detail-card">
+    <div class="detail-card-title">PARAMETERS</div>
+    <div class="params-grid">${PARAMS.map(p=>`
+      <div class="param-cell">
+        <span class="param-name">${{comm:'コミュ',visu:'ビジュ',head:'頭',tact:'手際',air:'空気',mental:'心'}[p]}</span>
+        <span class="param-grade ${GRADE_CLASS(c.params[p])}">${GRADE(c.params[p])}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  const traitTags = (c.traits||[]).map(t => {
+    const type = t.startsWith('⚠')?'danger':t.startsWith('✓')?'safe':'';
+    return `<span class="trait ${type}">${t}</span>`;
+  }).join('');
+  const traitsHtml = traitTags ? `<div class="detail-card"><div class="detail-card-title">TRAITS</div><div class="detail-traits">${traitTags}</div></div>` : '';
+
+  const noteHtml = c.note ? `<div class="detail-note${c.limit?' warn':''}">${c.limit?`⚠ ${c.limit}<br>`:''}${c.note}</div>` : '';
+
+  const relHtml = `<div class="detail-card">
+    <div class="detail-card-title">RELATIONSHIP</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span style="font-family:var(--font);font-size:10px;color:var(--pencil);width:44px;">親密度</span>
+      <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${intimacy}%;background:var(--green);"></div>
+      </div>
+      <span style="font-family:var(--font);font-size:10px;color:var(--green);">${intimacy}</span>
+    </div>
+    <div style="font-family:var(--font);font-size:9px;color:var(--muted);">今学期 ${used}回呼び出し済み</div>
+  </div>`;
+
+  let intrHtml = '';
+  if(c.introduces?.length){
+    const chips = c.introduces.map(intro => {
+      const target = CHARACTERS.find(x=>x.id===intro.id);
+      if(!target) return '';
+      const unlocked = (GameState._data?.discoveredFriends||[]).includes(intro.id);
+      return `<div class="intro-chip">
+        <div>
+          <div class="intro-chip-name">${charAvatar(target)} ${target.name}${unlocked?' ✓':''}</div>
+          <div class="intro-chip-cond">親密度${intro.minIntimacy}+ / ${intro.reason}</div>
+        </div>
+      </div>`;
+    }).filter(Boolean).join('');
+    if(chips) intrHtml = `<div class="detail-card"><div class="detail-card-title">INTRODUCES</div>${chips}</div>`;
+  }
+
+  // ひとこと（戦略メモ）
+  const hitokotoHtml = c.hint_default ? `
+    <div class="detail-hitokoto">
+      <div class="detail-hitokoto-label">📝 ひとこと</div>
+      <div class="detail-hitokoto-text">${c.hint_default}</div>
+    </div>` : '';
+
+  document.getElementById('detail-body').innerHTML = hitokotoHtml + relHtml + paramsHtml + traitsHtml + noteHtml + intrHtml;
+
+  const overlay = document.getElementById('detail-overlay');
+  const screen  = document.getElementById('detail-screen');
+  overlay.style.pointerEvents = 'auto';
+  screen.style.display = 'flex';
+  requestAnimationFrame(() => screen.classList.add('open'));
+}
+
+function updateDetailBtn(){
+  const btn = document.getElementById('detail-select-btn');
+  if(!detailCharId) return;
+  const isSel  = selected.includes(detailCharId);
+  const isFull = selected.length>=2 && !isSel;
+  const c = CHARACTERS.find(x=>x.id===detailCharId);
+  if(!isAvailable(c)){
+    btn.textContent='呼べない'; btn.className='detail-select-btn'; btn.disabled=true;
+  } else if(isSel){
+    btn.textContent='外す'; btn.className='detail-select-btn sel'; btn.disabled=false;
+  } else if(isFull){
+    btn.textContent='満員'; btn.className='detail-select-btn'; btn.disabled=true;
+  } else {
+    btn.textContent='追加'; btn.className='detail-select-btn'; btn.disabled=false;
+  }
+}
+
+function toggleDetailSelect(){ if(detailCharId!==null) toggleFriend(detailCharId); }
+
+function closeDetail(){
+  const screen  = document.getElementById('detail-screen');
+  const overlay = document.getElementById('detail-overlay');
+  screen.classList.remove('open');
+  setTimeout(()=>{ screen.style.display='none'; overlay.style.pointerEvents='none'; detailCharId=null; },260);
+}
+
+function selectHeroines(){
+  const available = [101,102,103,104,105,106,107,108,109];
+  const pool = [...available].sort(()=>Math.random()-.5);
+  const anchorId = pool[0];
+  const anchor = HEROINES.find(h=>h.id===anchorId);
+  const related = available.filter(id=>id!==anchorId).filter(id=>{
+    const h=HEROINES.find(x=>x.id===id);
+    return (anchor.circle!=='none'&&h.circle===anchor.circle)||(anchor.part!=='none'&&h.part===anchor.part)||(anchor.hometown&&h.hometown===anchor.hometown)||(anchor.zemi&&h.zemi===anchor.zemi);
+  }).sort(()=>Math.random()-.5);
+  const others = available.filter(id=>id!==anchorId&&!related.includes(id)).sort(()=>Math.random()-.5);
+  return [anchorId,...([...related,...others].slice(0,2))];
+}
+
+function confirmFormation(){
+  const heroineIds = selectHeroines();
+  localStorage.setItem('goukon_party', JSON.stringify(selected));
+  localStorage.setItem('goukon_heroines', JSON.stringify(heroineIds));
+  // 合コンの前に持ちネタを見せる（2026-09-24）。
+  // 何が出せるか知らないまま卓に着くと、手札が配られた瞬間が初対面になる
+  location.href = 'deck.html?next=seat_battle.html';
+}
+
+// SYNERGY PANEL
+const ALL_PARTY_SYNERGIES = [
+  { icon:'💪', label:'体育会シナジー',     flavor:'ノリと体力で圧倒する。乾杯が場を包む。',        effect:'ノリコマンド効果 ×1.5',       cond: c => c.circle === 'sports' },
+  { icon:'📚', label:'文化系シナジー',     flavor:'マニアックな話が意外と刺さる夜になる。',        effect:'深掘りの成功率 +20%',         cond: c => c.circle === 'culture' },
+  { icon:'🍺', label:'居酒屋仲間シナジー', flavor:'飲ませるのが上手い。温まるのが早い。',         effect:'飲もうよコマンドで全員+5',     cond: c => c.part === 'izakaya' },
+  { icon:'☕', label:'カフェ仲間シナジー', flavor:'場が荒れかけても、さりげなく修復する。',        effect:'空気ゲージの減少量 ×0.8',     cond: c => c.part === 'cafe' },
+  { icon:'🎓', label:'塾仲間シナジー',     flavor:'テスト期間や勉強の話で自然に近づける。',       effect:'深掘りの成功率 +15%',         cond: c => c.part === 'juku' },
+  { icon:'🏠', label:'一人暮らしシナジー', flavor:'家に呼べる空気が、自然と二人を抜けさせる。', effect:'抜け出し成功率 +20%',           cond: c => c.living !== 'home' },
+  { icon:'🏡', label:'実家シナジー',       flavor:'真面目で堅実な雰囲気が、安心感になる。',       effect:'連絡先交換の空気要件 45→40',  cond: c => c.living === 'home' },
+];
+
+let prevActiveLabels = new Set();  // 前回発動していたシナジーを追跡
+
+function getActivesynergies(allMen){
+  return ALL_PARTY_SYNERGIES.filter(s => allMen.filter(m => s.cond(m)).length >= 2);
+}
+
+function renderSynergyPanel(){
+  const config = loadConfig();
+  const selfMock = config ? { circle: config.circle, living: config.living, part: config.part } : null;
+  const allMen = [
+    ...(selfMock ? [selfMock] : []),
+    ...selected.map(id => CHARACTERS.find(c => c.id === id)).filter(Boolean),
+  ];
+
+  const chipsEl = document.getElementById('synergy-chips');
+  if(!chipsEl) return;
+
+  const activeItems = getActivesynergies(allMen);
+  prevActiveLabels = new Set(activeItems.map(s => s.label));
+
+  // 折りたたみ時でも発動数が見えるようミニ表示に追記
+  // （renderSelectedRow が renderParamsPanel → renderSynergyPanel の順で呼ぶ前提）
+  const miniEl = document.getElementById('params-mini');
+  if(miniEl && activeItems.length > 0 && miniEl.textContent){
+    miniEl.textContent += ` ・⚡${activeItems.length}`;
+  }
+
+  if(activeItems.length === 0){
+    chipsEl.innerHTML = '';
+    return;
+  }
+
+  chipsEl.innerHTML = activeItems.map(s =>
+    `<div class="syn-chip">${s.icon} ${s.label}</div>`
+  ).join('');
+}
+
+// SYNERGY HELP
+const SYNERGY_COND_LABELS = {
+  sports:  'サークル：体育会系',
+  culture: 'サークル：文化系',
+  izakaya: 'バイト：居酒屋',
+  cafe:    'バイト：カフェ',
+  juku:    'バイト：塾講師',
+  notHome: '一人暮らし',
+  home:    '実家暮らし',
+};
+function showSynergyHelp(){
+  const listEl = document.getElementById('synergy-help-list');
+  listEl.innerHTML = ALL_PARTY_SYNERGIES.map(s => {
+    const src = s.cond.toString();
+    let condText = '';
+    if(src.includes('sports'))           condText = SYNERGY_COND_LABELS.sports;
+    else if(src.includes('culture'))     condText = SYNERGY_COND_LABELS.culture;
+    else if(src.includes('izakaya'))     condText = SYNERGY_COND_LABELS.izakaya;
+    else if(src.includes('cafe'))        condText = SYNERGY_COND_LABELS.cafe;
+    else if(src.includes('juku'))        condText = SYNERGY_COND_LABELS.juku;
+    else if(src.includes("!== 'home'")) condText = SYNERGY_COND_LABELS.notHome;
+    else if(src.includes("=== 'home'")) condText = SYNERGY_COND_LABELS.home;
+    return `<div class="synergy-help-item">
+      <div class="synergy-help-icon">${s.icon}</div>
+      <div>
+        <div class="synergy-help-label">${s.label}</div>
+        <div class="synergy-help-flavor">${s.flavor}</div>
+        <div class="synergy-help-effect">✓ ${s.effect}</div>
+        <div class="synergy-help-cond">条件: ${condText} が2人以上</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('synergy-help-overlay').classList.add('show');
+}
+function hideSynergyHelp(){
+  document.getElementById('synergy-help-overlay').classList.remove('show');
+}
+
+// アバター右下に発動シナジーのアイコンを表示
+function getSynBadgeIcons(charObj){
+  const config = loadConfig();
+  const selfMock = config ? { circle: config.circle, living: config.living, part: config.part } : null;
+  const allMen = [
+    ...(selfMock ? [selfMock] : []),
+    ...selected.map(id => CHARACTERS.find(c => c.id === id)).filter(Boolean),
+  ];
+  // このキャラが絡むシナジーのアイコンを返す
+  return ALL_PARTY_SYNERGIES
+    .filter(s => allMen.filter(m => s.cond(m)).length >= 2 && s.cond(charObj))
+    .map(s => s.icon);
+}
+
+// PARAMS PANEL — 布陣の平均値バーのみ表示
+function renderParamsPanel(){
+  const config    = loadConfig();
+  const selfParams= config ? derivePlayerParams(config.living, config.circle, config.part) : null;
+  const LABELS    = {comm:'コミュ',visu:'ビジュ',head:'頭',tact:'手際',air:'空気',mental:'心'};
+  const PKEYS     = ['comm','visu','head','tact','air','mental'];
+
+  const allParamsArr = [
+    ...(selfParams ? [selfParams] : []),
+    ...selected.map(id => CHARACTERS.find(c=>c.id===id)).filter(Boolean).map(c=>c.params),
+  ];
+
+  if(allParamsArr.length === 0){
+    document.getElementById('params-members').innerHTML = '';
+    document.getElementById('params-mini').textContent = '';
+    return;
+  }
+
+  // 折りたたみ時でも見える総合ミニ表示
+  const overallAvg = Math.round(
+    PKEYS.reduce((sum, p) =>
+      sum + allParamsArr.reduce((a, ps) => a + (ps[p]||0), 0) / allParamsArr.length,
+    0) / PKEYS.length
+  );
+  document.getElementById('params-mini').textContent = `総合 ${GRADE(overallAvg)}`;
+
+  const avgHtml = PKEYS.map(p => {
+    const avg = Math.round(allParamsArr.reduce((s,ps)=>s+(ps[p]||0),0) / allParamsArr.length);
+    return `<div class="ptb-row">
+      <span class="ptb-name">${LABELS[p]}</span>
+      <div class="ptb-bar-wrap"><div class="ptb-bar" style="width:${avg}%"></div></div>
+      <span class="ptb-val">${GRADE(avg)}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('params-members').innerHTML = `
+    <div class="party-total-row" style="width:100%;margin-top:0;">
+      <div class="party-total-label">PARTY AVG — 布陣の平均値（${allParamsArr.length}人）</div>
+      <div class="party-total-bars">${avgHtml}</div>
+    </div>`;
+}
+
+// PARAMS PANEL TOGGLE（デフォルト折りたたみ）
+let paramsOpen = false;
+function toggleParamsPanel(){
+  paramsOpen = !paramsOpen;
+  const body     = document.getElementById('params-body');
+  const hd       = document.getElementById('params-hd');
+  const chevron  = document.getElementById('params-chevron');
+  body.classList.toggle('collapsed', !paramsOpen);
+  hd.classList.toggle('open', paramsOpen);
+  chevron.classList.toggle('open',   paramsOpen);
+  chevron.classList.toggle('closed', !paramsOpen);
+}
+
+// TUTORIAL
+function showTutorial(){
+  document.getElementById('tutorial-overlay').classList.add('show');
+}
+function hideTutorial(){
+  document.getElementById('tutorial-overlay').classList.remove('show');
+  localStorage.setItem('params_tutorial_seen','1');
+}
+
+// init
+GameState.load();
+applyEnvironmentLocks();
+renderFilterTabs();
+renderSelectedRow();
+renderList();
+</script>
+</body>
+</html>

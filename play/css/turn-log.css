@@ -1,0 +1,23 @@
+/* css/turn-log.css — ターンログ（2026-09-24）
+
+   「ゆなが身を乗り出した。ぐっと近づいた」のような第三者視点の要約は、
+   会話ウィンドウに出すと、いま見たばかりのものをもう一度言葉で説明される
+   ことになる。場は具体、要約はログ、と役割を分ける。
+   目立たせない: 小さく、暗く、1行だけ。読まなくても進める位置に置く。 */
+.turn-log{
+  flex-shrink:0;
+  min-height:15px;
+  margin:2px 14px -2px;
+  font-size:10.5px; font-weight:700; line-height:1.4;
+  color:rgba(233,228,245,.42);
+  text-align:right;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  pointer-events:none;
+}
+.turn-log.in{ animation:tlogIn .3s ease-out; }
+@keyframes tlogIn{ from{ opacity:0; transform:translateY(-3px); } }
+body.beat-play .turn-log{ opacity:.7; }
+
+/* 視線の矢印は出さない（2026-09-24）。友達チップが同じことを文字で言っている。
+   JS側も Stage.GAZE_ON で止めてあるが、描画が残っても見えないようにしておく */
+.gaze-svg{ display:none !important; }

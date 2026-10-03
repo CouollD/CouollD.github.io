@@ -1,0 +1,23 @@
+/* css/fx-deal.css — 演出。ここだけを触る（並列作業の衝突を避けるため分離してある） */
+
+/* ── 配り（goukon_day.css の dealIn を上書き。この file が後に読まれる） ──
+   元は translate(20px,16px) rotate(10deg)＝右下から来ていたが、山札 #deck-stack は
+   .meter-row の左端（流れメーターが消えている配り直しの瞬間は space-between で左寄り）。
+   札が山と逆から湧いて見えるので、左上＝山の方向から滑り込ませる。
+   to を書かないのは元のまま。100% が「その札の扇の角度」になり、
+   インラインの transform をそのまま終点に使えるため（書くと扇が崩れる）。 */
+@keyframes dealIn{
+  from{ transform:translate(-32px,-26px) rotate(-9deg); opacity:0; }
+}
+
+/* 280ms・既存のイージング据え置き。backwards は必須で、
+   これが無いと animation-delay の間だけ札が完成形で見えてから巻き戻る。
+   ずらし幅（animation-delay）は札ごとに違うので setHand がインラインで入れる。 */
+.fan-card.dealt{
+  animation:dealIn .28s cubic-bezier(.2,.9,.3,1.1) backwards;
+}
+
+/* 動きを減らす設定の人には、ずらさず出す（待たされるだけになるため） */
+@media (prefers-reduced-motion: reduce){
+  .fan-card.dealt{ animation:none; }
+}

@@ -1,0 +1,1233 @@
+/* ═══════════════════════════════════════════════════
+   goukon_day.css — 合コン当日画面スタイル
+   register: 夜ポップ(縁日調) — v23モック準拠
+   夜のネイビー地に、白いシールUIと提灯の光を浮かべる。
+   ※セレクタはJS(ui/*.js)が参照するため変更禁止。見た目のみ差し替え。
+   ═══════════════════════════════════════════════════ */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
+:root{
+  --night:   #232032;   /* 夜のネイビー地 */
+  --night2:  #1a1726;   /* 一段深い夜(帯・外側) */
+  --sil:     #14121e;   /* 影絵(夜より濃い) */
+  --ink:     #201d2b;
+  --ink2:    #7d788f;
+  --muted:   #b6b2c4;
+  --pink:    #ff5b8f;
+  --pink-soft:#ffe3ed;
+  --cyan:    #27c0dd;
+  --cyan-soft:#d8f4fa;
+  --yellow:  #ffcf3f;
+  --ok:      #3ec98a;
+  --bad:     #e05a4a;
+  --white-dim:rgba(255,255,255,.55);
+  --font:     "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",-apple-system,system-ui,sans-serif;
+  --font-pop: "Mochiy Pop One","M PLUS Rounded 1c",sans-serif;
+}
+
+html,body{height:100%;background:var(--night2);}
+
+.phone{
+  max-width:390px; min-height:100dvh; margin:0 auto;
+  background:var(--night);
+  display:flex; flex-direction:column; overflow:hidden;
+  position:relative;
+  font-family:var(--font);
+}
+
+/* ── ステータスバー ── */
+.vn-status{
+  background:rgba(26,23,38,.94);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:7px 14px 6px;
+  display:flex; align-items:center; gap:10px;
+  flex-shrink:0; position:relative; z-index:20;
+}
+/* ── 夜の残り時間（デジタル時計・世界内の時刻で「夜が更ける」を見せる）── */
+.night-meter{
+  display:flex; align-items:center; gap:7px; flex-shrink:0;
+}
+.night-clock{
+  font-family:var(--font-pop); font-size:12px; font-weight:700;
+  letter-spacing:.3px; white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  color:rgba(255,255,255,.85);
+  transition:color .6s ease, text-shadow .6s ease;
+}
+.night-word{
+  font-family:var(--font-pop); font-size:11px;
+  color:rgba(255,255,255,.6); white-space:nowrap;
+  transition:color .6s ease;
+}
+/* 宵の口＝まだ夜は長い（涼しい色） */
+.night-meter.calm .night-clock{ color:rgba(230,255,240,.9); }
+.night-meter.calm .night-word{ color:rgba(255,255,255,.55); }
+/* たけなわ（琥珀） */
+.night-meter.warm .night-clock{ color:#ffe08a; text-shadow:0 0 8px rgba(255,207,63,.4); }
+.night-meter.warm .night-word{ color:rgba(255,231,150,.85); }
+/* そろそろ終盤（橙） */
+.night-meter.late .night-clock{ color:#ffb070; text-shadow:0 0 8px rgba(255,154,77,.45); }
+.night-meter.late .night-word{ color:#ffbe8a; }
+/* ラストオーダー（赤・脈打つ） */
+.night-meter.last .night-clock{ color:#ff7a68; text-shadow:0 0 10px rgba(224,90,74,.6); }
+.night-meter.last .night-word{ color:#ff8f7f; font-weight:800; }
+.night-meter.last{ animation:night-pulse 1.1s ease-in-out infinite; }
+@keyframes night-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+.air-wrap{ flex:1; display:flex; align-items:center; gap:6px; }
+.air-label{ font-size:9px; font-weight:800; color:var(--white-dim); flex-shrink:0; }
+.air-track{ flex:1; height:5px; background:rgba(255,255,255,.14); border-radius:3px; overflow:hidden; }
+.air-fill{ height:100%; border-radius:3px; transition:width .6s,background .6s; }
+.air-hi{ background:var(--ok);    box-shadow:0 0 8px rgba(62,201,138,.5); }
+.air-md{ background:var(--yellow);box-shadow:0 0 8px rgba(255,207,63,.5); }
+.air-lo{ background:var(--bad);   box-shadow:0 0 8px rgba(224,90,74,.5); }
+.air-num{ font-size:9px; font-weight:800; color:var(--white-dim); width:22px; flex-shrink:0; }
+.target-chip{
+  font-size:10px; font-weight:800; color:#fff;
+  background:var(--pink); border:2px solid var(--ink); border-radius:12px;
+  padding:2px 9px; flex-shrink:0;
+  transform:rotate(1.5deg);
+  box-shadow:0 0 10px rgba(255,91,143,.4);
+}
+.target-chip span{ color:#fff; }
+
+/* ── ステージ（立ち絵エリア）── */
+.vn-stage{
+  flex:1; position:relative; overflow:hidden;
+  cursor:pointer; min-height:0;
+  background:
+    radial-gradient(ellipse 65% 60% at 18% 0%,  rgba(255,190,80,.22), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 92% 30%, rgba(255,91,143,.11), transparent 70%),
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+    var(--night);
+  background-size:auto,auto,22px 22px,22px 22px,auto;
+}
+/* 下端は夜の靄に沈む */
+.vn-stage::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:120px;
+  background:linear-gradient(0deg, rgba(26,23,38,.55), transparent);
+  pointer-events:none; z-index:3;
+}
+
+/* ── 奥行きカード — 白いシールが夜に浮かぶ ──
+   位置(pos-*)=席順、距離(tier-*)=自席との席差。遠いほど夜の靄に沈む */
+.h-card{
+  position:absolute;
+  transition:opacity .35s, filter .35s;
+}
+.h-card.hidden{ opacity:0 !important; pointer-events:none; }
+.h-card.pos-left{   left:8px; }
+.h-card.pos-center{ left:50%; transform:translateX(-50%); }
+.h-card.pos-right{  right:8px; }
+.h-card.tier-near{ width:132px; top:28px; z-index:8; }
+.h-card.tier-near .h-portrait{ height:172px; }
+/* 靄(距離減衰)は立ち絵にだけ掛け、ネームプレートの名前は常時読める状態を保つ */
+.h-card.tier-mid{  width:104px; top:56px; z-index:6; }
+.h-card.tier-mid .h-portrait{ height:134px; opacity:.72; filter:blur(.4px) brightness(.92); }
+.h-card.tier-far{  width:82px;  top:86px; z-index:5; }
+.h-card.tier-far .h-portrait{ height:102px; opacity:.45; filter:blur(1px) brightness(.85); }
+/* 話者は靄から浮かび上がる */
+.h-card.talking .h-portrait{ opacity:1; filter:none; }
+
+.h-portrait{
+  /* 立ち絵は背景透過PNG。白箱でなく夜に浮かぶガラス調 */
+  position:relative; overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  border:2.5px solid var(--ink); border-radius:12px 12px 0 0;
+  transition:opacity .35s, filter .35s;
+}
+/* 立ち絵の読み込み失敗時はシルエットにフォールバック（バグ見えを防ぐ） */
+.h-portrait.img-fallback .vn-img{ visibility:hidden; }
+.h-portrait.img-fallback::after{
+  content:'👤'; position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:52px; opacity:.4;
+  filter:grayscale(1) brightness(.5);
+}
+.vn-img{
+  display:block; width:100%; height:100%;
+  object-fit:cover; object-position:top center;
+}
+.h-name{
+  background:#fff; border:2.5px solid var(--ink); border-top:none;
+  border-radius:0 0 8px 8px; padding:3px 4px 4px; text-align:center;
+}
+.h-name b{ display:block; font-size:11px; color:var(--ink); }
+.h-name small{
+  display:block; font-size:8.5px; font-weight:800; color:var(--ink2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.h-name small.unknown{ color:#b3aec5; }
+.h-name small.uncertain{ font-style:italic; }
+/* 狙いの子=提灯に照らされる */
+.h-card.h-target .h-portrait{
+  opacity:1; filter:none;
+  border-color:var(--pink);
+  box-shadow:0 0 0 3px rgba(255,91,143,.35), 0 0 24px rgba(255,150,90,.35);
+}
+.h-card.h-target .h-name{ border-color:var(--pink); background:var(--pink); }
+.h-card.h-target .h-name b{ color:#fff; }
+.h-card.h-target .h-name small{ color:#ffe3ed; }
+/* 会話中ドット */
+@keyframes talkDots{ 0%,100%{opacity:.25} 50%{opacity:1} }
+.talk-dots{
+  position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+  display:none; gap:3px; z-index:10;
+}
+.h-card.talking .talk-dots{ display:flex; }
+.talk-dots span{
+  width:5px; height:5px; border-radius:50%; background:var(--pink);
+  box-shadow:0 0 6px rgba(255,91,143,.8);
+  animation:talkDots 1s ease-in-out infinite;
+}
+.talk-dots span:nth-child(2){ animation-delay:.2s; }
+.talk-dots span:nth-child(3){ animation-delay:.4s; }
+
+/* ── 本気モード: ライバル到達バー（狙いの子カード下・シアン系）── */
+.rival-bar{
+  margin-top:3px;
+  background:rgba(20,18,30,.92);
+  border:2px solid var(--cyan);
+  border-radius:8px;
+  padding:3px 5px 4px;
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.rival-bar-top{
+  display:flex; align-items:center; justify-content:space-between; gap:4px;
+  margin-bottom:2px;
+}
+.rival-bar-label{
+  font-size:8px; font-weight:800; color:var(--cyan);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.rival-bar-val{
+  font-size:8px; font-weight:800; color:var(--cyan-soft); flex-shrink:0;
+}
+.rival-track{
+  height:5px; background:rgba(255,255,255,.14);
+  border-radius:3px; overflow:hidden;
+}
+.rival-fill{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--cyan),#7fe3f4);
+  border-radius:3px;
+  transition:width .5s ease-out, background .3s;
+  box-shadow:0 0 6px rgba(39,192,221,.6);
+}
+.rival-warn{
+  display:none;
+  margin-top:2px; text-align:center;
+  font-size:8.5px; font-weight:800; color:var(--bad);
+  text-shadow:0 0 6px rgba(224,90,74,.6);
+}
+/* >55: 危険＝パルス＋警告表示 */
+@keyframes rivalPulse{
+  0%,100%{ box-shadow:2px 2px 0 rgba(0,0,0,.3), 0 0 0 rgba(224,90,74,0); }
+  50%{     box-shadow:2px 2px 0 rgba(0,0,0,.3), 0 0 12px rgba(224,90,74,.7); }
+}
+.rival-bar.danger{
+  border-color:var(--bad);
+  animation:rivalPulse 1s ease-in-out infinite;
+}
+.rival-bar.danger .rival-fill{ background:linear-gradient(90deg,var(--bad),#ff8a7a); }
+.rival-bar.danger .rival-bar-label{ color:var(--bad); }
+.rival-bar.danger .rival-warn{ display:block; }
+/* 奪われた後 */
+.rival-bar.taken{
+  border-color:var(--muted); animation:none;
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.rival-bar.taken .rival-fill{ background:var(--muted); box-shadow:none; }
+.rival-bar.taken .rival-bar-label{ color:var(--muted); }
+.rival-bar.taken .rival-warn{ display:block; color:var(--muted); text-shadow:none; }
+
+/* 狙いの子が奪われた退場演出＝立ち絵が夜の靄に沈む */
+.h-card.h-stolen .h-portrait{
+  opacity:.32 !important; filter:grayscale(.7) blur(1.4px) brightness(.6) !important;
+  border-color:var(--muted) !important; box-shadow:none !important;
+  transition:opacity .8s, filter .8s;
+}
+.h-card.h-stolen .h-name{ border-color:var(--muted) !important; background:#4a4658 !important; }
+.h-card.h-stolen .h-name b,
+.h-card.h-stolen .h-name small{ color:rgba(255,255,255,.5) !important; }
+
+/* タイプ開示演出（1回だけ） */
+@keyframes type-reveal{
+  0%{ color:#dd9500; text-shadow:0 0 8px rgba(255,207,63,.9); }
+  100%{ color:var(--ink2); text-shadow:none; }
+}
+.h-name small.reveal-flash{ animation:type-reveal 1.6s ease-out; }
+
+/* ── 卓（台形・夜の木目）── */
+.table-band{
+  position:absolute; left:-24px; right:-24px; bottom:0; height:104px;
+  z-index:9; pointer-events:none;
+}
+.table-face{
+  position:absolute; inset:0;
+  background:linear-gradient(178deg,#332e48,#2a2740 60%,#262336);
+  clip-path:polygon(0% 0%,78% 0%,100% 100%,0% 100%);
+}
+.table-edge{
+  position:absolute; left:0; right:0; top:0; height:3px;
+  background:linear-gradient(90deg,rgba(255,207,63,.75),rgba(255,207,63,.1));
+  clip-path:polygon(0% 0%,78% 0%,80% 100%,0% 100%);
+}
+
+/* ── 視線レイヤー ── */
+@keyframes dashFlow{ to{ stroke-dashoffset:-26; } }
+.gaze-svg{
+  position:absolute; inset:0; width:100%; height:100%;
+  z-index:14; pointer-events:none;
+}
+.gz{ fill:none; }
+.gz-self{
+  stroke:var(--pink); stroke-width:2.8;
+  stroke-dasharray:2 7; stroke-linecap:round;
+  animation:dashFlow 1.2s linear infinite;
+  filter:drop-shadow(0 0 4px rgba(255,91,143,.6));
+  opacity:.9;
+}
+.gz-rival{ stroke:var(--cyan); stroke-width:2.2; opacity:.8; }
+
+/* ── 友達（影絵+状態チップ）── */
+.f-sil{
+  position:absolute; bottom:-6px; width:110px; height:96px;
+  z-index:12; pointer-events:none;
+}
+.f-sil.hidden, .f-chip.hidden{ display:none; }
+#f-sil-0{ left:8px; }
+#f-sil-1{ right:8px; }
+.f-head{
+  position:absolute; left:50%; transform:translateX(-50%); top:0;
+  width:46px; height:46px; border-radius:50%; background:var(--sil);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.14);
+}
+.f-body{
+  position:absolute; left:50%; transform:translateX(-50%); top:38px;
+  width:122px; height:64px; border-radius:46% 46% 0 0; background:var(--sil);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.10);
+}
+.f-chip{
+  position:absolute; bottom:90px; z-index:19; max-width:160px;
+  background:#fff; border:2px solid var(--ink); border-radius:10px;
+  padding:3px 8px; box-shadow:2px 2px 0 rgba(0,0,0,.3);
+  pointer-events:none;
+}
+#f-chip-0{ left:6px; transform:rotate(-1.5deg); }
+#f-chip-1{ right:6px; text-align:right; transform:rotate(1.2deg); }
+.f-chip b{ display:block; font-size:9.5px; color:var(--ink); }
+.f-chip small{
+  display:block; font-size:8.5px; font-weight:800; color:var(--cyan);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.f-chip.quiet small{ color:var(--muted); }
+.f-chip.twoworld small{ color:var(--pink); }
+
+/* 観察ヒント(気づき=提灯色) */
+/* 観察ヒント: 以前は top:34px で立ち絵の顔に被って読めなかった。
+   卓の上（立ち絵の下）に、地を敷いて置く。 */
+.obs-hint{
+  position:absolute; left:10px; right:10px; bottom:74px; z-index:18;
+  text-align:center; pointer-events:none;
+  font-size:10.5px; font-weight:800; line-height:1.4;
+  color:rgba(255,180,61,0);
+  background:rgba(14,11,20,0);
+  border-radius:4px; padding:3px 10px 4px;
+  transition:color .4s, background .4s;
+}
+.obs-hint.flash{
+  color:var(--role-neta, #FFB43D);
+  background:rgba(14,11,20,.82);
+  text-shadow:0 1px 2px rgba(0,0,0,.8);
+}
+.obs-hint:empty{ display:none; }
+
+/* 友達インジケーター(友達の発言中=シアン) */
+.friend-indicator{
+  position:absolute; bottom:112px; left:50%;
+  transform:translateX(-50%) rotate(-1.5deg);
+  z-index:16;
+  font-size:10px; font-weight:800;
+  color:var(--cyan); opacity:0; transition:opacity .3s;
+  background:#fff; border:2px solid var(--cyan);
+  padding:3px 10px; border-radius:10px;
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+  white-space:nowrap;
+}
+.friend-indicator.show{ opacity:1; }
+
+/* ── テキストボックス(コミック吹き出し=白いシール) ── */
+.vn-textbox-area{
+  flex-shrink:0;
+  background:#fff;
+  border:2.5px solid var(--ink);
+  border-radius:14px;
+  margin:6px 10px 4px;
+  padding:10px 12px 8px;
+  cursor:pointer; position:relative;
+  min-height:94px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.35);
+}
+.vn-namebox{
+  display:inline-block;
+  font-size:12px; font-weight:800;
+  color:var(--pink);
+  background:var(--pink-soft);
+  border-radius:10px;
+  padding:2px 12px;
+  margin-bottom:6px;
+  min-width:60px; text-align:center;
+  visibility:hidden;
+}
+.vn-text{
+  font-size:14px; font-weight:700;
+  color:var(--ink); line-height:1.65;
+  min-height:40px;
+}
+.vn-text.result-good{ color:var(--ok); }
+.vn-text.result-bad{  color:var(--bad); }
+.vn-text.result-neutral{ color:var(--ink2); }
+.vn-text.narr{ color:var(--ink2); font-weight:500; font-size:13px; }
+
+.tap-indicator{
+  position:absolute; right:14px; bottom:8px;
+  font-size:10px; font-weight:800; color:var(--pink);
+  opacity:0; transition:opacity .3s;
+  animation:blink 1.2s ease-in-out infinite;
+}
+.tap-indicator.show{ opacity:1; }
+@keyframes blink{
+  0%,100%{opacity:.4;} 50%{opacity:1;}
+}
+
+/* ── ことだまパネル ── */
+.kotodama-panel{
+  flex-shrink:0;
+  padding:5px 10px 6px;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom));
+  background:rgba(26,23,38,.96);
+  border-top:1px solid rgba(255,255,255,.07);
+  position:relative;
+  /* タイミング窓アニメーション用 */
+  transition:box-shadow .2s;
+}
+.kotodama-panel.timing-window{
+  box-shadow:0 0 0 2.5px var(--yellow) inset, 0 0 18px rgba(255,207,63,.35) inset;
+}
+.kotodama-panel.timing-pre{
+  box-shadow:0 0 0 1.5px rgba(255,207,63,.35) inset;
+}
+/* ── 喋る／静観（常時2択・グノーシア型の基点） ── */
+.kdm-primary{ display:flex; gap:8px; }
+.kdm-main{
+  flex:1; padding:11px 8px;
+  border-radius:14px; border:2.5px solid var(--ink);
+  background:var(--pink);
+  box-shadow:3px 3px 0 rgba(0,0,0,.3);
+  cursor:pointer; position:relative;
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  transition:all .15s;
+}
+.kdm-main:active{ transform:scale(.97); box-shadow:1px 1px 0 rgba(0,0,0,.3); }
+.kdm-main.disabled{ opacity:.3; pointer-events:none; }
+.kdm-main-icon{ font-size:18px; }
+.kdm-main-name{ font-family:var(--font-pop); font-size:15px; color:#fff; }
+/* 静観=夜に沈む控えめボタン（幅を抑えて「喋る」を主役に） */
+.kdm-main.kanshi{
+  flex:0 0 25%;
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.28);
+  box-shadow:none;
+}
+.kdm-main.kanshi .kdm-main-icon{ font-size:15px; }
+.kdm-main.kanshi .kdm-main-name{
+  font-family:var(--font); font-weight:800; font-size:13px;
+  color:rgba(255,255,255,.62);
+}
+/* パス=引き直し（2026-09-24）。静観と同じ「夜に沈む」側の手だが、
+   静観が“友達に場を譲る”ぶん代償を払うのに対し、こちらは代償なしの逃げ道。 */
+.kdm-main.pass{
+  flex:0 0 21%;
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.28);
+  box-shadow:none;
+}
+.kdm-main.pass .kdm-main-icon{ font-size:14px; }
+.kdm-main.pass .kdm-main-name{
+  font-family:var(--font); font-weight:800; font-size:12px;
+  color:rgba(255,255,255,.62);
+}
+/* 「喋る」を開いている間は反転して「閉じる」を示す */
+.kotodama-panel.speak-open #kdm-hanasu{ background:var(--ink); }
+
+/* ── 「喋る」→文脈選択肢（中央に浮くポップ。打てる手だけ点灯） ── */
+.speak-backdrop{
+  display:none; position:absolute; inset:0; z-index:30;
+  background:rgba(26,23,38,.5);
+}
+.speak-backdrop.show{ display:block; }
+.kotodama-panel.speak-open{ z-index:32; }
+.speak-menu{
+  display:none;
+  position:absolute; left:8px; right:8px; bottom:calc(100% + 9px);
+  background:#fff; border:2.5px solid var(--ink); border-radius:16px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.35), 0 0 24px rgba(255,91,143,.22);
+  padding:11px 11px 12px;
+}
+.kotodama-panel.speak-open .speak-menu{
+  display:block; animation:speakPop .18s ease-out;
+}
+@keyframes speakPop{
+  from{ transform:translateY(8px) scale(.96); opacity:0; }
+  to{   transform:none; opacity:1; }
+}
+/* ▼ 吹き出しの足（「喋る」ボタンを指す） */
+.speak-menu::after{
+  content:''; position:absolute; left:32%; bottom:-9px; transform:translateX(-50%);
+  border:9px solid transparent; border-top-color:var(--ink); border-bottom:0;
+}
+.speak-menu-title{
+  font-family:var(--font-pop); font-size:12px; color:var(--ink);
+  text-align:center; margin-bottom:8px;
+}
+.speak-grid{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+}
+.kdm-btn{
+  padding:7px 3px;
+  border-radius:12px;
+  border:2px solid var(--ink);
+  background:#fff;
+  cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  transition:all .15s; position:relative; overflow:hidden;
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.kdm-btn:active{ transform:scale(.95); box-shadow:1px 1px 0 rgba(0,0,0,.3); }
+.kdm-btn.disabled{ opacity:.25; pointer-events:none; }
+/* 打てない手はメニューに出さない（「選べる時だけ点灯」） */
+.kdm-btn.unavail{ display:none; }
+.kdm-btn .kdm-icon{ font-size:16px; }
+.kdm-btn .kdm-name{
+  font-size:10px; font-weight:800; color:var(--ink);
+}
+/* 連絡先=勝負ボタン(ピンク) */
+#kdm-renraku{ background:var(--pink); }
+#kdm-renraku .kdm-name{ color:#fff; }
+#kdm-renraku .kdm-icon{ filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+
+/* タイミング窓プログレスバー（残量が一目で分かる太さと光量） */
+.timing-bar{
+  height:7px;
+  background:linear-gradient(90deg, var(--yellow), #ffe38a);
+  box-shadow:0 0 14px rgba(255,207,63,.9), 0 0 4px rgba(255,207,63,.9);
+  border-radius:0 4px 4px 0;
+  position:absolute; bottom:0; left:0;
+  transition:width linear;
+  display:none;
+}
+.kotodama-panel.timing-window .timing-bar{ display:block; }
+/* 早とちり見える化: 窓が開く前の予告（相手がまだ話している＝バーが満ちていく）。
+   本番の残り時間バー(黄色グロー全開)とは色量を落として区別し、
+   「今はまだ押しどきではない」を数値なしで伝える。 */
+.kotodama-panel.timing-pre .timing-bar.priming{
+  display:block;
+  background:linear-gradient(90deg, rgba(255,207,63,.55), rgba(255,227,138,.55));
+  box-shadow:0 0 6px rgba(255,207,63,.4);
+}
+
+@keyframes ripple{
+  0%{transform:scale(0);opacity:.5;}
+  100%{transform:scale(3.5);opacity:0;}
+}
+.kdm-ripple{
+  position:absolute; width:40px; height:40px;
+  border-radius:50%; background:var(--pink);
+  top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+  animation:ripple .5s ease-out forwards;
+  pointer-events:none;
+}
+
+/* ── ゲーム終了オーバーレイ ── */
+.game-over{
+  display:none; position:absolute; inset:0;
+  background:rgba(26,23,38,.95);
+  flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; padding:36px 28px; z-index:50;
+}
+.game-over.show{ display:flex; }
+.go-icon{ font-size:52px; filter:drop-shadow(0 0 16px rgba(255,190,80,.4)); }
+.go-title{
+  font-family:var(--font-pop); font-size:23px;
+  color:#fff; text-align:center; line-height:1.35;
+}
+.go-sub{
+  font-size:13px; font-weight:700;
+  color:rgba(255,255,255,.6); text-align:center; line-height:1.7; white-space:pre-line;
+}
+.go-btn{
+  margin-top:6px; padding:14px 40px;
+  border-radius:14px; border:2.5px solid var(--ink);
+  background:var(--pink); color:#fff;
+  font-family:var(--font); font-size:15px; font-weight:800;
+  cursor:pointer;
+  box-shadow:3px 3px 0 rgba(0,0,0,.35), 0 0 16px rgba(255,91,143,.4);
+}
+.go-btn:active{ transform:scale(.97); }
+
+/* ── ことだまボタンの語彙sub（文脈語彙×セリフ） ── */
+.kdm-btn .kdm-sub{
+  font-size:8px; font-weight:800; color:var(--ink2);
+  max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#kdm-renraku .kdm-sub{ color:var(--pink-soft); }
+
+/* ── セリフプレビュー方式（Phase 1）: 発動時に実際流れるセリフの冒頭を併記 ──
+   コマンド名・アイコンは残しつつ、セリフは小さく下に添える（盤面の読みやすさを維持）。
+   .kdm-preview が空の時は行を作らない＝未定義シチュ/コマンドは従来表示のまま。 */
+.kdm-btn .kdm-preview{
+  font-size:9px; font-weight:700; color:var(--pink);
+  max-width:100%; overflow:hidden; line-height:1.3;
+  /* セリフは全文読めてこそ「何を言うか選ぶ」感が出る＝2行まで折り返す */
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+.kdm-btn .kdm-preview:empty{ display:none; }
+
+/* ── 自分のセリフ（ピンクの罫で区別。result.htmlの自分=ピンクと揃える） ── */
+.vn-text.player{
+  color:var(--pink);
+  border-left:3px solid var(--pink);
+  padding-left:9px;
+}
+
+/* ── 「友達に向く」入口ストリップ ── */
+.friend-strip{ display:flex; gap:6px; margin-top:5px; }
+.friend-strip:empty{ display:none; }
+.friend-turn-btn{
+  flex:1; min-width:0; padding:4px 8px;
+  border-radius:10px; border:2px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.07);
+  font-family:var(--font); font-size:10px; font-weight:800;
+  color:var(--cyan); cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.friend-turn-btn:active{ transform:scale(.96); }
+.friend-turn-btn.disabled{ opacity:.25; pointer-events:none; }
+
+/* ── 「友達に向く」オーバーレイ（白シール） ── */
+.friend-overlay{
+  display:none; position:absolute; inset:0; z-index:40;
+  background:rgba(26,23,38,.88);
+  align-items:center; justify-content:center; padding:24px 18px;
+}
+.friend-overlay.show{ display:flex; }
+.friend-ov-card{
+  width:100%; max-width:320px;
+  background:#fff; border:2.5px solid var(--ink); border-radius:14px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.35);
+  padding:14px 14px 12px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.friend-ov-head{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.friend-ov-head b{ font-size:15px; color:var(--ink); }
+.friend-ov-trait{
+  font-size:9px; font-weight:800; color:var(--cyan);
+  background:var(--cyan-soft); border-radius:8px; padding:2px 8px;
+}
+.friend-ov-impulse{
+  font-size:12px; font-weight:700; color:var(--ink2); line-height:1.6;
+}
+.friend-ov-whisper{
+  font-size:13px; font-weight:700; color:var(--ink); line-height:1.6;
+  background:var(--cyan-soft); border:2px solid var(--cyan);
+  border-radius:12px; padding:8px 10px;
+}
+.friend-ov-actions{ display:flex; flex-direction:column; gap:6px; }
+.friend-ov-btn{
+  padding:9px 10px; border-radius:12px;
+  border:2px solid var(--ink); background:#fff; cursor:pointer;
+  font-family:var(--font); font-size:13px; font-weight:800; color:var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.25);
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  transition:all .15s;
+}
+.friend-ov-btn:active{ transform:scale(.97); box-shadow:1px 1px 0 rgba(0,0,0,.25); }
+.friend-ov-btn small{ font-size:9px; font-weight:800; color:var(--ink2); }
+.friend-ov-btn.back{
+  background:var(--pink-soft); border-color:var(--pink); color:var(--pink);
+}
+.friend-ov-btn.back small{ color:var(--pink); }
+
+/* ── 早とちりの見える化（発話状態表示） ──
+   talking = セリフ再生中: パネル暗転＋「…話し中」。押下は可能なまま(pointer-eventsは触らない)
+   ready   = 選択可能: パネル点灯＋「今押せる！」 */
+.kdm-status{
+  min-height:13px; margin-bottom:3px;
+  text-align:center; font-size:9px; font-weight:800;
+  letter-spacing:.08em; color:transparent;
+  transition:color .25s;
+  pointer-events:none;
+}
+.kdm-status.talking{ color:rgba(255,255,255,.42); }
+.kdm-status.ready{
+  color:var(--yellow);
+  text-shadow:0 0 8px rgba(255,207,63,.55);
+  animation:blink 1.2s ease-in-out infinite;
+}
+.kotodama-panel.talking .kdm-primary,
+.kotodama-panel.talking .friend-strip{
+  opacity:.45; filter:saturate(.5) brightness(.8);
+  transition:opacity .25s, filter .25s;
+}
+.kotodama-panel.ready .kdm-primary,
+.kotodama-panel.ready .friend-strip{
+  opacity:1; filter:none;
+  transition:opacity .25s, filter .25s;
+}
+.kotodama-panel.ready:not(.timing-window):not(.timing-pre){
+  box-shadow:0 0 0 1.5px rgba(255,91,143,.35) inset, 0 0 14px rgba(255,91,143,.18) inset;
+}
+
+/* ── 短い画面(iPhone SE 等・実効高が低い端末)専用の圧縮 ──
+   本番は固定高の下段スタック(テキスト枠+ことだま)が大きく、背の低い画面だと
+   立ち絵ステージが潰れて顔・名前板・ライバルバーが切れる。ここで奥行きシーンと
+   下段を協調的に縮め、盤面(立ち絵+名前+ライバル)が必ず読める状態を保つ。
+   背の高い端末(iPhone 14 等 innerHeight>680)には一切影響しない。 */
+@media (max-height:680px){
+  /* 立ち絵を低くし、席差(top)も詰めて短いステージに収める */
+  .h-card.tier-near{ top:14px; }
+  .h-card.tier-near .h-portrait{ height:118px; }
+  .h-card.tier-mid{  top:30px; }
+  .h-card.tier-mid  .h-portrait{ height:92px; }
+  .h-card.tier-far{  top:50px; }
+  .h-card.tier-far  .h-portrait{ height:72px; }
+  /* 名前板・ライバルバーを詰める(名前は必ず見える要件を維持) */
+  .h-name{ padding:2px 4px 3px; }
+  .h-name b{ font-size:10px; }
+  /* 手前シルエット・机・下端の靄を薄く(ヒロインの顔を覆わない) */
+  .f-sil{ height:62px; }
+  .table-band{ height:70px; }
+  .vn-stage::after{ height:80px; }
+  /* 下段スタックを圧縮してステージに高さを渡す(「ボタン領域が大きすぎ」対応も兼ねる) */
+  .vn-textbox-area{ min-height:54px; margin:4px 10px 2px; padding:7px 12px 5px; }
+  .vn-namebox{ margin-bottom:3px; }
+  .vn-text{ min-height:22px; font-size:13px; line-height:1.5; }
+  .kotodama-panel{ padding-top:3px; }
+  .speak-grid{ gap:4px; }
+  .kdm-btn{ padding:5px 3px; }
+  .kdm-btn .kdm-icon{ font-size:14px; }
+  .kdm-btn .kdm-name{ font-size:9px; }
+  .kdm-btn .kdm-preview{ font-size:8px; }
+  .kdm-main{ padding:8px 8px; }
+  .kdm-main-name{ font-size:14px; }
+  .friend-turn-btn{ padding:3px 8px; }
+}
+
+/* ── さらに短い画面(SE+ブラウザバー等・実効高520px以下)の第2段圧縮 ──
+   680px段だけでは足りない高さ。.f-chip(bottom:90px)が縮んだステージ内で
+   ヒロインの名前板・ライバルバーの高さに達して重なる=「女の子が隠れる」の正体
+   (2026-07-17 実機実証・480pxで再現)。チップを影絵の胸元(下端)へ落とし、
+   立ち絵と下段をもう一段縮めて、名前板+ライバルバーの帯を必ず空ける。 */
+@media (max-height:520px){
+  .h-card.tier-near{ top:8px; }
+  .h-card.tier-near .h-portrait{ height:96px; }
+  .h-card.tier-mid{  top:20px; }
+  .h-card.tier-mid  .h-portrait{ height:74px; }
+  .h-card.tier-far{  top:34px; }
+  .h-card.tier-far  .h-portrait{ height:58px; }
+  /* 友達チップは影絵の胸元=ステージ下端へ(名前板の帯と交差しない) */
+  .f-chip{ bottom:6px; max-width:132px; }
+  .f-chip b{ font-size:9px; }
+  .friend-indicator{ bottom:58px; }
+  .f-sil{ height:48px; }
+  .table-band{ height:48px; }
+  .vn-stage::after{ height:56px; }
+  .obs-hint{ top:2px; font-size:10px; }
+  /* 下段第2段圧縮(680px段の値をさらに詰める) */
+  .vn-textbox-area{ min-height:46px; margin:3px 8px 2px; padding:6px 10px 4px; }
+  .vn-text{ min-height:18px; font-size:12.5px; line-height:1.45; }
+  .kdm-main{ padding:7px 6px; }
+  .kdm-main-name{ font-size:13px; }
+  .friend-strip{ margin-top:4px; }
+}
+
+/* ── S1: engagement可視化（会話から冷えている子はバッジがくすむ・質的表現）── */
+.h-name.eng-low{ opacity:.55; filter:saturate(.45); transition:opacity .4s, filter .4s; }
+.h-card.h-target .h-name.eng-low{ opacity:.75; }
+
+/* ── C4: 二人の空気の演出（chain.lane==='futari'・質的可視化＝数字は出さない）──
+   相手=提灯ピンクの暖グロー（h-targetの提灯枠より一段「体温が上がった」印象。
+   lv1(連鎖2)→lv3(連鎖4+=頂点前夜)で transition .5s のままゆっくり強まる）
+   周り=夜の靄に沈む（淡く・少しぼける。tier系の流儀を踏襲し名前は読める状態を保つ）
+   レイアウトは動かさない: opacity/filter/box-shadow のみ（幅高さ不変） */
+
+/* ステージ全体: ごく薄いビネット（z:4=カード(z5+)の下層。盤面は覆わない） */
+.vn-stage::before{
+  content:''; position:absolute; inset:0; z-index:4; pointer-events:none;
+  background:radial-gradient(ellipse 85% 75% at 50% 38%,
+    transparent 52%, rgba(26,23,38,.55) 100%);
+  opacity:0; transition:opacity .6s ease;
+}
+.vn-stage.futari-mode::before{ opacity:1; }
+
+/* 周りの子: 夜の靄にふわっと沈む（立ち絵をぼかし、名前板は淡くするだけ＝読める） */
+.h-card.futari-dim .h-portrait{
+  opacity:.5;
+  filter:blur(1.4px) saturate(.55) brightness(.85);
+  transition:opacity .55s ease, filter .55s ease;
+}
+.h-card.futari-dim .h-name{
+  opacity:.65; filter:saturate(.6);
+  transition:opacity .55s ease, filter .55s ease;
+}
+/* 靄の中で喋る子は少しだけ浮かぶ（talkingの解除は「二人の空気」の間はしない） */
+.h-card.futari-dim.talking .h-portrait{
+  opacity:.72; filter:blur(.8px) saturate(.7);
+}
+
+/* 相手: 提灯の光に照らされて体温が上がっていく */
+.h-card.futari-partner .h-portrait{
+  opacity:1;
+  border-color:var(--pink);
+  transition:opacity .5s ease, filter .5s ease, box-shadow .5s ease;
+}
+.h-card.futari-partner .h-name{ border-color:var(--pink); background:var(--pink); }
+.h-card.futari-partner .h-name b{ color:#fff; }
+.h-card.futari-partner .h-name small{ color:var(--pink-soft); }
+/* 深度lv1(連鎖2): 二人の空気が成立——提灯枠より一段あたたかい */
+.h-card.futari-partner.futari-lv1 .h-portrait{
+  filter:none;
+  box-shadow:0 0 0 3px rgba(255,91,143,.5), 0 0 26px rgba(255,150,90,.5);
+}
+/* 深度lv2(連鎖3): 光が満ちてくる */
+.h-card.futari-partner.futari-lv2 .h-portrait{
+  filter:brightness(1.04) saturate(1.06);
+  box-shadow:0 0 0 3px rgba(255,91,143,.62), 0 0 36px rgba(255,150,90,.62);
+}
+/* 深度lv3(連鎖4+): 頂点前夜——いちばん体温が高い */
+.h-card.futari-partner.futari-lv3 .h-portrait{
+  filter:brightness(1.07) saturate(1.1);
+  box-shadow:0 0 0 4px rgba(255,91,143,.72), 0 0 46px rgba(255,150,90,.72),
+             0 0 80px rgba(255,91,143,.3);
+}
+
+/* 短い画面: グローの広がりだけ控えめに（レイアウト値は触らない＝破綻しない） */
+@media (max-height:680px){
+  .h-card.futari-partner.futari-lv3 .h-portrait{
+    box-shadow:0 0 0 3px rgba(255,91,143,.72), 0 0 30px rgba(255,150,90,.72);
+  }
+}
+
+/* ── 山場(junction)の型カード ─────────────────────────
+   常設パネルとは別の一時オーバーレイ（§11）。卓の視線が集まる一瞬。 */
+.junction-cards{
+  position:absolute; inset:0; z-index:40;
+  display:none; flex-direction:column; gap:9px;
+  align-items:center; justify-content:center;
+  padding:0 22px;
+  background:rgba(20,16,32,.20);
+  backdrop-filter:blur(1.5px);
+  pointer-events:none;
+}
+.junction-cards.show{ display:flex; pointer-events:auto; }
+.jn-card{
+  position:relative;
+  width:100%; max-width:300px;
+  padding:11px 15px 22px;
+  text-align:left; color:var(--ink);
+  background:#fff; border:2.5px solid var(--ink); border-radius:13px;
+  box-shadow:3px 3px 0 rgba(32,29,43,.9);
+  cursor:pointer;
+  opacity:0; transform:translateX(34px);
+  animation:jnIn .32s cubic-bezier(.16,1,.3,1) forwards;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+/* 主役＝具体セリフ */
+.jn-line{
+  display:block;
+  font-family:inherit; font-size:13.5px; font-weight:700; line-height:1.45;
+  color:var(--ink);
+}
+/* 型＝小ラベル（右下に控えめ・§12） */
+.jn-kata{
+  position:absolute; right:10px; bottom:6px;
+  font-size:9px; font-weight:800; letter-spacing:.04em;
+  color:var(--ink2); opacity:.72;
+}
+.jn-card.picked .jn-line,
+.jn-card.picked .jn-kata{ color:#fff; opacity:.9; }
+.jn-card:hover{ background:#fffdf6; }
+.jn-card:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(32,29,43,.9); }
+.jn-card.picked{
+  background:var(--ok); color:#fff; border-color:var(--ink);
+  transform:translate(2px,2px) scale(1.01); box-shadow:1px 1px 0 rgba(32,29,43,.9);
+}
+.junction-cards.resolving .jn-card:not(.picked){ opacity:.4; pointer-events:none; }
+@keyframes jnIn{ to{ opacity:1; transform:translateX(0); } }
+
+/* ミス着地: 光のトーンを一段だけ冷やす（かぶり暗転とは別・§6.2） */
+.vn-stage.tone-cool{
+  filter:saturate(.62) hue-rotate(-8deg) brightness(.95);
+  transition:filter .55s ease;
+}
+
+/* ═══════════════════════════════════════════════════
+   手札 = 扇（案B・2026-09-22）
+   伏せている札は「役割の帯と札名」だけ。1枚選ぶと持ち上がってセリフが読める。
+   もう一度おすと出す。色は役割ひとつに決める:
+     紅=使い切る／押す  水=つなぐ  琥珀=ネタ  白=連絡先
+   ═══════════════════════════════════════════════════ */
+
+:root{
+  --ink-deep:#0E0B14;
+  --card-paper:#F3EFE6;
+  --card-ink:#17131F;
+  --role-link:#35E3F0;
+  --role-burn:#FF3D7F;
+  --role-neta:#FFB43D;
+  --role-renraku:#FFFFFF;
+}
+
+/* ── この流れ ── */
+.meter-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; min-height:14px; margin-bottom:2px; padding:0 2px;
+}
+.chain-meter{ display:none; align-items:center; gap:4px; flex:1 1 auto; }
+.chain-meter.show{ display:flex; }
+.chain-meter .cm-label{
+  font-family:var(--font-pop); font-size:9px; letter-spacing:.1em; color:var(--role-link);
+}
+.chain-meter i{ width:15px; height:4px; border-radius:2px; background:rgba(255,255,255,.14); display:block; }
+.chain-meter i.on{ background:var(--role-link); box-shadow:0 0 8px rgba(53,227,240,.8); }
+.chain-meter.full .cm-label{ color:var(--role-neta); }
+.chain-meter.full i.on{ background:var(--role-neta); box-shadow:0 0 9px rgba(255,180,61,.9); }
+@keyframes chainPulse{0%{transform:scale(1)}45%{transform:scaleY(1.9)}100%{transform:scale(1)}}
+.chain-meter.show i.on{ animation:chainPulse .34s ease-out; }
+
+.deck-stack{ display:flex; align-items:center; gap:2px; flex:0 0 auto; }
+.deck-stack .ds-label{
+  font-family:var(--font-pop); font-size:8px; color:rgba(255,255,255,.4);
+  margin-right:3px; letter-spacing:.1em;
+}
+.deck-stack .ds-label.empty{ color:var(--role-burn); }
+.deck-stack i{ width:3px; height:12px; border-radius:1px; background:rgba(255,255,255,.3); display:block; }
+
+/* ── 扇 ── */
+.hand{ position:relative; height:212px; margin-bottom:2px; }
+.hand.locked{ opacity:.42; filter:saturate(.4) brightness(.85); pointer-events:none; transition:opacity .25s,filter .25s; }
+/* 扇は下から18px浮かせる。ここを0にすると回転した端の札が
+   下の「静観」行にはみ出して重なる（一度やった） */
+.fan{
+  position:absolute; left:0; right:0; bottom:18px; height:120px;
+  display:flex; align-items:flex-end; justify-content:center; gap:0;
+}
+.fan-hint{
+  position:absolute; left:0; right:0; bottom:1px; z-index:50; text-align:center;
+  font-family:var(--font-pop); font-size:9.5px; letter-spacing:.16em; color:var(--role-neta);
+  animation:blink 1.4s ease-in-out infinite;
+}
+
+/* 伏せている札 */
+.fan-card{
+  position:relative; flex:0 0 auto;
+  width:78px; height:112px; margin:0 -7px; padding:0;
+  border:2px solid var(--card-ink); border-radius:5px;
+  background:var(--card-paper);
+  box-shadow:0 5px 12px rgba(0,0,0,.55);
+  cursor:pointer; overflow:hidden;
+  display:flex; flex-direction:column;
+  transform-origin:50% 120%;
+  transition:transform .16s ease-out, box-shadow .16s;
+}
+.fan-card .fc-band{
+  flex:0 0 auto; padding:3px 5px 4px;
+  font-family:var(--font-pop); font-size:8.5px; color:var(--ink-deep);
+  background:var(--card-ink); display:flex; align-items:center; gap:3px; white-space:nowrap;
+}
+.fan-card .fc-dots{ font-size:6px; letter-spacing:-1px; }
+.fan-card .fc-name{
+  flex:1 1 auto; padding:6px 5px; display:flex; align-items:center;
+  font-family:var(--font-pop); font-size:10.5px; line-height:1.3; color:var(--card-ink);
+  overflow:hidden;
+}
+.fan-card .fc-top{
+  position:absolute; right:-1px; bottom:-1px;
+  font-family:var(--font-pop); font-size:9px; color:var(--ink-deep);
+  background:var(--role-burn); border-radius:6px 0 3px 0; padding:1px 5px 2px 6px;
+}
+.fan-card .fc-fit{
+  position:absolute; inset:0; pointer-events:none;
+  box-shadow:0 0 0 2px var(--role-neta) inset, 0 0 14px rgba(255,180,61,.6);
+  border-radius:3px;
+}
+.fan-card .fc-lock{
+  position:absolute; left:0; right:0; bottom:0; padding:2px 0 3px;
+  text-align:center; font-family:var(--font-pop); font-size:8px;
+  color:#fff; background:rgba(26,23,38,.86);
+}
+
+/* 役割の色 */
+.fan-card.role-link .fc-band{ background:var(--role-link); }
+.fan-card.role-burn .fc-band{ background:var(--role-burn); }
+.fan-card.role-neta .fc-band{ background:var(--role-neta); }
+.fan-card.role-neta{ background:#191225; border-color:var(--role-neta); }
+.fan-card.role-neta .fc-name{ color:#fff; }
+.fan-card.role-renraku{ background:#fff; border-color:var(--role-burn); box-shadow:0 0 18px rgba(255,61,127,.55), 0 5px 12px rgba(0,0,0,.55); }
+.fan-card.role-renraku .fc-band{ background:var(--role-burn); }
+.fan-card.locked{ filter:grayscale(.55) brightness(.75); }
+
+/* 選ばれて持ち上がった札 */
+/* 持ち上がった札は .hand の中に収まる高さにする
+   （bottom + height が .hand の高さを超えると、上の「今なら出せる」に被る） */
+.fan-card.sel{
+  position:absolute; left:50%; bottom:28px; z-index:40;
+  width:168px; height:170px; margin:0;
+  transform:translateX(-50%);
+  border-width:2.5px;
+  box-shadow:0 0 30px rgba(255,255,255,.14), 0 14px 26px rgba(0,0,0,.7);
+}
+.fan-card.sel .fb-band{
+  flex:0 0 auto; padding:4px 9px 5px; display:flex; align-items:center; justify-content:space-between;
+  font-family:var(--font-pop); font-size:9.5px; color:var(--ink-deep); background:var(--card-ink);
+}
+.fan-card.sel.role-link  .fb-band{ background:var(--role-link); }
+.fan-card.sel.role-burn  .fb-band{ background:var(--role-burn); }
+.fan-card.sel.role-neta  .fb-band{ background:var(--role-neta); }
+.fan-card.sel.role-renraku .fb-band{ background:var(--role-burn); }
+.fan-card.sel .fb-fit{
+  font-size:8.5px; font-weight:800; color:var(--ink-deep);
+  background:rgba(255,255,255,.72); border-radius:3px; padding:1px 5px 2px;
+}
+.fan-card.sel .fb-line{
+  flex:1 1 auto; padding:9px 11px 0;
+  font-size:12.5px; font-weight:800; line-height:1.42; color:var(--card-ink);
+  overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical;
+}
+.fan-card.sel.role-neta .fb-line{ color:#fff; }
+.fan-card.sel .fb-foot{
+  flex:0 0 auto; padding:7px 11px 10px; display:flex; align-items:center; gap:6px;
+  border-top:1px dashed rgba(26,23,38,.25);
+}
+.fan-card.sel.role-neta .fb-foot{ border-top-color:rgba(255,255,255,.2); }
+.fan-card.sel .fb-name{
+  font-family:var(--font-pop); font-size:11px; color:var(--card-ink);
+  flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.fan-card.sel.role-neta .fb-name{ color:#fff; }
+.fan-card.sel .fb-sub{
+  font-size:8.5px; font-weight:800; color:#fff; background:#4A4160;
+  border-radius:3px; padding:2px 5px 3px; flex:0 0 auto; white-space:nowrap;
+}
+.fan-card.sel .fb-lock{
+  position:absolute; left:0; right:0; bottom:0; padding:4px 0 5px;
+  text-align:center; font-family:var(--font-pop); font-size:10px;
+  color:#fff; background:rgba(26,23,38,.88);
+}
+
+/* 配る／出す */
+@keyframes dealIn{ from{ transform:translate(20px,16px) rotate(10deg); opacity:0; } }
+.fan-card.dealt{ animation:dealIn .28s cubic-bezier(.2,.9,.3,1.1) backwards; }
+@keyframes playOut{ to{ transform:translateX(-50%) translateY(-42px) scale(.88); opacity:0; } }
+.fan-card.played{ animation:playOut .24s ease-in forwards; pointer-events:none; }
+.fan-card:active{ box-shadow:0 2px 6px rgba(0,0,0,.6); }
+
+/* 流れが乗っている間、ネタ札は「いま出すと流れを捨てる」ことを見せる */
+.hand.chained .fan-card.role-neta:not(.sel){ opacity:.6; }
+
+/* 友達／ライバルが撒いた札（第3段の口） */
+.fan-card.from-friend{ border-color:var(--role-link); }
+.fan-card.from-rival { border-color:#8A6BE8; }
+
+/* ── 常時手（静観／話を振る）── */
+.kdm-primary{ display:flex; gap:6px; }
+.kdm-main{
+  flex:1 1 0; min-width:0; padding:10px 6px;
+  border:1.5px solid rgba(255,255,255,.18); border-radius:3px;
+  background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  transition:opacity .15s;
+}
+.kdm-main:active{ opacity:.6; }
+.kdm-main.disabled{ opacity:.3; pointer-events:none; }
+.kdm-main.unavail{ display:none; }
+.kdm-main-icon{ font-size:13px; }
+.kdm-main-name{ font-family:var(--font); font-weight:800; font-size:11.5px; color:rgba(255,255,255,.72); white-space:nowrap; }
+.kdm-main-sub{ font-size:8px; font-weight:800; color:var(--role-link); white-space:nowrap; }
+.kdm-main-sub:empty{ display:none; }
+.kdm-main.furu .kdm-main-name{ color:var(--role-link); }
+
+/* 話し中は常時手だけ沈める（手札は .hand.locked が担当） */
+.kotodama-panel.talking .kdm-primary,
+.kotodama-panel.talking .friend-strip{ opacity:.45; transition:opacity .25s; }
+.kotodama-panel.ready   .kdm-primary,
+.kotodama-panel.ready   .friend-strip{ opacity:1; transition:opacity .25s; }
+
+/* 短い画面 */
+@media (max-height:680px){
+  .hand{ height:186px; }
+  .fan{ height:104px; bottom:16px; }
+  .fan-card{ width:70px; height:96px; }
+  .fan-card .fc-name{ font-size:9.5px; }
+  .fan-card.sel{ width:156px; height:150px; bottom:24px; }
+  .fan-card.sel .fb-line{ font-size:11.5px; padding-top:8px; }
+  .kdm-main{ padding:8px 5px; }
+}
+@media (max-height:520px){
+  .hand{ height:164px; }
+  .fan{ height:94px; bottom:14px; }
+  .fan-card{ width:64px; height:86px; }
+  .fan-card.sel{ width:146px; height:134px; bottom:22px; }
+}
+
+/* ── 自分の席 ──
+   友達の影絵が left:8px / right:8px 固定で、どの席を選んでも真ん中に
+   見えていた問題の対（js/ui/stage.js の _placeFriends が left を差す）。 */
+.me-marker{
+  position:absolute; bottom:-2px; transform:translateX(-50%);
+  z-index:20; pointer-events:none;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+}
+.me-marker::before{
+  content:''; width:34px; height:10px; border-radius:50% 50% 0 0;
+  background:linear-gradient(180deg, rgba(255,61,127,.6), rgba(255,61,127,.12));
+  box-shadow:0 0 16px rgba(255,61,127,.45);
+}
+.me-marker span{
+  font-family:var(--font-pop); font-size:8px; letter-spacing:.12em;
+  color:var(--role-burn); text-shadow:0 0 6px rgba(255,61,127,.6);
+}
+@media (max-height:680px){ .me-marker span{ font-size:7px; } }
+
+
+/* ── 【意図】席の上の予告（2026-09-22）───────────────────────
+   手札ではなく、ここが読むところ。1ターン固定で、札の効き方に直結している。
+   数値は出さない（質的表現のみ）。 */
+.intent-tag{
+  position:absolute; top:-17px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:4px; white-space:nowrap;
+  padding:2px 7px 3px; border-radius:9px;
+  border:1.5px solid var(--muted); background:#221d33;
+  font-size:9.5px; font-weight:900; letter-spacing:.02em;
+  line-height:1; z-index:12; pointer-events:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+}
+.intent-tag .it-mark{ font-size:10.5px; }
+.h-card.tier-far .intent-tag{ font-size:8.5px; padding:2px 5px 3px; top:-15px; }
+.h-card.tier-far .intent-tag .it-label{ display:none; }
+.h-card.tier-mid .intent-tag{ font-size:9px; }
+
+.intent-tag.tone-hot { border-color:#FFB43D; color:#FFD98A; background:#2a2016; }
+.intent-tag.tone-cool{ border-color:#6B6278; color:#A9A2B8; background:#1e1b28; }
+.intent-tag.tone-away{ border-color:#35E3F0; color:#8FEEF6; background:#152a2e; }
+.intent-tag.tone-open{ border-color:var(--pink); color:#FFC2D6; background:#2c141d;
+  animation:intentOpen 1.4s ease-in-out infinite; }
+
+@keyframes intentOpen{
+  0%,100%{ box-shadow:0 2px 6px rgba(0,0,0,.5); }
+  50%    { box-shadow:0 2px 6px rgba(0,0,0,.5), 0 0 12px rgba(255,61,127,.55); }
+}
+
+.intent-tag.just-changed{ animation:intentPop .42s ease-out; }
+.intent-tag.tone-open.just-changed{ animation:intentPop .42s ease-out, intentOpen 1.4s ease-in-out infinite .42s; }
+@keyframes intentPop{
+  0%  { transform:translateX(-50%) translateY(4px) scale(.82); opacity:0; }
+  60% { transform:translateX(-50%) translateY(0)   scale(1.06); opacity:1; }
+  100%{ transform:translateX(-50%) translateY(0)   scale(1); }
+}
+
+
+/* ── 札の上の「予告と同じ印」（2026-09-23）──────────────
+   席の上の .intent-tag と同じ記号・同じ色。頭上の▲を見たら手札の▲を探す。
+   .mk-now = いまそれが当たりの札（光る）。 */
+.fc-mk{
+  /* 扇では札の左側が隣の札に隠れるので、印は必ず見える右上に置く */
+  position:absolute; top:3px; right:3px; z-index:3;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:15px; height:15px; border-radius:4px;
+  font-size:10px; line-height:1; font-weight:900;
+  border:1.5px solid currentColor; background:rgba(14,11,20,.55); opacity:.7;
+}
+.fc-mk[data-big]{ width:20px; height:20px; font-size:13px; top:5px; right:5px; }
+.fc-mk.tone-hot { color:#FFB43D; }
+.fc-mk.tone-cool{ color:#B9B1C9; }
+.fc-mk.tone-open{ color:#FF7BA8; }
+.fc-mk.mk-now{
+  opacity:1; border-color:transparent; color:#17131F;
+  animation:mkNow 1.3s ease-in-out infinite;
+}
+.fc-mk.mk-now.tone-hot { background:#FFB43D; box-shadow:0 0 10px rgba(255,180,61,.8); }
+.fc-mk.mk-now.tone-cool{ background:#CFC8DC; box-shadow:0 0 10px rgba(207,200,220,.6); }
+.fc-mk.mk-now.tone-open{ background:#FF3D7F; color:#fff; box-shadow:0 0 11px rgba(255,61,127,.85); }
+@keyframes mkNow{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.35); } }
+
+.kdm-main-icon.mk-yoso{ color:#35E3F0; font-weight:900; }
+
+
+/* ══ 1ターンを2拍に割る（2026-09-23）════════════════════════════
+   「相手を見る」と「札を出す」は同じ瞬間には要らない。それなのに
+   会話ウィンドウ(94px)と手札(212px)が常に同居していて、札が78pxまで
+   潰れていた。絵柄も印も載らない。
+
+   拍1「見る」= 会話が流れている間。札は下端の帯だけに沈み、
+                ステージ（ヒロインと予告）が広くなる。
+   拍2「出す」= 自分の番(.ready)。会話は1行に畳まれ、札が前に出て
+                104×150になる。予告は両方の拍で出しっぱなし＝
+                読んだものを見ながら出せる。
+   ステージは flex:1 なので、手札が伸び縮みすると自動で逆に動く。 */
+
+/* ── 拍1「見る」──────────────────────────────── */
+/* overflow:hidden が要る。これが無いと沈めた札が下の「静観」行の上に
+   はみ出して、押せないボタンの上に札が乗る（一度やった） */
+body:not(.beat-play) .hand{ height:56px; overflow:hidden; }
+body:not(.beat-play) .fan{ bottom:-56px; height:120px; }
+body:not(.beat-play) .fan-card{ box-shadow:0 -3px 12px rgba(0,0,0,.6); }
+body:not(.beat-play) .fan-card .fc-name{ opacity:0; }
+body:not(.beat-play) .meter-row{ opacity:.55; }
+
+/* ── 拍2「出す」──────────────────────────────── */
+body.beat-play .vn-textbox-area{
+  min-height:0; padding:7px 12px 7px; margin:4px 10px 2px;
+}
+body.beat-play .vn-text{
+  display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical;
+  overflow:hidden; font-size:12.5px; line-height:1.5;
+}
+body.beat-play .vn-namebox{ font-size:10px; padding:1px 8px 2px; }
+body.beat-play .tap-indicator{ display:none; }
+
+/* 幅: 5枚 × 96 − 重なり4箇所 × 28 = 368px。390pxの画面に収まる最大。
+   重なりは札の左側を食うので、右上の印と役割の帯は必ず見えたまま残る */
+body.beat-play .hand{ height:212px; }
+body.beat-play .fan{ bottom:16px; height:154px; }
+body.beat-play .fan-card{ width:88px; height:148px; margin:0 -14px; border-radius:7px; }
+body.beat-play .fan-card .fc-band{ font-size:9.5px; padding:4px 7px 5px; }
+/* 重なりは札の左側を食うので、札名は右に寄せて見えている側に置く。
+   全文は選んで持ち上げたときに読める（言葉は出す直前まで要らない） */
+body.beat-play .fan-card .fc-name{
+  font-size:11px; line-height:1.35; padding:4px 8px 10px;
+  justify-content:flex-end; text-align:right;
+}
+body.beat-play .fan-card .fc-mk{ width:18px; height:18px; font-size:12px; top:4px; right:4px; }
+body.beat-play .fan-card.sel{
+  width:190px; height:200px; bottom:22px; margin:0;
+}
+body.beat-play .fan-card.sel .fb-line{ font-size:13.5px; }
+
+.hand, .fan, .fan-card, .vn-textbox-area, .vn-text{
+  transition:height .22s ease-out, bottom .22s ease-out, width .22s ease-out,
+             min-height .22s ease-out, padding .22s ease-out, font-size .22s ease-out;
+}
+
+
+/* ── 常時出ている情報を減らす（2026-09-23）──────────────
+   視線の矢印は「誰が誰を狙っているか」を毎フレーム叫び続けていて、
+   札を選んでいる間はただの騒音になる。出す拍では引っ込める。
+   見る拍でも主張を落とす（消しはしない＝場を読む材料ではある）。 */
+.gaze-svg{ transition:opacity .25s; }
+body:not(.beat-play) .gaze-svg{ opacity:.45; }
+body.beat-play .gaze-svg{ opacity:0; }
+body.beat-play .f-chip{ opacity:.5; transition:opacity .25s; }

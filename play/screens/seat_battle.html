@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>席取りバトル</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+<style>
+/* register: 夜ポップ(縁日調) — goukon_day.css 準拠
+   夜のネイビー地+方眼に、白いシールUIと提灯の暖色光(グラデ表現)を浮かべる */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --night:   #232032;   /* 夜のネイビー地 */
+  --night2:  #1a1726;   /* 一段深い夜(帯・外側) */
+  --ink:     #201d2b;
+  --ink2:    #7d788f;
+  --muted:   #b6b2c4;
+  --pink:    #ff5b8f;
+  --pink-soft:#ffe3ed;
+  --cyan:    #27c0dd;
+  --cyan-soft:#d8f4fa;
+  --yellow:  #ffcf3f;
+  --white-dim:rgba(255,255,255,.55);
+  --font:     "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",-apple-system,system-ui,sans-serif;
+  --font-pop: "Mochiy Pop One","M PLUS Rounded 1c",sans-serif;
+}
+html,body{height:100%;background:var(--night2);}
+
+.phone{
+  max-width:390px; min-height:100dvh; margin:0 auto;
+  background:
+    radial-gradient(ellipse 65% 45% at 18% 0%,  rgba(255,190,80,.20), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 92% 22%, rgba(255,91,143,.10), transparent 70%),
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px),
+    var(--night);
+  background-size:auto,auto,22px 22px,22px 22px,auto;
+  display:flex; flex-direction:column; overflow:hidden;
+  position:relative;
+  font-family:var(--font);
+}
+
+/* STATUS BAR */
+.status-bar{
+  background:rgba(26,23,38,.94); color:var(--white-dim);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:10px 20px 6px;
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--font); font-weight:700; font-size:11px;
+  flex-shrink:0;
+}
+
+/* HEADER */
+.page-header{
+  padding:18px 20px 10px;
+}
+.phase-label{
+  font-family:var(--font); font-size:9px; font-weight:800; letter-spacing:.15em;
+  color:var(--white-dim); margin-bottom:6px;
+}
+.page-title{
+  font-size:22px; font-weight:400;
+  font-family:var(--font-pop); color:#fff;
+  text-shadow:0 0 14px rgba(255,190,80,.35);
+}
+
+/* DRAFT ORDER STRIP — 白シールバッジ */
+.draft-order{
+  padding:2px 20px 14px;
+  display:flex; gap:8px; overflow-x:auto;
+}
+.draft-badge{
+  flex-shrink:0;
+  width:56px; padding:6px 0;
+  border-radius:10px;
+  background:#fff; border:2px solid var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-family:var(--font); font-size:9px; color:var(--ink2);
+  transition:all .3s;
+}
+.draft-badge .db-num{
+  font-size:8.5px; font-weight:800; color:var(--ink2);
+}
+.draft-badge .db-name{
+  font-size:10px; color:var(--ink); font-weight:800;
+}
+.draft-badge .db-tact{
+  font-size:8.5px; font-weight:700; color:var(--ink2);
+}
+.draft-badge.active{
+  border-color:var(--yellow);
+  box-shadow:2px 2px 0 rgba(0,0,0,.3), 0 0 12px rgba(255,207,63,.55);
+  transform:translateY(-1px) rotate(-1.5deg);
+}
+.draft-badge.done{
+  opacity:.4;
+}
+.draft-badge.is-self .db-name{ color:var(--pink); }
+.draft-badge.active.is-self .db-name{ color:var(--pink); }
+
+/* STATUS TEXT */
+.status-text{
+  padding:0 20px 16px;
+  font-size:13px; font-weight:700; color:var(--muted);
+  font-family:var(--font);
+  min-height:36px;
+  transition:opacity .3s;
+}
+
+/* TABLE */
+.table-wrap{
+  padding:0 20px;
+  flex:1;
+}
+
+.table-visual{
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+/* HEROINE SIDE */
+.heroine-side{
+  display:flex;
+  border-bottom:2px dashed rgba(255,255,255,.14);
+  padding:12px 8px;
+  gap:6px;
+}
+
+/* TABLE CENTER LINE — 夜の木目卓 */
+.table-center{
+  display:flex; align-items:center; justify-content:center;
+  padding:6px 0;
+  background:linear-gradient(180deg,#332e48,#262336);
+  border-top:2px solid rgba(255,207,63,.45);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  font-family:var(--font); font-size:9px; font-weight:800;
+  color:rgba(255,207,63,.65); letter-spacing:.2em;
+}
+
+/* MAN SIDE */
+.man-side{
+  display:flex;
+  padding:12px 8px;
+  gap:6px;
+}
+
+/* SEAT CARD */
+.seat-card{
+  flex:1;
+  border-radius:10px;
+  padding:10px 4px;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  transition:all .3s;
+  cursor:default;
+  position:relative;
+  min-width:0;
+}
+
+/* 女の子席 — 白シール */
+.seat-card.heroine-card{
+  background:#fff;
+  border:2px solid var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.seat-card.heroine-card .seat-emoji{ font-size:22px; }
+/* 顔アイコン — 立ち絵の顔部分を丸く切り抜き */
+.seat-face{
+  width:38px; height:38px; border-radius:50%;
+  overflow:hidden; flex-shrink:0;
+  border:2px solid var(--ink);
+  background:var(--pink-soft);
+  display:flex; align-items:center; justify-content:center;
+}
+.seat-face img{
+  width:100%; height:100%;
+  object-fit:cover; object-position:50% 0%;
+  transform:scale(2.2); transform-origin:50% 30%;
+  display:block;
+}
+.seat-face.no-img{ font-size:20px; }
+.seat-card.heroine-card .seat-name{
+  font-size:10px; font-weight:800; color:var(--ink);
+  font-family:var(--font);
+  text-align:center;
+  word-break:break-all;
+}
+.seat-card.heroine-card .seat-type{
+  font-size:8px; font-weight:700; color:var(--ink2); text-align:center; line-height:1.2;
+}
+
+/* 男席 — 空き */
+.seat-card.man-card{
+  background:rgba(255,255,255,.04);
+  border:2px dashed rgba(255,255,255,.28);
+}
+.seat-card.man-card.available{
+  background:#fff; border:2px solid var(--pink);
+  cursor:pointer;
+  animation:pulse-pink .8s ease-in-out infinite alternate;
+}
+@keyframes pulse-pink{
+  from{box-shadow:2px 2px 0 rgba(0,0,0,.3), 0 0 0 rgba(255,91,143,0);}
+  to{box-shadow:2px 2px 0 rgba(0,0,0,.3), 0 0 14px rgba(255,91,143,.6);}
+}
+.seat-card.man-card.available:active{
+  transform:scale(.96);
+}
+.seat-card.man-card.taken{
+  background:#fff; border:2px solid var(--ink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.3);
+}
+.seat-card.man-card .seat-emoji{ font-size:22px; }
+.seat-card.man-card .seat-name{
+  font-size:10px; font-weight:800; color:var(--ink);
+  font-family:var(--font); text-align:center;
+}
+.seat-card.man-card .seat-label{
+  font-size:9px; font-weight:800; color:var(--white-dim);
+  font-family:var(--font);
+}
+.seat-card.man-card.available .seat-label{ color:var(--pink); }
+
+/* 空き席 */
+.seat-card.empty{
+  background:transparent; border:2px dashed rgba(255,255,255,.2);
+}
+.seat-empty-icon{ font-size:20px; opacity:.5; }
+
+/* 確定後の席 — 自分=ピンク(goukon_day/resultと統一) */
+.seat-card.man-card.self-seat{
+  background:#fff; border:2.5px solid var(--pink);
+  box-shadow:2px 2px 0 rgba(0,0,0,.3), 0 0 0 3px rgba(255,91,143,.3);
+}
+.seat-card.man-card.self-seat .seat-name{ color:var(--pink); }
+
+/* CONNECTOR LINE */
+.connector{
+  display:flex;
+  padding:0 8px;
+}
+.conn-item{
+  flex:1;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:rgba(255,255,255,.15);
+  transition:color .5s, text-shadow .5s;
+}
+.conn-item.active{ color:var(--cyan); text-shadow:0 0 8px rgba(39,192,221,.5); }
+.conn-item.self{ color:var(--pink); text-shadow:0 0 8px rgba(255,91,143,.6); }
+
+/* 結果バナー — 白シールカード */
+.result-banner{
+  margin:0 20px; margin-top:14px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:#fff; border:2.5px solid var(--ink);
+  box-shadow:4px 4px 0 rgba(0,0,0,.35);
+  opacity:0; transform:translateY(8px);
+  transition:all .4s ease;
+}
+.result-banner.show{
+  opacity:1; transform:translateY(0);
+}
+.result-banner .rb-title{
+  font-family:var(--font); font-size:9px; font-weight:800;
+  color:var(--ink2); letter-spacing:.15em; margin-bottom:8px;
+}
+.result-banner .rb-line{
+  font-family:var(--font); font-size:12.5px; font-weight:700;
+  color:var(--ink); line-height:1.7; margin-bottom:4px;
+}
+.result-banner .rb-line span{ color:var(--pink); font-weight:800; }
+
+/* BOTTOM */
+.bottom-bar{
+  padding:16px 20px;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom));
+  flex-shrink:0;
+}
+.next-btn{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:2.5px solid var(--ink);
+  background:var(--pink); color:#fff;
+  font-family:var(--font); font-size:15px; font-weight:800;
+  cursor:pointer;
+  box-shadow:3px 3px 0 rgba(0,0,0,.35), 0 0 16px rgba(255,91,143,.4);
+  opacity:0; pointer-events:none;
+  transition:all .3s;
+}
+.next-btn.show{
+  opacity:1; pointer-events:all;
+}
+.next-btn:active{ transform:scale(.98); box-shadow:1px 1px 0 rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar">
+    <span id="status-time">00:00</span>
+    <span>合コン</span>
+    <span>●●●</span>
+  </div>
+
+  <!-- お披露目: 全身立ち絵を大きく見せてから席取りへ（席の前に「今夜の3人」を一望） -->
+  <style>
+    .reveal-stage{
+      position:absolute; inset:0; z-index:60;
+      background:linear-gradient(180deg,#1a1726,#241f33);
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center;
+      padding:20px 14px calc(16px + env(safe-area-inset-bottom));
+    }
+    .reveal-stage.hide{ display:none; }
+    .reveal-head{ text-align:center; flex-shrink:0; }
+    .reveal-phase{ font-size:10px; letter-spacing:.15em; color:#7d788f; font-weight:800; }
+    .reveal-title{ font-family:"Mochiy Pop One",sans-serif; font-size:24px; color:#fff; margin-top:4px; }
+    .reveal-sub{ font-size:11px; color:rgba(255,255,255,.6); margin-top:6px; font-weight:700; }
+    .reveal-row{
+      flex:0 1 auto; min-height:0; width:100%; margin:24px 0;
+      display:flex; align-items:flex-end; justify-content:center; gap:4px;
+      max-height:44vh;
+    }
+    .reveal-card{
+      flex:1 1 0; min-width:0; height:100%;
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    }
+    .reveal-portrait{
+      /* 本番のカード立ち絵と同じ見せ方（ガラス調カード＋バストアップ切り抜き）。
+         全身は見せない＝FB「女性が全身出てるのは違和感」対応 */
+      width:100%; aspect-ratio:100/120; min-height:0;
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      border:2.5px solid #201d2b; border-radius:12px;
+    }
+    .reveal-portrait img{
+      width:100%; height:100%;
+      object-fit:cover; object-position:top center;
+    }
+    .reveal-name{
+      margin-top:6px; text-align:center;
+      background:#fff; border:2px solid #201d2b; border-radius:10px;
+      padding:3px 8px; box-shadow:2px 2px 0 rgba(0,0,0,.3);
+    }
+    .reveal-name b{ display:block; font-size:12px; color:#201d2b; }
+    .reveal-name small{ display:block; font-size:8.5px; font-weight:800; color:#7d788f; }
+    .reveal-btn{
+      flex-shrink:0; margin-top:6px; padding:13px 34px;
+      border-radius:14px; border:2.5px solid #201d2b; background:#ff5b8f; color:#fff;
+      font-family:"M PLUS Rounded 1c",sans-serif; font-size:15px; font-weight:800;
+      box-shadow:3px 3px 0 rgba(0,0,0,.35); cursor:pointer;
+    }
+    .reveal-btn:active{ transform:scale(.97); box-shadow:1px 1px 0 rgba(0,0,0,.35); }
+  </style>
+  <div class="reveal-stage" id="reveal-stage">
+    <div class="reveal-head">
+      <div class="reveal-phase">PHASE 02 / SEAT BATTLE</div>
+      <div class="reveal-title">今夜の3人</div>
+      <div class="reveal-sub">誰の正面に座る？ ——まず全体を見てから席を取り合う。</div>
+    </div>
+    <div class="reveal-row" id="reveal-row"></div>
+    <button class="reveal-btn" id="reveal-btn">席を取り合う →</button>
+  </div>
+
+  <div class="page-header">
+    <div class="phase-label">PHASE 02 / SEAT BATTLE</div>
+    <div class="page-title">席取りバトル</div>
+  </div>
+
+  <div class="draft-order" id="draft-order"></div>
+
+  <div class="status-text" id="status-text">手際の高い順に席を選んでいく…</div>
+
+  <div class="table-wrap">
+    <div class="table-visual">
+      <!-- 女の子側 -->
+      <div class="heroine-side" id="heroine-side"></div>
+      <!-- コネクター -->
+      <div class="connector" id="connector"></div>
+      <!-- テーブル中央線 -->
+      <div class="table-center">― テーブル ―</div>
+      <!-- 男側 -->
+      <div class="man-side" id="man-side"></div>
+    </div>
+  </div>
+
+  <div class="result-banner" id="result-banner">
+    <div class="rb-title">SEATING RESULT</div>
+    <div id="rb-lines"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="next-btn" id="next-btn" onclick="goNext()">
+      乾杯へ →
+    </button>
+  </div>
+</div>
+
+<script src="../data/gamedata.js"></script>
+<script src="../data/gamestate.js"></script>
+<script>
+// ── 時計 ──────────────────────────────────────────────
+(function(){
+  const n=new Date();
+  const el=document.getElementById('status-time');
+  if(el) el.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+})();
+
+// ── データ読み込み ────────────────────────────────────
+GameState.load();
+const config      = loadConfig() || {};
+const PARTY_IDS   = JSON.parse(localStorage.getItem('goukon_party')   || '[]');
+const HEROINE_IDS = JSON.parse(localStorage.getItem('goukon_heroines')|| '[]');
+const SELF_PARAMS = derivePlayerParams(config.living||'home', config.circle||'none', config.part||'none');
+const partyChars  = PARTY_IDS.map(id => CHARACTERS.find(c=>c.id===id)).filter(Boolean);
+const heroineChars= HEROINE_IDS.map(id => HEROINES.find(h=>h.id===id)).filter(Boolean);
+
+// ── ドラフト順（手際降順）────────────────────────────
+// 全員（自分 + 友達）を手際でソート
+const allPickers = [
+  { id: 'self', name: 'あなた', tact: SELF_PARAMS.tact, isSelf: true, emoji:'🎯' },
+  ...partyChars.map(c => ({ id: c.id, name: c.name.split(' ')[1]||c.name, tact: c.params.tact, isSelf: false, emoji:'👤', char: c }))
+];
+// 手際降順ソート（同値はランダム）
+allPickers.sort((a,b) => b.tact - a.tact + (Math.random()-.5)*.01);
+
+// ── 状態 ─────────────────────────────────────────────
+const seatAssign = {}; // seatIdx(0-2) → picker.id
+let draftStep = 0;
+let playerResolveFn = null; // プレイヤーが席を選ぶPromise用
+
+// ── 席の位置名（0=奥 / 1=真ん中 / 2=入口側）──────────
+const SEAT_POS = ['奥', '真ん中', '入口側'];
+const MIDDLE_SEAT = 1;
+// 端・奥から埋まる傾向のバイアス
+const POSITION_BIAS = [1.5, 0.7, 0.4];
+// 残り2席で真ん中が空いていたら優先（真ん中が最後に残らないように）
+const MIDDLE_RESCUE_BONUS = 2;
+
+// ── 友達の席選び：likesマッチ + 現実的な位置傾向 ──────
+function friendPickSeat(friendChar, availableSeats){
+  if(availableSeats.length === 0) return null;
+  if(availableSeats.length === 1) return availableSeats[0];
+
+  // likes のラベル と heroine.type / heroine.likes をマッチング
+  const scores = availableSeats.map(seatIdx => {
+    const h = heroineChars[seatIdx];
+    if(!h) return { seatIdx, score: 0 };
+    let score = 0;
+    (friendChar.likes || []).forEach(likeType => {
+      // ヒロインのtypeに含まれるか
+      if(h.type && h.type.includes(likeType)) score += 2;
+      // ヒロインのlikesに含まれるか
+      if(h.likes && h.likes.includes(likeType)) score += 1;
+    });
+    // 位置傾向: 奥から埋まりやすい
+    score += POSITION_BIAS[seatIdx] || 0;
+    if(availableSeats.length === 2 && seatIdx === MIDDLE_SEAT){
+      score += MIDDLE_RESCUE_BONUS;
+    }
+    // タイブレーク: ビジュが高いほうを選ぶ
+    score += (h.params.visu || 50) * 0.01;
+    return { seatIdx, score };
+  });
+  scores.sort((a,b) => b.score - a.score);
+  return scores[0].seatIdx;
+}
+
+// ── 席選びの一言セリフ（キャラ特性に寄せる）──────────
+function friendSeatLine(picker, seatIdx, ctx){
+  const trait = (picker.char.traits || [])[0] || '';
+  const pos = SEAT_POS[seatIdx] || '';
+  const h = heroineChars[seatIdx];
+  const hName = h ? heroineShortName(h) : '';
+
+  if(ctx.isLast){
+    if(trait.includes('暴走')) return 'なら俺はここ！むしろここが特等席だろ！';
+    if(trait.includes('譲れ')) return '残りものには福があるって言うしな。';
+    if(trait.includes('惚れ')) return `え、じゃあ俺は${hName}ちゃんの前……いいの？`;
+    if(trait.includes('学歴')) return `必然的に${pos}だな。異論はない。`;
+    return `じゃ、残りの${pos}な。`;
+  }
+  if(trait.includes('暴走')) return `${pos}もらった！${hName}ちゃんの前、俺な！`;
+  if(trait.includes('惚れ')) return `えっと……俺、${pos}いいすか。`;
+  if(trait.includes('譲れ')) return ctx.afterPlayer
+    ? `お前の席が決まったなら、俺は${pos}で。`
+    : `俺は後でもいいんだけど……じゃ、${pos}で。`;
+  if(trait.includes('学歴')) return `消去法で${pos}だな。`;
+  return `じゃあ俺、${pos}いくわ。`;
+}
+
+// ── 描画ヘルパー ─────────────────────────────────────
+function heroineShortName(h){
+  const parts = h.name.split(' ');
+  return parts[1] || h.name;
+}
+
+// ── テーブル初期描画 ─────────────────────────────────
+function renderTable(){
+  // 女の子側
+  const hs = document.getElementById('heroine-side');
+  heroineChars.forEach((h, i) => {
+    const card = document.createElement('div');
+    card.className = 'seat-card heroine-card';
+    card.id = 'hc-'+i;
+    card.innerHTML = `
+      <div class="seat-face">
+        <img src="../images/h${h.id}_normal.png" alt="${heroineShortName(h)}"
+          onerror="this.parentNode.classList.add('no-img');this.parentNode.textContent='${h.emoji||'👩'}';">
+      </div>
+      <div class="seat-name">${heroineShortName(h)}</div>
+      <div class="seat-type">${h.type||''}</div>`;
+    hs.appendChild(card);
+  });
+
+  // コネクター
+  const conn = document.getElementById('connector');
+  for(let i=0;i<3;i++){
+    const ci = document.createElement('div');
+    ci.className = 'conn-item';
+    ci.id = 'conn-'+i;
+    ci.textContent = '↕';
+    conn.appendChild(ci);
+  }
+
+  // 男側
+  const ms = document.getElementById('man-side');
+  for(let i=0;i<3;i++){
+    const card = document.createElement('div');
+    card.className = 'seat-card man-card';
+    card.id = 'mc-'+i;
+    card.dataset.seat = i;
+    card.innerHTML = `
+      <div class="seat-empty-icon">💺</div>
+      <div class="seat-label">${SEAT_POS[i]}</div>`;
+    ms.appendChild(card);
+  }
+}
+
+// ── ドラフトバッジ描画 ────────────────────────────────
+function renderDraftBadges(){
+  const wrap = document.getElementById('draft-order');
+  allPickers.forEach((p, i) => {
+    const badge = document.createElement('div');
+    badge.className = 'draft-badge' + (p.isSelf?' is-self':'');
+    badge.id = 'badge-'+i;
+    badge.innerHTML = `
+      <div class="db-num">${i+1}番</div>
+      <div class="db-name">${p.isSelf?'あなた':p.name}</div>
+      <div class="db-tact">手際:${p.tact}</div>`;
+    wrap.appendChild(badge);
+  });
+}
+
+// ── 現在のピッカーをハイライト ─────────────────────
+function highlightBadge(step){
+  allPickers.forEach((_, i) => {
+    const b = document.getElementById('badge-'+i);
+    if(!b) return;
+    b.classList.remove('active','done');
+    if(i < step) b.classList.add('done');
+    if(i === step) b.classList.add('active');
+  });
+}
+
+// ── 席に座る ──────────────────────────────────────────
+function takeSeat(seatIdx, picker){
+  seatAssign[seatIdx] = picker.id;
+  const card = document.getElementById('mc-'+seatIdx);
+  if(!card) return;
+  card.classList.remove('available','empty');
+  card.classList.add('taken');
+  if(picker.isSelf) card.classList.add('self-seat');
+
+  const emoji = picker.isSelf ? '🎯' : (picker.char?.emoji || '👤');
+  card.innerHTML = `
+    <div class="seat-emoji">${emoji}</div>
+    <div class="seat-name">${picker.isSelf?'あなた':picker.name}</div>`;
+
+  // コネクター色
+  const ci = document.getElementById('conn-'+seatIdx);
+  if(ci) ci.className = 'conn-item' + (picker.isSelf?' self':' active');
+
+  // 他の利用可能ボタンを更新
+  refreshAvailableSeats();
+}
+
+// ── 利用可能席表示を更新 ─────────────────────────────
+function refreshAvailableSeats(){
+  for(let i=0;i<3;i++){
+    const card = document.getElementById('mc-'+i);
+    if(!card) continue;
+    if(seatAssign[i] !== undefined) continue;
+    // 空いている → available (プレイヤー待ちターンのみ)
+    if(isPlayerTurn){
+      card.classList.add('available');
+      card.onclick = () => playerPickSeat(i);
+    } else {
+      card.classList.remove('available');
+      card.onclick = null;
+    }
+  }
+}
+
+let isPlayerTurn = false;
+
+// ── プレイヤーが席を選ぶ ─────────────────────────────
+function playerPickSeat(seatIdx){
+  if(!isPlayerTurn) return;
+  if(seatAssign[seatIdx] !== undefined) return;
+  isPlayerTurn = false;
+
+  // 全席のクリックを無効化
+  for(let i=0;i<3;i++){
+    const c=document.getElementById('mc-'+i);
+    if(c){ c.classList.remove('available'); c.onclick=null; }
+  }
+
+  if(playerResolveFn){ playerResolveFn(seatIdx); playerResolveFn=null; }
+}
+
+// ── ステータステキスト ────────────────────────────────
+function setStatus(text){
+  document.getElementById('status-text').textContent = text;
+}
+
+// ── ドラフト処理（非同期）────────────────────────────
+async function runDraft(){
+  renderDraftBadges();
+  renderTable();
+
+  await sleep(600);
+
+  let playerSeated = false;
+
+  for(let step=0; step < allPickers.length; step++){
+    const picker = allPickers[step];
+    highlightBadge(step);
+
+    const availableSeats = [0,1,2].filter(i => seatAssign[i] === undefined);
+
+    if(picker.isSelf){
+      // プレイヤーターン
+      setStatus('あなたの番だ。──どこに座る？');
+      isPlayerTurn = true;
+      refreshAvailableSeats();
+
+      // プレイヤーの選択を待つ
+      const chosen = await new Promise(resolve => { playerResolveFn = resolve; });
+      takeSeat(chosen, picker);
+      playerSeated = true;
+      setStatus(`あなたは${SEAT_POS[chosen]}に座った。${heroineShortName(heroineChars[chosen])}の向かいだ。`);
+
+    } else {
+      // 友達ターン — 暴走系は食い気味、それ以外は一拍おいて選ぶ
+      const isRash = (picker.char.traits || []).some(t => t.includes('暴走'));
+      if(isRash){
+        await sleep(250);
+      } else {
+        setStatus(`${picker.name}が席をうかがっている…`);
+        await sleep(900);
+      }
+
+      const chosen = friendPickSeat(picker.char, availableSeats);
+      if(chosen === null){ setStatus(`${picker.name}は席がなかった…`); continue; }
+
+      takeSeat(chosen, picker);
+
+      const h = heroineChars[chosen];
+      const hName = h ? heroineShortName(h) : '?';
+      const line = friendSeatLine(picker, chosen, {
+        isLast: availableSeats.length === 1,
+        afterPlayer: playerSeated,
+      });
+      setStatus(`${picker.name}「${line}」──${hName}の向かいへ。`);
+    }
+
+    highlightBadge(step);
+    document.getElementById('badge-'+step).classList.remove('active');
+    document.getElementById('badge-'+step).classList.add('done');
+
+    await sleep(700);
+  }
+
+  // ── 全員着席完了 ───────────────────────────────
+  setStatus('席が決まった。');
+  await sleep(400);
+  showResult();
+}
+
+// ── 結果バナー表示 ────────────────────────────────────
+function showResult(){
+  const banner = document.getElementById('result-banner');
+  const linesEl = document.getElementById('rb-lines');
+
+  // selfSeat を探す
+  let selfSeat = -1;
+  for(const [si, pid] of Object.entries(seatAssign)){
+    if(pid === 'self') { selfSeat = parseInt(si); break; }
+  }
+
+  const lines = [];
+  if(selfSeat >= 0 && heroineChars[selfSeat]){
+    const h = heroineChars[selfSeat];
+    lines.push(`あなたは <span>${heroineShortName(h)}</span> の向かいに座った。`);
+  }
+  partyChars.forEach(c => {
+    const seatIdx = Object.entries(seatAssign).find(([,pid])=>pid===c.id)?.[0];
+    if(seatIdx !== undefined && heroineChars[parseInt(seatIdx)]){
+      const h = heroineChars[parseInt(seatIdx)];
+      const firstName = c.name.split(' ')[1]||c.name;
+      lines.push(`${firstName}は <span>${heroineShortName(h)}</span> の向かい。`);
+    }
+  });
+
+  linesEl.innerHTML = lines.map(l=>`<div class="rb-line">${l}</div>`).join('');
+  banner.classList.add('show');
+
+  setTimeout(()=>{
+    document.getElementById('next-btn').classList.add('show');
+  }, 600);
+}
+
+// ── localStorage保存 & 遷移 ─────────────────────────
+function goNext(){
+  // selfSeat
+  let selfSeat = -1;
+  const friendSeats = {};
+  for(const [si, pid] of Object.entries(seatAssign)){
+    if(pid === 'self') selfSeat = parseInt(si);
+    else {
+      const c = partyChars.find(c => c.id === pid);
+      if(c) friendSeats[pid] = parseInt(si);
+    }
+  }
+  localStorage.setItem('goukon_seating', JSON.stringify({ selfSeat, friendSeats }));
+  location.href = 'intro.html';
+}
+
+// ── ユーティリティ ────────────────────────────────────
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ── お披露目: 全身立ち絵を見せてから席取りへ ──────────
+function buildReveal(){
+  const row = document.getElementById('reveal-row');
+  if(!row) return;
+  row.innerHTML = heroineChars.map(h => `
+    <div class="reveal-card">
+      <div class="reveal-portrait">
+        <img src="../images/h${h.id}_normal.png" alt="${heroineShortName(h)}"
+          onerror="this.style.display='none'">
+      </div>
+      <div class="reveal-name"><b>${heroineShortName(h)}</b><small>${(h.type||'').split('・')[0]||''}</small></div>
+    </div>
+  `).join('');
+}
+function startSeatBattle(){
+  document.getElementById('reveal-stage')?.classList.add('hide');
+  runDraft();
+}
+
+// ── START ─────────────────────────────────────────────
+buildReveal();
+document.getElementById('reveal-btn')?.addEventListener('click', startSeatBattle);
+</script>
+</body>
+</html>

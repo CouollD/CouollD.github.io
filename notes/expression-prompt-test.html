@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>表情差分テスト｜CouollD</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 立ち絵と画像生成</nav>
+  <article class="note">
+    <header><h1>表情差分テスト</h1><div class="meta">作成 2026-10-02　更新 2026-10-03</div></header>
+<p>調べたこと → <a href="expression-methods.html">表情差分の作り方（調査）</a></p>
+<h2>手順</h2>
+<ol>
+<li><strong>素材の確認（済）</strong>：試作に出る5人の元絵と、要る表情を洗い出した</li>
+<li><strong>切り出しと貼り戻しの道具（済）</strong>：顔のまわりを正方形で切り出し、生成した顔を元絵に戻す <code>paste_back.py</code> を作った
+   - 生成画像の位置・大きさのずれは、特徴点（SIFT）で合わせる。表情で変わる目・口の点は外れ値として捨てられ、髪・輪郭で合う（10/3 に総当たりから変更。全身や3枚並びの出力からでも切り出して合わせられる）
+   - 色ずれは、顔まわりの色の分布をそろえて直す
+   - 重ねるのは顔の中心だけ（ぼかした楕円）。髪の外側・服・体・透過は元絵のまま</li>
+<li><strong>プロンプト5案の比較（済・10/3）</strong>：めい の「困り顔」で、ChatGPT と Gemini に同じ5案を入れて比べた → 下の「結果」</li>
+<li><strong>最終プロンプト（案）</strong>：顔の切り出し型（P3）を土台に、表情ごとに書き分けた → 下の「最終プロンプト（案）」</li>
+<li><strong>全員ぶんの生成と貼り戻し（済・10/3）</strong>：12枚。結果と手振りの実験は <a href="expression-experiment.html">表情・手振り差分の実験（研究ノート）</a></li>
+</ol>
+<h2>要る差分</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>人</th>
+<th>体に使う元絵</th>
+<th>新しく要る</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>あおい</td>
+<td>h101_happy</td>
+<td>真顔（作り直し）・困り顔・退屈</td>
+</tr>
+<tr>
+<td>ゆな</td>
+<td>h102_normal</td>
+<td>困り顔・退屈</td>
+</tr>
+<tr>
+<td>めい</td>
+<td>h103_normal</td>
+<td>困り顔・退屈・ぽやっと</td>
+</tr>
+<tr>
+<td>けいた</td>
+<td>proto_m4</td>
+<td>笑（あれば困り顔）</td>
+</tr>
+<tr>
+<td>けんた</td>
+<td>proto_m9</td>
+<td>笑（あれば困り顔）</td>
+</tr>
+</tbody>
+</table></div>
+<h2>気づいたこと</h2>
+<ul>
+<li>いまある差分は、表情だけでなく手や服まで変わっている（あおいの normal と happy は手の形が違う）。差分は「顔のパーツを同じ体に重ねる」形にそろえたい</li>
+<li>あおいの shy は手で口を隠しているので元絵には向かない</li>
+<li>けいたの元絵（245×745）は小さい。作り直すかどうかは後で</li>
+</ul>
+<h2>結果（10/3）</h2>
+<p>画像：<code>表情差分テスト/比較_一覧.png</code>（貼り戻した顔を並べたもの）、<code>比較シート_めい困り顔.png</code>（生成そのまま／貼り戻し／ゲームでの大きさ）</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>案</th>
+<th>渡したもの</th>
+<th>Gemini</th>
+<th>ChatGPT</th>
+<th>気づいたこと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 保持列挙</td>
+<td>全身</td>
+<td>14</td>
+<td>16</td>
+<td>顔が小さいので<strong>ぼやける</strong>。Gemini は汗を足した。体も描き直される</td>
+</tr>
+<tr>
+<td>P2 変更点細分</td>
+<td>全身</td>
+<td>13</td>
+<td>15</td>
+<td>同上。Gemini は眉間にしわ線を足した</td>
+</tr>
+<tr>
+<td>P3 顔の切り出し・英語</td>
+<td>顔</td>
+<td><strong>21</strong></td>
+<td><strong>22</strong></td>
+<td>くっきり。位置・大きさはほぼそのまま返ってくる（ずれは貼り戻しで吸収）</td>
+</tr>
+<tr>
+<td>P4 3表情シート</td>
+<td>顔</td>
+<td>18</td>
+<td>19</td>
+<td>1回で3つ作れる。Gemini は文字と枠線を入れてくる。ChatGPT は困り顔の目と口がやや別の絵柄に寄った</td>
+</tr>
+<tr>
+<td>P5 顔の切り出し・日本語</td>
+<td>顔</td>
+<td><strong>21</strong></td>
+<td><strong>22</strong></td>
+<td>P3 とほぼ同じ。日本語でも効く</td>
+</tr>
+</tbody>
+</table></div>
+<p>点数は5項目×5点（顔立ち・髪線色・表情の伝わり・貼り戻しやすさ・画質）を目で付けたもの。</p>
+<h3>分かったこと</h3>
+<ul>
+<li><strong>効くのは「何を渡すか」</strong>。全身を渡すと顔が小さくて潰れる。顔だけ渡すとどちらのモデルでもきれいに返る。英語か日本語かはほぼ差がない</li>
+<li><strong>モデルの差は小さい</strong>。外周（髪・輪郭）の保ち方は Gemini がやや上（ずれの数値 7.1 対 8.2）。ChatGPT のほうが出力は大きい（1254px 対 1024px）が、元絵の顔は 300px なので効かない。待ち時間は Gemini 約25秒、ChatGPT 約60秒</li>
+<li>無料枠：ChatGPT で5枚、Gemini で5枚作って、どちらも上限に当たらなかった</li>
+<li>生成した顔は<strong>線が少し太い</strong>。ゲームの大きさでは目立たない</li>
+<li>余計な物（汗・文字・しわ線）を足されることがある → 最終プロンプトで禁止する</li>
+<li>3表情シート（P4）は手数が減るが、1枚ごとの絵柄の揃いは P3 に劣る。量産では1回1表情にする</li>
+</ul>
+<h2>最終プロンプト（案）</h2>
+<p>顔の切り出しを渡す。<strong>1回に1表情、毎回新しい会話で</strong>。崩れたら直させず、元の切り出しからやり直す。</p>
+<pre><code>This is a head crop cut from my game sprite. I will paste your result back onto the original body, so keep the crop size, head position, angle, outline, hair and colors exactly the same. Change only the expression to {表情}. Same art style and line weight, white background. Do not add text, symbols, sweat drops or wrinkle lines.
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>表情</th>
+<th>{表情} に入れる文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>困り顔</td>
+<td>troubled: eyebrows raised at the inner ends, worried eyes, small wavy closed mouth</td>
+</tr>
+<tr>
+<td>退屈</td>
+<td>bored: half-closed eyes looking aside, flat eyebrows, small straight closed mouth</td>
+</tr>
+<tr>
+<td>ぽやっと（ほろ酔い）</td>
+<td>tipsy: light pink flush on the cheeks, soft half-closed unfocused eyes, small relaxed smile</td>
+</tr>
+<tr>
+<td>真顔（あおい）</td>
+<td>neutral: relaxed eyebrows, eyes open looking at the viewer, small closed mouth without a smile</td>
+</tr>
+<tr>
+<td>笑（男）</td>
+<td>smiling: cheerful open-mouth grin, eyes slightly narrowed by the smile, relaxed eyebrows</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>第一候補は Gemini（外周が崩れにくく速い）。表情が弱いときは ChatGPT で作り直す</li>
+</ul>
+  </article>
+  <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
+</div>
+</body>
+</html>

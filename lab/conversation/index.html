@@ -1,0 +1,3225 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><title>会話の方式くらべ</title></head><body><script>window.__STATIC__=1</script><title>会話の方式くらべ</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #F4F4F4; --ink: #262626; --ink2: #545454; --ink3: #8C8C8C; --line: #BDBDBD;
+    --card: #FFFFFF; --stage: #DCDCDC; --hero: #6E6E6E; --friend: #8A8A8A; --speak: #4E4E4E;
+    --board: #4A4A4A; --board2: #7A7A7A; --table: #C8C8C8; --soft: #F7F7F7; --kw: #262626; --kwInk: #FFFFFF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #1B1B1B; --ink: #ECECEC; --ink2: #B5B5B5; --ink3: #858585; --line: #444444;
+      --card: #262626; --stage: #333333; --hero: #7A7A7A; --friend: #5E5E5E; --speak: #9A9A9A;
+      --board: #202020; --board2: #555555; --table: #4A4A4A; --soft: #2B2B2B; --kw: #ECECEC; --kwInk: #1B1B1B;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #1B1B1B; --ink: #ECECEC; --ink2: #B5B5B5; --ink3: #858585; --line: #444444;
+    --card: #262626; --stage: #333333; --hero: #7A7A7A; --friend: #5E5E5E; --speak: #9A9A9A;
+    --board: #202020; --board2: #555555; --table: #4A4A4A; --soft: #2B2B2B; --kw: #ECECEC; --kwInk: #1B1B1B;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font-family: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  button { font-family: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+
+  /* 一覧 */
+  .home { max-width: 520px; margin: 0 auto; padding: 18px 16px 40px; }
+  .home h1 { font-size: 22px; margin: 4px 0 6px; }
+  .home .lead { font-size: 13px; color: var(--ink2); line-height: 1.6; margin: 0 0 14px; }
+  .mcard { background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .mcard .hd { display: flex; align-items: baseline; gap: 8px; }
+  .mcard .badge { font-weight: 800; font-size: 15px; background: var(--ink); color: var(--bg); border-radius: 6px; padding: 1px 7px; }
+  .mcard .nm { font-weight: 700; font-size: 16px; }
+  .mcard .ref { font-size: 11px; color: var(--ink3); margin-left: auto; text-align: right; }
+  .mcard dl { margin: 8px 0 10px; display: grid; grid-template-columns: 4.6em 1fr; gap: 3px 8px; font-size: 12.5px; line-height: 1.5; }
+  .mcard dt { color: var(--ink3); }
+  .mcard dd { margin: 0; }
+  .mcard .go { display: flex; gap: 8px; }
+  .mcard .go button { flex: 1; min-height: 42px; border-radius: 10px; border: 1.5px solid var(--ink); background: var(--ink); color: var(--bg); font-weight: 700; font-size: 14px; cursor: pointer; }
+  .mcard .go button.sub { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 400; }
+  .mcard .go button:disabled { opacity: .4; cursor: default; }
+  .mcard .go.prof { flex-direction: column; }
+  .mcard .go button.pbtn { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 8px 12px; text-align: left; font-weight: 400; }
+  .mcard .go button.pbtn b { font-size: 14px; }
+  .mcard .go button.pbtn span { font-size: 13px; }
+  .mcard .go button.pbtn small { font-size: 11px; opacity: .75; }
+  .home .foot { font-size: 11.5px; color: var(--ink3); line-height: 1.6; margin-top: 16px; }
+
+  /* 遊ぶ画面（案6の灰色） */
+  .app { max-width: 462px; height: 100%; margin: 0 auto; padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px; }
+  .top { display: flex; align-items: center; gap: 8px; height: 34px; flex: none; }
+  .top .back { flex: none; white-space: nowrap; height: 32px; border: 1px solid var(--line); background: var(--card); border-radius: 8px; font-size: 13px; padding: 0 10px; cursor: pointer; }
+  .top .ttl { flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dots { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--ink2); flex: none; white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .dot.on { background: var(--ink2); }
+  .tools { position: relative; flex: none; }
+  .tools > button { width: 40px; height: 32px; border: 1px solid var(--line); background: var(--card); border-radius: 8px; font-size: 16px; cursor: pointer; }
+  .menu { position: absolute; right: 0; top: 38px; z-index: 30; display: flex; flex-direction: column; gap: 4px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.18); min-width: 190px; }
+  .menu button { min-height: 36px; border: none; background: transparent; border-radius: 6px; font-size: 13px; text-align: left; padding: 0 10px; cursor: pointer; }
+  .menu button:hover, .menu button:focus-visible { background: var(--bg); }
+
+  .stage { position: relative; flex: 1 1 auto; min-height: 300px; background: var(--stage); border-radius: 12px; overflow: hidden; cursor: pointer; }
+  .shade { position: absolute; inset: 0; background: #000; opacity: 0; transition: opacity .6s; pointer-events: none; z-index: 8; }
+  .board { position: absolute; left: 30px; right: 30px; top: 16px; height: 80px; background: var(--board); border: 5px solid var(--board2); }
+  .table { position: absolute; left: 0; right: 0; bottom: 150px; height: 26px; background: var(--table); }
+  .fig { position: absolute; top: 86px; bottom: 150px; width: 34%; transition: filter .3s, opacity .3s; }
+  .fig .head { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #FFFFFF; }
+  .fig .body { position: absolute; left: 0; right: 0; top: 58px; bottom: 0; border-radius: 60px 60px 0 0;
+    display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 4px; font-size: 11px; color: #FFFFFF; }
+  .fig .meter { font-size: 10.5px; opacity: .95; letter-spacing: .5px; }
+  .fig.h .head, .fig.h .body { background: var(--hero); }
+  .fig.f .head, .fig.f .body { background: var(--friend); }
+  .fig.dim { filter: blur(2.5px); opacity: .8; }
+  .fig.far { filter: blur(5px); opacity: .6; }
+  .fig.speak { filter: none; opacity: 1; z-index: 3; }
+  .fig.speak .head, .fig.speak .body { background: var(--speak); }
+  .fig.watch { filter: none; opacity: 1; }
+  #fig-101 { left: -2%; } #fig-102 { left: 33%; z-index: 2; } #fig-103 { left: 67%; }
+  #fig-1 { left: -34%; top: 130px; bottom: 120px; width: 44%; z-index: 4; }
+  #fig-4 { left: 90%; top: 130px; bottom: 120px; width: 44%; z-index: 4; }
+  .fig.f.far { filter: blur(3.5px); opacity: .75; }
+  #fig-1.speak { left: -24%; } #fig-4.speak { left: 80%; }
+  .note { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); font-size: 22px; font-weight: 800; color: var(--ink);
+    background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px; padding: 0 8px; z-index: 12; pointer-events: none;
+    animation: rise 1.8s ease-out forwards; white-space: nowrap; }
+  @keyframes rise { 0% { opacity: 0; transform: translate(-50%, 8px); } 15% { opacity: 1; transform: translate(-50%, 0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -18px); } }
+
+  .win { position: absolute; left: 0; right: 0; bottom: 0; min-height: 138px; background: var(--card); border: 1.5px solid var(--ink);
+    border-radius: 12px; padding: 24px 14px 18px; z-index: 9; }
+  .win.narr { background: var(--soft); border-style: dashed; border-color: var(--ink3); }
+  .plate { position: absolute; left: 12px; top: -14px; display: flex; align-items: center; gap: 6px; }
+  .who { background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+  .to { background: var(--card); border: 1.5px solid var(--ink); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+  .act { background: var(--card); border: 1.5px solid var(--ink3); font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+  .tag { position: absolute; right: 12px; top: -11px; background: var(--card); border: 1.5px solid var(--ink3); font-size: 11px; padding: 2px 10px; border-radius: 11px; }
+  .text { font-size: 15px; line-height: 1.75; }
+  .win.narr .text { color: var(--ink2); font-size: 14px; }
+  .next { position: absolute; right: 12px; bottom: 6px; font-size: 11px; color: var(--ink3); }
+  .tbar { position: absolute; left: 12px; bottom: 6px; height: 3px; width: 0; background: var(--ink3); border-radius: 2px; }
+  .kw { font: inherit; font-weight: 700; background: var(--kw); color: var(--kwInk); border: none; border-radius: 4px; padding: 0 4px; margin: 0 1px; cursor: pointer; }
+  .kw.used { background: transparent; color: var(--ink3); text-decoration: line-through; cursor: default; }
+  .think { display: inline-block; letter-spacing: 3px; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  .cmds { flex: none; min-height: 112px; display: flex; flex-direction: column; gap: 6px; }
+  .row { display: grid; gap: 6px; }
+  .cmd { min-height: 50px; border: 1.5px solid var(--ink3); background: var(--card); border-radius: 10px; font-size: 15px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; padding: 4px 8px; text-align: center; }
+  .cmd small { font-size: 10px; font-weight: 400; color: var(--ink2); }
+  .cmd.line { font-size: 14px; font-weight: 400; align-items: flex-start; text-align: left; padding: 8px 12px; min-height: 44px; }
+  .cmd.quiet { border: 1px solid var(--line); background: transparent; font-size: 14px; font-weight: 400; min-height: 42px; }
+  .cmd.pill { border-radius: 24px; border-color: var(--ink); }
+  .cmd.card { border-style: dashed; }
+  .cmd:disabled { opacity: .35; cursor: default; }
+  .hint { font-size: 11px; color: var(--ink3); text-align: center; }
+  .bar { display: flex; align-items: center; gap: 10px; min-height: 60px; }
+  .bar .hint { flex: 1 1 auto; text-align: left; }
+  .cut { height: 52px; padding: 0 22px; border: 2px solid var(--ink); background: var(--ink); color: var(--bg); border-radius: 26px; font-size: 15px; font-weight: 700; cursor: pointer; flex: none; }
+  .panelcmd { display: flex; flex-direction: column; gap: 6px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px; padding: 8px 10px 10px; }
+  .panelcmd .top2 { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink2); }
+  .panelcmd .top2 button { border: none; background: transparent; font-size: 11px; color: var(--ink2); cursor: pointer; }
+  .clock { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .clock > i { display: block; height: 100%; background: var(--ink); width: 100%; }
+  .mbar { position: relative; display: inline-block; width: 74px; height: 9px; border: 1px solid var(--ink3); border-radius: 5px; overflow: hidden;
+    background: linear-gradient(to right, var(--line) 0 15%, transparent 15% 70%, var(--line) 70% 100%); }
+  .mbar > i { display: block; height: 100%; background: var(--ink2); transition: width .4s; }
+  .cue { position: absolute; width: max-content; top: 64px; transform: translateX(-50%); z-index: 11; border: 1.5px dashed var(--ink); background: var(--card); color: var(--ink);
+    border-radius: 14px; font-size: 12px; font-weight: 700; padding: 5px 12px; cursor: pointer; animation: pulse 1.1s ease-in-out infinite; }
+  .cue.table { top: auto; bottom: 156px; }
+  .cue.done { border-style: solid; animation: none; }
+  @keyframes pulse { 50% { transform: translateX(-50%) scale(1.08); } }
+  .kwq { background: var(--kw); color: var(--kwInk); border-radius: 4px; padding: 0 3px; font-weight: 700; }
+  .votes { display: grid; gap: 3px; font-size: 13px; }
+  .vrow { display: grid; grid-template-columns: 4.5em 1.2em 1fr; align-items: center; animation: vin .3s ease-out; }
+  @keyframes vin { from { opacity: 0; transform: translateY(4px); } }
+
+  #sheet-log { z-index: 25; }
+  .tip { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 13; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 8px 10px; font-size: 12px; line-height: 1.55; animation: vin .3s ease-out; cursor: pointer; }
+  .tip.whisper { background: var(--card); color: var(--ink); border: 1.5px dashed var(--ink3); }
+  .tip.whisper b { border-color: var(--ink3); }
+  .fig.gone { opacity: 0 !important; filter: none !important; pointer-events: none; transition: opacity .6s; }
+  /* 場所：背景と左上の札（店の外・カラオケは夜の色にする） */
+  .stage { transition: background .8s; }
+  .stage[data-scene="out"], .stage[data-scene="station"] { background: linear-gradient(180deg, #1F2740 0%, #36405E 70%, #4A4F63 100%); }
+  .stage[data-scene="karaoke"] { background: radial-gradient(circle at 18% 22%, rgba(255, 110, 190, .35), transparent 38%), radial-gradient(circle at 82% 28%, rgba(110, 170, 255, .35), transparent 40%), #2F2540; }
+  .stage[data-place]:not([data-place=""])::after { content: attr(data-place); position: absolute; left: 10px; top: 10px; z-index: 5; font-size: 12px; padding: 2px 10px; border-radius: 10px; background: var(--card); color: var(--ink); border: 1.5px solid var(--ink3); pointer-events: none; }
+  .lc-st { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink); font-size: 12px; font-weight: 700; padding: 2px 4px; }
+  .tip b { display: inline-block; font-size: 10.5px; border: 1px solid var(--bg); border-radius: 8px; padding: 0 6px; margin-right: 6px; }
+  .phone { position: absolute; inset: 8px; z-index: 12; background: var(--card); border: 1.5px solid var(--ink); border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; cursor: default; }
+  .ph-top { padding: 10px 12px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--line); background: var(--bg); }
+  .ph-body { flex: 1; overflow: auto; padding: 8px 10px; }
+  /* ログ：3案 */
+  .panel.log { padding-top: 0; }
+  .loghead { position: sticky; top: 0; z-index: 2; background: var(--card); display: flex; align-items: center; gap: 8px; padding: 14px 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+  .loghead h2 { margin: 0; font-size: 17px; }
+  .logtabs { display: flex; gap: 4px; margin-left: 4px; }
+  .ltab { border: 1px solid var(--line); background: transparent; border-radius: 14px; font-size: 12px; padding: 4px 10px; cursor: pointer; }
+  .ltab.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .lclose { margin-left: auto; border: none; background: transparent; font-size: 12px; color: var(--ink2); cursor: pointer; }
+  /* 複合 */
+  .lm-card { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 8px; overflow: hidden; }
+  .lm-card > summary { list-style: none; cursor: pointer; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px; background: var(--bg); }
+  .lm-card > summary::-webkit-details-marker { display: none; }
+  .lm-card > summary::after { content: '▸ 開く'; font-size: 10.5px; color: var(--ink3); }
+  .lm-card[open] > summary::after { content: '▾ 閉じる'; }
+  .lm-h { font-weight: 700; font-size: 14px; }
+  .lm-k { font-size: 11.5px; color: var(--ink2); }
+  .lm-body { padding: 4px 10px 10px; }
+  .logtabs { flex-wrap: wrap; }
+  /* A チャット */
+  .lc-h { text-align: center; margin: 14px 0 8px; } .lc-h span { font-size: 11px; color: var(--ink2); background: var(--bg); border-radius: 10px; padding: 2px 10px; }
+  .lc-row { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0; }
+  .lc-row.me { justify-content: flex-end; }
+  .lc-av { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--hero); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .lc-col { max-width: 78%; }
+  .lc-row.me .lc-col { display: flex; flex-direction: column; align-items: flex-end; }
+  .lc-name { font-size: 10.5px; color: var(--ink2); margin: 0 0 2px 2px; } .lc-name i { font-style: normal; color: var(--ink3); }
+  .lc-b { font-size: 13.5px; line-height: 1.5; background: var(--bg); border-radius: 4px 12px 12px 12px; padding: 6px 10px; }
+  .lc-row.me .lc-b { background: var(--ink); color: var(--bg); border-radius: 12px 4px 12px 12px; }
+  .lc-act { font-size: 10px; color: var(--ink3); margin-top: 2px; }
+  .lc-n { text-align: center; font-size: 11.5px; color: var(--ink3); margin: 6px 12px; }
+  .lc-fx { text-align: center; font-size: 10.5px; color: var(--ink2); margin: 2px 0 8px; }
+  /* B 台本 */
+  .ls-h { position: sticky; top: 52px; background: var(--card); font-size: 12px; font-weight: 700; color: var(--ink2); padding: 8px 0 4px; border-bottom: 1px dashed var(--line); margin: 6px 0; }
+  .ls-row { display: grid; grid-template-columns: 4.6em 1fr; gap: 8px; padding: 4px 4px; font-size: 13.5px; line-height: 1.55; }
+  .ls-row.me { background: var(--bg); border-radius: 6px; }
+  .ls-name { font-weight: 700; text-align: right; font-size: 12px; padding-top: 1px; }
+  .ls-name small { display: block; font-weight: 400; font-size: 10px; color: var(--ink3); }
+  .ls-n { font-size: 12px; color: var(--ink3); padding: 3px 4px 3px 5.4em; }
+  .ls-fx { font-size: 10.5px; color: var(--ink2); padding: 0 4px 4px 5.4em; }
+  /* C 振り返り */
+  .lr-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 10px; }
+  .lr-h { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .lr-k { font-size: 12px; color: var(--ink2); margin: 2px 0; }
+  .lr-acts { margin: 6px 0; padding-left: 18px; font-size: 13px; line-height: 1.5; } .lr-acts li { margin: 4px 0; } .lr-acts span { color: var(--ink2); font-size: 12px; }
+  .lr-card details { margin-top: 6px; font-size: 12.5px; } .lr-card summary { cursor: pointer; color: var(--ink2); font-size: 12px; }
+  .lr-card details p { margin: 4px 0; } .lr-card details p.n { color: var(--ink3); }
+  .acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+
+  .sheet { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 20; }
+  .panel { width: 100%; max-width: 440px; max-height: 84%; overflow: auto; background: var(--card); border-radius: 16px 16px 0 0; padding: 18px 16px 24px; }
+  .panel h2 { margin: 0 0 8px; font-size: 20px; }
+  .panel h3 { margin: 14px 0 4px; font-size: 13px; color: var(--ink2); }
+  .panel p { margin: 6px 0; line-height: 1.6; font-size: 14px; }
+  .panel .small { font-size: 12px; color: var(--ink2); }
+  .hearts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
+  .hearts div { border: 1px solid var(--line); border-radius: 8px; padding: 6px; text-align: center; font-size: 12px; }
+  .hearts b { display: block; font-size: 16px; }
+  .log p { margin: 0 0 8px; font-size: 13px; line-height: 1.55; }
+  .log .r { color: var(--ink3); font-size: 11px; margin-top: 12px; }
+  .log .n { color: var(--ink3); }
+  .dbg { position: absolute; left: 8px; top: 8px; z-index: 10; background: var(--card); opacity: .94; border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 8px; font-size: 10.5px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="home" id="home">
+  <h1>会話の方式くらべ</h1>
+  <p class="lead">同じ合コン（乾杯のあと、約5分）を、いろいろな方式で遊べます。人・話題・事情はどれも同じです。台詞と数値はすべて仮のものです。</p>
+  <div id="mlist"></div>
+  <p class="foot">どの方式も、最後に結果と「この方式で1夜ぶんに要る台詞の量」が出ます。Bは、遊ぶ人の Claude の利用枠を使います（はじめの1回だけ許可を聞かれます）。</p>
+</div>
+
+<div class="app" id="play" hidden>
+  <div class="top">
+    <button type="button" class="back" id="btn-back">‹ 一覧</button>
+    <div class="ttl" id="ttl"></div>
+    <div class="dots" id="dots"></div>
+    <div class="tools">
+      <button type="button" id="btn-menu" aria-label="メニュー" aria-expanded="false">…</button>
+      <div class="menu" id="menu" hidden></div>
+    </div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="board"></div>
+    <div class="table"></div>
+    <div class="fig h dim" id="fig-101"><div class="head">あ</div><div class="body"><span data-expr>真顔</span><span class="meter" data-meter></span></div></div>
+    <div class="fig h dim" id="fig-102"><div class="head">ゆ</div><div class="body"><span data-expr>真顔</span><span class="meter" data-meter></span></div></div>
+    <div class="fig h dim" id="fig-103"><div class="head">め</div><div class="body"><span data-expr>真顔</span><span class="meter" data-meter></span></div></div>
+    <div class="fig f far" id="fig-1"><div class="head">け</div><div class="body"></div></div>
+    <div class="fig f far" id="fig-4"><div class="head">い</div><div class="body"></div></div>
+    <div class="shade" id="shade"></div>
+    <div class="dbg" id="dbg" hidden></div>
+    <div class="win narr" id="win">
+      <div class="plate" id="plate"></div>
+      <div class="tag" id="tag" hidden></div>
+      <div class="text" id="text"></div>
+      <div class="next" id="next" hidden>タップで続き ▸</div>
+      <div class="tbar" id="tbar"></div>
+    </div>
+  </div>
+  <div class="cmds" id="cmds"></div>
+</div>
+
+<div class="sheet" id="sheet-log" hidden><div class="panel log" id="log"></div></div>
+<div class="sheet" id="sheet-end" hidden><div class="panel" id="end"></div></div>
+
+<script>
+// 遊べる版で使う分だけのデータ（data/gamedata.js と js/core/card-topics.js から書き出し）
+const HEROINES = [{"id":101,"name":"瀬川 あおい","params":{"mental":60},"result_lines":{"contact":"「……また、話しましょう」（少し赤くなって目を逸らした）","good":"「今日、楽しかったです。また機会があれば」","normal":"静かに微笑んで帰っていった","cold":"少し退屈そうにしていた気がする"}},{"id":102,"name":"橘 ゆな","params":{"mental":75},"result_lines":{"contact":"「えーやば！番号交換しよ！？」（テンション爆上がり）","good":"「今日のメンツ普通に楽しかったわ！また誘ってよ〜」","normal":"「まあ悪くなかったかな」（すでに別の話題に移っていた）","cold":"友達と盛り上がっていて、こちらはほぼ眼中になかった"}},{"id":103,"name":"星野 めい","params":{"mental":65},"result_lines":{"contact":"「……君とはまた話したいな。宇宙の話、途中だったし」","good":"「なんか、今日の空気は悪くなかったよ。不思議と」","normal":"楽しんでいたようだが、どこか遠い目をしていた","cold":"終始マイペースで、こちらへの関心は薄かった"}},{"id":104,"params":{"mental":88}},{"id":105,"params":{"mental":55}},{"id":106,"params":{"mental":70}},{"id":107,"params":{"mental":60}},{"id":108,"params":{"mental":58}},{"id":109,"params":{"mental":65}},{"id":110,"params":{"mental":80}}];
+const CardTopics = (() => { const SCORE = {"baito_intro":{"101":2,"102":2,"103":0,"104":2,"105":2,"106":2,"107":2,"108":0,"109":2,"110":2},"sumai_intro":{"101":2,"102":2,"103":2,"104":2,"105":2,"106":2,"107":2,"108":2,"109":2,"110":2},"jimoto_intro":{"101":2,"102":2,"103":2,"104":2,"105":2,"106":2,"107":2,"108":2,"109":2,"110":2},"juku_tantou":{"101":3,"102":1,"103":0,"104":1,"105":3,"106":1,"107":1,"108":0,"109":1,"110":3},"jikka_juku":{"101":3,"102":0,"103":0,"104":0,"105":3,"106":0,"107":0,"108":1,"109":1,"110":1},"culture_nushi":{"101":3,"102":1,"103":3,"104":1,"105":0,"106":0,"107":0,"108":3,"109":1,"110":3},"sports_asaren":{"101":1,"102":3,"103":1,"104":3,"105":0,"106":0,"107":0,"108":1,"109":3,"110":1},"send_shiokuri":{"101":0,"102":3,"103":1,"104":1,"105":0,"106":1,"107":3,"108":0,"109":0,"110":3},"izakaya_kinyou":{"101":1,"102":1,"103":0,"104":3,"105":1,"106":3,"107":1,"108":0,"109":1,"110":1},"cafe_latte":{"101":1,"102":3,"103":0,"104":1,"105":1,"106":1,"107":3,"108":0,"109":3,"110":1},"nosend_denki":{"101":0,"102":1,"103":3,"104":3,"105":0,"106":3,"107":1,"108":0,"109":0,"110":1}};
+  const TOPICS = {
+ "baito_intro": {
+  "id": "baito_intro",
+  "label": "バイト何してる",
+  "kind": "intro",
+  "open": "「バイト何してんの。俺けっこう長くてさ」",
+  "bite": {
+   "101": "「塾で、小学生を。……あの子たち、こわいくらい正直で」",
+   "102": "「カフェ。まかない目当てで入ったんだけどね」"
+  },
+  "miss": "「してない。……向いてなくて」",
+  "moreDefault": "「そっちは？　何年くらいやってるの」",
+  "friend": "「こいつシフト削られないんだよ、店長に好かれてて」"
+ },
+ "sumai_intro": {
+  "id": "sumai_intro",
+  "label": "実家か一人暮らしか",
+  "kind": "intro",
+  "open": "「実家？　それとも一人暮らし」",
+  "bite": {
+   "101": "「実家です。……門限、まだあります」",
+   "102": "「一人暮らし。親には内緒でバイト増やしてるけどね」",
+   "103": "「ひとり。……部屋の音が、たまに大きい気がする」"
+  },
+  "moreDefault": "「で、それ楽なの。しんどいの」",
+  "friend": "「こいつ実家なのに全然帰らないからな」"
+ },
+ "jimoto_intro": {
+  "id": "jimoto_intro",
+  "label": "地元どこ",
+  "kind": "intro",
+  "open": "「地元どこ。俺けっこう遠くてさ」",
+  "bite": {
+   "101": "「関西です。……あんまり出ないんですけど、たまに」",
+   "102": "「関西。うっわ、分かる人おった」",
+   "103": "「地方。……というか、どこにいても同じ気がする」"
+  },
+  "moreDefault": "「なんで出てきたの。こっちに」",
+  "friend": "「こいつ酔うと訛るからな。見とけ」"
+ },
+ "juku_tantou": {
+  "id": "juku_tantou",
+  "label": "担当の子の話",
+  "kind": "aruaru",
+  "require": {
+   "part": "juku"
+  },
+  "open": "「担当の子が受かったときって、あれヤバくない」",
+  "bite": {
+   "101": "「……分かります。自分のことより、ずっと」"
+  },
+  "miss": "「受かった……？　あ、受験の話ですか」",
+  "more": {
+   "101": "「……逆に、落ちた子のことは、まだ覚えてますか」"
+  },
+  "moreDefault": "「どのくらい担当してるんですか、その子」",
+  "friend": "「こいつ生徒の名前、卒業しても覚えてるからな」"
+ },
+ "jikka_juku": {
+  "id": "jikka_juku",
+  "label": "実家から塾へ",
+  "kind": "deep",
+  "require": {
+   "living": "home",
+   "part": "juku"
+  },
+  "open": "「実家から塾って、一回家に帰ってから行くじゃん。あれ無駄すぎない？」",
+  "bite": {
+   "101": "「……分かります。一回帰ると、もう出たくなくなるんです」"
+  },
+  "miss": "「え、そんなに大変なんですか」",
+  "more": {
+   "101": "「……あの、帰ってから出るまでの時間、どうしてますか」"
+  },
+  "moreDefault": "「そんなに違うものなんですか」",
+  "friend": "「こいつ一回帰ったら来ないからな。知ってる」"
+ },
+ "culture_nushi": {
+  "id": "culture_nushi",
+  "label": "部室の主の話",
+  "kind": "aruaru",
+  "require": {
+   "circle": "culture"
+  },
+  "open": "「部室にさ、なんか住んでる先輩っていない？」",
+  "bite": {
+   "101": "「……います。いつ行っても、いるんです」",
+   "102": "「うちの部にもおったわ、そういうの」",
+   "103": "「いる。あれはもう、部屋の一部だと思ってる」"
+  },
+  "miss": "「部室……？　入ってないので、分からないです」",
+  "more": {
+   "101": "「……その先輩、卒業したらどうなるんでしょうね」",
+   "103": "「で、その人の椅子ってもう決まってるでしょ。あれ何なんだろ」"
+  },
+  "moreDefault": "「その人、どんな人なんですか」",
+  "friend": "「こいつも部室で寝てるとこ見たことあるぞ」"
+ },
+ "sports_asaren": {
+  "id": "sports_asaren",
+  "label": "朝練の話",
+  "kind": "aruaru",
+  "require": {
+   "circle": "sports"
+  },
+  "open": "「朝練って、起きた瞬間がいちばんきついよな」",
+  "bite": {
+   "102": "「あれ何なんだろうね！　起きたら終わってたことにならないかな」"
+  },
+  "miss": "「朝練……すごいですね。わたし、朝は無理です」",
+  "more": {
+   "102": "「ね、起きるコツある？　うち毎回ギリギリなんだけど」"
+  },
+  "moreDefault": "「何時からなんですか、それ」",
+  "friend": "「こいつ朝練の日だけ前の日に帰るからな」"
+ },
+ "send_shiokuri": {
+  "id": "send_shiokuri",
+  "label": "仕送り日の話",
+  "kind": "aruaru",
+  "require": {
+   "living": "alone_send"
+  },
+  "open": "「仕送りの日って、ちょっとだけ気が大きくなるよな」",
+  "bite": {
+   "102": "「なるなる！　その日だけ財布ゆるゆるなんだけど」"
+  },
+  "miss": "「仕送り？　……あ、うち実家なので」",
+  "more": {
+   "102": "「で、最初の日なに食べる？　うちは絶対に肉」"
+  },
+  "moreDefault": "「その日、なに食べるんですか」",
+  "friend": "「こいつ仕送り日の翌日に必ず誘ってくるからな」"
+ },
+ "izakaya_kinyou": {
+  "id": "izakaya_kinyou",
+  "label": "金曜21時の話",
+  "kind": "aruaru",
+  "require": {
+   "part": "izakaya"
+  },
+  "open": "「金曜の21時ってさ、あれ何なんだろうな」",
+  "bite": {
+   "102": "「カフェだとそこまでじゃないけど、想像はつく」"
+  },
+  "miss": "「金曜？　……ふつうの日じゃないんですか」",
+  "moreDefault": "「なにが一番しんどいんですか、その時間」",
+  "friend": "「金曜のこいつ、目がすわってるからな」"
+ },
+ "cafe_latte": {
+  "id": "cafe_latte",
+  "label": "ラテアートの話",
+  "kind": "aruaru",
+  "require": {
+   "part": "cafe"
+  },
+  "open": "「ラテアート、あれいつできるようになるんだろ」",
+  "bite": {
+   "102": "「ねー！　うちいまだにハート歪むんだけど」"
+  },
+  "miss": "「ラテ、アート……？　あ、見るのは好きです」",
+  "more": {
+   "102": "「てか誰に教わった？　うち独学でずっと詰んでる」"
+  },
+  "moreDefault": "「一日、何杯くらい作るんですか」",
+  "friend": "「こいつのラテ、前に見たけど普通に雲だったぞ」"
+ },
+ "nosend_denki": {
+  "id": "nosend_denki",
+  "label": "電気代の話",
+  "kind": "aruaru",
+  "require": {
+   "living": "alone_nosend"
+  },
+  "open": "「電気代の請求くるとき、ちょっと息止めない？」",
+  "bite": {
+   "103": "「……止める。数字を見る前に、一回深呼吸する」"
+  },
+  "miss": "「電気代……うち、見たことないです」",
+  "more": {
+   "103": "「……で、いくらだった？　わたしのと比べたい」"
+  },
+  "moreDefault": "「夏と冬、どっちがきついですか」",
+  "friend": "「こいつの部屋、真夏に行ったら地獄だったからな」"
+ }
+};
+  return { TOPICS, score: (t, h) => (SCORE[t.id] && SCORE[t.id][h.id]) || 0 }; })();
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// js/v0/night-engine.js — 遊べる版（v0）の1夜の進行（2026-09-28）
+// 依存: HEROINES（data/gamedata.js）, CardTopics（js/core/card-topics.js）。DOM は触らない
+//
+// ルールは docs/rules-v0.md。数値は tools/sim_round.js と同じ（2000夜で 読んで掘る54%・読まずに掘る23%）。
+// 画面は「出来事（events）」を順に読み、「決めること（decision）」が来たら選択肢を出す。
+//
+//   const night = NightEngine.create({ HEROINES, CardTopics }).newNight(seed);
+//   night.advance();                  // 次の決めることまで進む
+//   night.events                      // 起きたことの列（画面はここを読む）
+//   night.decision                    // { kind:'start'|'react'|'rescue'|'end', options, speaker }
+//   night.choose({ cmd:'open', topic }) / ({ cmd:'go'|'dig'|'tease'|'wait' })
+// ═══════════════════════════════════════════════════════════════
+const NightEngine = (() => {
+  'use strict';
+
+  const V0_HEROINES = [101, 102, 103];
+  const V0_FRIENDS = [1, 4];            // けんた・けいた
+  // 話題は「持ち主」がいる（card-topics.js の require）。あるある話題は、その事情の人しか出さない（9/30）
+  //   自分  = 塾バイト・実家・文化系サークル → 入り口3つ＋自分のあるある3つ
+  //   けんた = 居酒屋・一人暮らし（仕送りあり）・体育会 ／ けいた = カフェ・一人暮らし（仕送りなし）・文化系
+  const INTROS = ['baito_intro', 'sumai_intro', 'jimoto_intro'];
+  const PLAYER_TOPICS = ['baito_intro', 'sumai_intro', 'jimoto_intro', 'juku_tantou', 'jikka_juku', 'culture_nushi'];
+  const FRIEND_TOPICS = { 1: ['sports_asaren', 'send_shiokuri', 'izakaya_kinyou'], 4: ['cafe_latte', 'nosend_denki'] };
+  const V0_TOPICS = PLAYER_TOPICS.concat(FRIEND_TOPICS[1], FRIEND_TOPICS[4]);
+
+  const CFG = {
+    H0: 10, HSTEP: 20, MW: 0.03, APPEAL: [-2, -1, 0, 1], NOISE: 0.2,
+    DIG: [0, 5, 9, 14],                  // 9/30 話題に持ち主と順番を付けたので、伸びを sim_depth.js の値に戻した
+    GO_HEART: 2, GO_SPILL: 0.5, GO_AIR: 3,
+    FAIL_HEART: 6, FAIL_AIR: 10,
+    DEEP_DRAIN: [0, 0, 3, 6], TEASE_AIR: 12, OPEN_HEART: [0, 0, 1, 3], AIR_DECAY: 2,
+    FRIEND_DIG_AIR: 5, FRIEND_GO: 0.5,
+    ROUNDS: 8, HOME: 55, CONTACT_AVG: 45, AIR0: 60,
+    self: { head: 50, air: 50, mental: 50 },
+  };
+
+  function rng(seed) {                    // 種を混ぜてから使う（連番の種だと最初の値が偏るため）
+    let s = (seed ^ 0x9E3779B9) >>> 0;
+    s = Math.imul(s ^ (s >>> 16), 0x85EBCA6B) >>> 0; s = Math.imul(s ^ (s >>> 13), 0xC2B2AE35) >>> 0; s = (s ^ (s >>> 16)) >>> 0 || 1;
+    return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  }
+  function gauss(r) { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const isH = s => V0_HEROINES.includes(s);
+  const isF = s => V0_FRIENDS.includes(s);
+
+  function create(deps) {
+    const { HEROINES, CardTopics } = deps;
+    const TOPICS = CardTopics.TOPICS;
+    const H = id => HEROINES.find(h => h.id === id);
+    const ap = (tid, hid) => CardTopics.score(TOPICS[tid], H(hid));
+    const MAXD = {};
+    for (const id of Object.keys(TOPICS)) {
+      const reach = HEROINES.filter(h => CardTopics.score(TOPICS[id], h) >= 2).length;
+      MAXD[id] = reach >= 4 ? 2 : 3;
+    }
+
+    function newNight(seed, overrides) {
+      const cfg = Object.assign({}, CFG, overrides || {});
+      const r = rng(seed == null ? (Date.now() >>> 0) : seed);
+      const hearts = {}, noise = {};
+      V0_HEROINES.forEach(id => { hearts[id] = 15 + Math.floor(r() * 21); noise[id] = gauss(r) * cfg.NOISE; });
+
+      const n = {
+        cfg, seed, heroines: V0_HEROINES.slice(), friends: V0_FRIENDS.slice(),
+        hearts, noise, air: cfg.AIR0, friendAff: { 1: 50, 4: 50 },
+        hand: PLAYER_TOPICS.slice(), friendPool: { 1: FRIEND_TOPICS[1].slice(), 4: FRIEND_TOPICS[4].slice() },
+        opened: new Set(), topic: null,
+        round: 0, phase: 'roundStart', acted: false, chain: [], ci: 0,
+        events: [], decision: null, result: null, over: false,
+        expr: {}, stats: { acts: 0, digs: 0, digOk: 0, fails: 0, maxDepth: 0 },
+      };
+      V0_HEROINES.forEach(h => n.expr[h] = '真顔');
+      // 出来事には、その瞬間の場の様子を写しておく（画面は出来事を1つずつ再生するので、今の値を見ると先走る）
+      const emit = e => {
+        e.round = n.round; e.air = n.air; e.exprs = Object.assign({}, n.expr);
+        e.topicNow = n.topic ? { id: n.topic.id, depth: n.topic.depth, max: n.topic.max, partner: n.topic.partner } : null;
+        n.events.push(e); return e;
+      };
+
+      // ── 判定 ────────────────────────────────────────────────
+      function tolerance(hid, tid) {
+        const c = n.cfg;
+        return (n.hearts[hid] - c.H0) / c.HSTEP + (H(hid).params.mental - 60) * c.MW + c.APPEAL[ap(tid, hid)] + n.noise[hid];
+      }
+      const gainMult = () => (0.6 + n.air / 150) * (0.8 + n.cfg.self.head / 250);
+      const honmei = () => V0_HEROINES.slice().sort((a, b) => n.hearts[b] - n.hearts[a])[0];
+      function canDig(hid) {
+        const t = n.topic;
+        return !!t && !t.strained && t.depth < t.max && t.depth + 1 <= tolerance(hid, t.id);
+      }
+      // 表情（サイン）: 空気読みの精度で、掘れるかどうかを匂わせる
+      function signalExpr(hid) {
+        const t = n.topic;
+        if (t.strained) return '困り顔';
+        if (ap(t.id, hid) === 0) return 'つまらない';
+        const truth = canDig(hid);
+        const shown = n.r() < 0.55 + n.cfg.self.air / 200 ? truth : !truth;
+        return shown ? 'はにかみ' : '真顔';
+      }
+      function settleOthers(except) {
+        const t = n.topic;
+        V0_HEROINES.forEach(h => {
+          if (h === except) return;
+          if (!t) { n.expr[h] = '真顔'; return; }
+          if (t.depth >= 2 && t.partner && t.partner !== h) n.expr[h] = 'つまらない';
+          else if (ap(t.id, h) === 0) n.expr[h] = 'つまらない';
+          else if (n.expr[h] === '困り顔') n.expr[h] = '真顔';
+        });
+      }
+
+      // ── 話題 ────────────────────────────────────────────────
+      // あるある話題は、入り口でその事情が出てから（バイト→「バイト何してる」、住まい→「実家？一人暮らし？」）
+      function unlocked(tid) {
+        const req = TOPICS[tid].require || {};
+        if (req.part && !n.opened.has('baito_intro')) return false;
+        if (req.living && !n.opened.has('sumai_intro')) return false;
+        return true;
+      }
+      function openTopic(tid, by) {
+        const known = PLAYER_TOPICS.includes(tid);              // 自分の話題か、誰でも知っている入り口なら分かる
+        n.hand = n.hand.filter(x => x !== tid);
+        V0_FRIENDS.forEach(f => { n.friendPool[f] = n.friendPool[f].filter(x => x !== tid); });
+        n.opened.add(tid);
+        // 話すこと＝食いつきの強さ。入り口の話題はみんなに聞いているので、全員がひとことは答える
+        const left = {}; V0_HEROINES.forEach(h => left[h] = INTROS.includes(tid) ? Math.max(ap(tid, h), 1) : ap(tid, h));
+        n.topic = { id: tid, by, openedRound: n.round, depth: 0, max: MAXD[tid], strained: false, wall: null, known, partner: null,
+                    reached: {}, left, part: new Set(), lost: 0, said: {}, friendSaid: false, talk: {}, friendAnswered: false };
+        V0_HEROINES.forEach(h => { n.hearts[h] = Math.min(100, n.hearts[h] + n.cfg.OPEN_HEART[ap(tid, h)]); });
+        emit({ t: 'open', by, topic: tid, known });
+        settleOthers(null);
+        if (!known) emit({ t: 'narr', key: 'unknown', topic: tid });
+      }
+      function alive() {
+        const t = n.topic; if (!t) return false;
+        if (t.depth >= 2 && t.partner) return t.left[t.partner] > 0;
+        return V0_HEROINES.some(h => t.left[h] > 0 && (ap(t.id, h) >= 2 || h === t.partner));
+      }
+      // 友達が話題を出す: 自分のあるある（事情が出たあと）か、まだ出ていない入り口
+      function npcOpen() {
+        const pool = [];
+        V0_FRIENDS.forEach(f => n.friendPool[f].filter(unlocked).forEach(tid => pool.push([tid, f])));
+        n.hand.filter(tid => INTROS.includes(tid)).forEach(tid => pool.push([tid, V0_FRIENDS[Math.floor(n.r() * V0_FRIENDS.length)]]));
+        if (!pool.length) { emit({ t: 'narr', key: 'stall' }); n.topic = null; return false; }
+        const [tid, fid] = pool[Math.floor(n.r() * pool.length)];
+        openTopic(tid, fid);
+        return true;
+      }
+      function buildChain() {
+        const t = n.topic; if (!t) return [];
+        if (t.depth >= 2 && t.partner) { t.leadNext = null; return t.left[t.partner] > 0 ? [t.partner] : []; }
+        // 通じていない子（食いつき1以下）が口を挟むのは、話題が出たラウンドだけ
+        const hs = V0_HEROINES.filter(h => t.left[h] > 0 && (ap(t.id, h) >= 2 || h === t.partner || t.openedRound === n.round))
+          .sort((a, b) => (t.left[b] - t.left[a]) || (n.hearts[b] - n.hearts[a]));
+        const out = hs.slice();
+        if (t.leadNext && out.includes(t.leadNext)) { out.splice(out.indexOf(t.leadNext), 1); out.unshift(t.leadNext); }   // 掘られた子が先に答える
+        t.leadNext = null;
+        if (out.length && !t.friendSaid && n.r() < n.cfg.FRIEND_GO) out.splice(1, 0, V0_FRIENDS[n.r() < 0.5 ? 0 : 1]);   // 友達が割り込むのは1つの話題で1回まで
+        return out;
+      }
+      function utter(s) {
+        const t = n.topic;
+        if (isH(s)) {
+          t.left[s]--; t.part.add(s);
+          const ld = (t.depth === 0 || t.partner === s) ? t.depth : 0;   // 掘られていない子は、深い話をしない（台詞の深さ）
+          const key = ld + ':' + s; t.said[key] = (t.said[key] || 0) + 1;
+          n.expr[s] = signalExpr(s); settleOthers(s);
+          // 話す相手: 自分が一度でも反応した子は、以降こっちに話す。そうでなければ話題を出した人に
+          const to = (t.partner === s || t.talk[s]) ? 'P' : t.by;
+          emit({ t: 'say', who: s, to, topic: t.id, depth: ld, topicDepth: t.depth, count: t.said[key], appeal: ap(t.id, s),
+                 strained: t.strained, expr: n.expr[s], lead: n.ci === 1, dugBy: t.partner === s ? 'P' : null });
+          // 友達に聞き返したら、友達が答える（1つの話題で1回）
+          if (ld === 0 && t.said[key] === 2 && isF(to) && !t.friendAnswered) { t.friendAnswered = true; emit({ t: 'friend', who: to, mode: 'answer', topic: t.id, to: s }); }
+        } else {
+          emit({ t: 'friend', who: s, mode: 'go', topic: t.id, playerOpened: t.by === 'P', first: !t.friendSaid });
+          t.friendSaid = true;
+        }
+      }
+
+      // ── 自分の手 ────────────────────────────────────────────
+      function legal(s) {
+        const t = n.topic, a = ['tease'];
+        if (!t || !t.known) return a;
+        a.unshift('go');
+        if (isF(s) || (t.depth < t.max && !t.strained)) a.splice(1, 0, 'dig');
+        return a;
+      }
+      function tease(s, free) {
+        const c = n.cfg, t = n.topic;
+        emit({ t: 'player', cmd: free ? 'rescue' : 'tease', to: s, topic: t.id, depth: t.depth });
+        if (t.depth === 0 && !t.strained) { n.air -= 3; emit({ t: 'narr', key: 'slip' }); return; }
+        if (t.strained && t.lost && isH(s)) { n.hearts[s] += t.lost * (c.self.mental / 100); t.lost = 0; }
+        t.depth = Math.max(0, t.depth - 1); t.strained = false; n.air += c.TEASE_AIR;
+        if (isH(s)) { n.expr[s] = '笑'; emit({ t: 'react', who: s, kind: free ? 'rescue' : 'tease', expr: '笑' }); }
+        else emit({ t: 'friend', who: s, mode: 'teased', topic: t.id });
+        settleOthers(s);
+      }
+      // 戻り値: 外れたら true
+      function act(s, cmd) {
+        const c = n.cfg, t = n.topic, gm = gainMult();
+        n.stats.acts++;
+        if (cmd === 'tease') { tease(s, false); return false; }
+        emit({ t: 'player', cmd, to: s, topic: t.id, depth: t.depth });
+        if (isH(s)) t.talk[s] = 'P';
+        if (isF(s)) {
+          if (cmd === 'go') { t.part.forEach(h => n.hearts[h] += c.GO_SPILL * gm); n.air += c.GO_AIR; n.friendAff[s] += 2;
+                              emit({ t: 'friend', who: s, mode: 'backed', topic: t.id }); }
+          else { n.air += c.FRIEND_DIG_AIR; n.friendAff[s] += 5; emit({ t: 'friend', who: s, mode: 'dug', topic: t.id });
+                 emit({ t: 'friend', who: s, mode: 'story', topic: t.id }); }
+          return false;
+        }
+        if (cmd === 'go') {
+          n.hearts[s] += (ap(t.id, s) >= 2 ? c.GO_HEART : c.GO_HEART / 2) * gm;
+          t.part.forEach(h => { if (h !== s) n.hearts[h] += c.GO_SPILL * gm; });
+          n.air += c.GO_AIR;
+          n.expr[s] = '笑';
+          emit({ t: 'react', who: s, kind: 'go', expr: '笑' });
+          return false;
+        }
+        // 掘る
+        n.stats.digs++;
+        const want = t.depth + 1;
+        if (canDig(s)) {
+          n.stats.digOk++; t.depth = want; t.partner = s; t.left[s] += 1;
+          if (want > (t.reached[s] || 0)) { n.hearts[s] += c.DIG[want] * gm; t.reached[s] = want; }
+          n.stats.maxDepth = Math.max(n.stats.maxDepth, want);
+          // 答えは次のラウンドの頭で話す（その場では、少し考える間だけ）。自分はその答えに反応できる
+          t.leadNext = s;
+          n.expr[s] = 'はにかみ'; settleOthers(s);
+          emit({ t: 'react', who: s, kind: 'ok', expr: 'はにかみ' });
+          if (want === 2 && !t.twoWorldShown) { t.twoWorldShown = true; emit({ t: 'narr', key: 'twoWorld' }); }
+          return false;
+        }
+        n.stats.fails++; t.strained = true; t.wall = want; t.lost = c.FAIL_HEART;
+        n.hearts[s] -= c.FAIL_HEART; n.air -= c.FAIL_AIR;
+        n.expr[s] = '困り顔';
+        emit({ t: 'react', who: s, kind: 'fail', expr: '困り顔' });
+        return true;
+      }
+
+      // ── 進行 ────────────────────────────────────────────────
+      function startRound() {
+        n.round++; n.acted = false; n.chain = []; n.ci = 0;
+        emit({ t: 'round', n: n.round, of: n.cfg.ROUNDS });
+        if (n.topic && n.topic.leadNext) {                 // 相手が答えている途中は、話題を変えられない
+          n.decision = null; n.chain = buildChain(); n.ci = 0; n.phase = 'chain';
+          runChain(); return;
+        }
+        const opts = n.hand.filter(unlocked).map(tid => ({ cmd: 'open', topic: tid, known: true }));
+        opts.push({ cmd: 'wait' });
+        n.decision = { kind: 'start', options: opts };
+        n.phase = 'start';
+      }
+      function endRound() {
+        n.air -= n.cfg.AIR_DECAY + (n.topic ? n.cfg.DEEP_DRAIN[n.topic.depth] : 0);
+        V0_HEROINES.forEach(h => n.hearts[h] = clamp(n.hearts[h], 0, 100));
+        n.air = clamp(n.air, 0, 100);
+        emit({ t: 'roundEnd', air: n.air, acted: n.acted });
+        if (n.air <= 0) { n.over = true; emit({ t: 'narr', key: 'cold' }); }
+        if (n.over || n.round >= n.cfg.ROUNDS) {
+          if (!n.over && n.topic && n.topic.leadNext) { const s = n.topic.leadNext; n.topic.leadNext = null; n.ci = 1; utter(s); }   // 最後に掘った答えは、お開きの前に聞ける
+          finish();
+        } else n.phase = 'roundStart';
+      }
+      function finish() {
+        const F = honmei(), hF = n.hearts[F];
+        n.result = n.over ? 'none' : hF >= n.cfg.HOME ? 'home' : ((n.air + hF) / 2 >= n.cfg.CONTACT_AVG ? 'contact' : 'none');
+        emit({ t: 'end', result: n.result, honmei: F, reachedDepth3: n.stats.maxDepth >= 3 });
+        n.decision = { kind: 'end', result: n.result, honmei: F };
+        n.phase = 'end';
+      }
+      function runChain() {
+        while (n.ci < n.chain.length) {
+          const s = n.chain[n.ci++];
+          utter(s);
+          if (!n.acted) {
+            const opts = legal(s).map(cmd => ({ cmd })); opts.push({ cmd: 'wait' });
+            n.decision = { kind: 'react', speaker: s, options: opts, last: n.ci >= n.chain.length };
+            n.phase = 'react';
+            return;
+          }
+        }
+        endRound();
+      }
+      function advance() {
+        if (n.phase === 'roundStart') startRound();
+        else if (n.phase === 'chain') runChain();
+        return n.decision;
+      }
+      function choose(ch) {
+        const d = n.decision; if (!d) return;
+        if (n.phase === 'start') {
+          n.decision = null;
+          if (ch.cmd === 'open' && n.hand.includes(ch.topic) && unlocked(ch.topic)) {
+            emit({ t: 'player', cmd: 'open', topic: ch.topic });
+            openTopic(ch.topic, 'P'); n.acted = true; n.stats.acts++;
+          } else if (!alive()) npcOpen();
+          n.chain = buildChain(); n.ci = 0;
+          n.phase = 'chain';
+          if (!n.chain.length && n.topic) emit({ t: 'narr', key: 'stall' });
+          runChain();
+        } else if (n.phase === 'react') {
+          const s = d.speaker; n.decision = null;
+          if (ch.cmd === 'wait') {
+            if (n.topic && !n.topic.known) { n.topic.known = true; emit({ t: 'narr', key: 'learned', topic: n.topic.id }); }
+            n.phase = 'chain'; runChain(); return;
+          }
+          if (!legal(s).includes(ch.cmd)) { n.decision = d; return; }
+          const failed = act(s, ch.cmd);
+          n.acted = true;
+          if (failed) { n.decision = { kind: 'rescue', speaker: s, options: [{ cmd: 'tease' }, { cmd: 'wait' }] }; n.phase = 'rescue'; return; }
+          n.ci = n.chain.length; endRound();
+        } else if (n.phase === 'rescue') {
+          const s = d.speaker; n.decision = null;
+          if (ch.cmd === 'tease') tease(s, true);          // 外した直後の茶化すは数えない
+          else emit({ t: 'narr', key: 'let' });
+          n.ci = n.chain.length; endRound();
+        }
+      }
+
+      n.r = r;
+      n.advance = advance; n.choose = choose; n.legal = legal; n.honmei = honmei;
+      n.appeal = ap; n.maxDepth = id => MAXD[id]; n.canDig = canDig;   // 画面のデバッグ表示と試験用
+      n.tolerance = tolerance; n.unlocked = unlocked; n.alive = alive;
+      return n;
+    }
+    return { newNight, CFG, V0_HEROINES, V0_FRIENDS, V0_TOPICS, PLAYER_TOPICS, FRIEND_TOPICS, INTROS };
+  }
+
+  return { create, CFG, V0_HEROINES, V0_FRIENDS, V0_TOPICS, PLAYER_TOPICS, FRIEND_TOPICS, INTROS };
+})();
+
+if (typeof module !== 'undefined') module.exports = NightEngine;
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// js/v0/night-lines.js — 遊べる版（v0）の台詞（2026-09-28・仮）
+// 依存: CardTopics（open／bite／biteDefault／miss／more／moreDefault／friend はそちらの台詞を使う）
+//
+// ここで足したのは、深さ1〜3の台詞・反応・自分の台詞・友達のひとこと・地の文。どれも仮。
+// 自分の台詞は goukon-speak-lines の規律（要約で受けない／評価しない／閉じすぎない／w禁止）で書いた。
+//
+// 会話が不自然にならないための決まり（9/28 の通し読みで見つけたもの）
+//   1. ヒロインの台詞には「型」がある: 話す（stmt）／聞き返す（ask）／通じていない（miss）／打ち明ける（deep）。
+//      自分の返しは、直前の相手の台詞の型で変わる。質問に「わかる」とは返さない
+//   2. ラウンドの最初の発言が、あいづちだけにならない。言うことがなければ、聞き返す（ASKBACK）
+//   3. 掘られていない子は深い話をしない（深さはエンジン側で子ごとに出す）
+//   4. 友達が割り込むのは1つの話題で1回まで。掘られたら、ちゃんと話をする（story）
+//   5. 自分の台詞は、同じ種類の中で順番に回す（すぐ同じ行が出ない）
+// ═══════════════════════════════════════════════════════════════
+const NightLines = (() => {
+  'use strict';
+
+  const NAME = { 101: 'あおい', 102: 'ゆな', 103: 'めい', 1: 'けんた', 4: 'けいた', P: 'あなた' };
+
+  // 話題 → ヒロイン → 深さ → 台詞（その深さで話すたびに次の行）
+  const DEEP = {
+    baito_intro: {
+      101: { 1: ['「塾の子に『先生』って呼ばれるの、まだちょっと慣れなくて」'],
+             2: ['「ほんとは、子どもが得意なわけじゃないんです。……得意なふりが上手いだけで」'] },
+      102: { 1: ['「まかないのパスタ、いまだに同じのしか頼めないんだけど」'],
+             2: ['「うち、バイト先でだけ標準語なの。……ちょっとキャラ作ってる」'] },
+    },
+    sumai_intro: {
+      101: { 1: ['「実家、楽なんです。……楽だから、ずっといちゃうんだと思います」'],
+             2: ['「門限、ほんとは誰も守ってないのに、わたしだけ守ってるんです」'] },
+      102: { 1: ['「一人暮らし、最初の一週間は毎晩電話してた。親に」'],
+             2: ['「仕送り、ほんとはもう断りたいの。……まだ言えてないけど」'] },
+      103: { 1: ['「夜、冷蔵庫の音だけする時間がある。あれ、ちょっと好き」'],
+             2: ['「誰も来ない部屋にいると、自分が何なのか分かんなくなるときある」'] },
+    },
+    culture_nushi: {
+      101: { 1: ['「……わたしも、ちょっと主になりかけてます。文芸部の」'],
+             2: ['「部室にいると、家に帰らなくていい理由になるんです」'] },
+      103: { 1: ['「その先輩の椅子に、座ってみたことある。……何も起きなかった」'],
+             2: ['「……わたし、たぶん次の主なんだと思う。もう半分住んでる」'] },
+    },
+    send_shiokuri: {
+      102: { 1: ['「仕送りの日だけ、ちょっといいシャンプー買うの。一本だけ」'],
+             2: ['「親、ほんとは余裕ないの知ってるんだよね。だから前の日はちょっとへこむ」'],
+             3: ['「……振込の通知、毎月スクショしてんの。なんか、捨てられへんくて」'] },
+    },
+    jimoto_intro: {
+      101: { 1: ['「……家では、普通に関西弁なんです。外だと、なんか出なくて」'],
+             2: ['「こっちに来たの、半分は逃げたかったからかもしれないです」'] },
+      102: { 1: ['「うちも向こう。こっち来てから方言封印してんの」'],
+             2: ['「地元の友達、もうみんな落ち着いててさ。なんか置いてかれてる」'] },
+      103: { 1: ['「山と田んぼしかないとこ。星だけは、すごい」'],
+             2: ['「帰っても、わたしの部屋もうないの。物置になってた」'] },
+    },
+    hon_eiga: {
+      101: { 1: ['「止まってたの、読むと終わっちゃうからで……終わってほしくなくて」'],
+             2: ['「最後の章だけ、ずっと読めないんです。好きな本ほど」'] },
+      102: { 1: ['「漫画ならめっちゃ読む。小説は表紙で買って積んでる」'],
+             2: ['「ほんとは一冊だけ、何回も読んでるやつある。誰にも言ってないけど」'] },
+      103: { 1: ['「同じ本を読むと、毎回ちがう話になる。わたしだけかな」'],
+             2: ['「読んでる途中で、作者が死んじゃった本がある。続き、まだ待ってる」'] },
+    },
+    cafe_latte: {
+      102: { 1: ['「店長に一回だけ褒められたの。泡だけ。それで続いてる」'],
+             2: ['「カフェのバイト、実は辞めようか迷ってて」'],
+             3: ['「……うちな、こっち来てから、ちゃんとできたのそれだけやねん」'] },
+    },
+    sports_asaren: {
+      102: { 1: ['「朝練のあと一限でしょ。寝ないの無理じゃない？」'],
+             2: ['「ほんとは、なんで続けてんのか自分でも分かんないときある」'],
+             3: ['「やめたら、こっちで知り合いゼロになるんよ。それがこわくて」'] },
+    },
+    juku_tantou: {
+      101: { 1: ['「中学生の子を、二年見てて。……わたしより、その子のほうが落ち着いてました」'],
+             2: ['「受かったって聞いたとき、トイレで少し泣きました。……内緒です」'],
+             3: ['「ほんとは、先生になりたかったんです。……親には、言ってないですけど」'] },
+    },
+    jikka_juku: {
+      101: { 1: ['「家に帰ると、母がいつも何か言いたそうで。それで早めに出ちゃいます」'],
+             2: ['「実家、居心地は悪くないんです。……悪くないから、出られなくて」'],
+             3: ['「一人暮らし、調べたことあるんです。……まだ誰にも見せてない画面」'] },
+    },
+    nosend_denki: {
+      103: { 1: ['「冬に一回ブレーカー落ちた。それから暖房つけるの、ちょっとこわい」'],
+             2: ['「仕送りなしって決めたの、わたし。……意地、みたいなもの」'],
+             3: ['「親と、あんまり話してないの。電気代の紙だけが、毎月ちゃんとくる」'] },
+    },
+    nobaito_jikan: {
+      103: { 1: ['「ずっと空見てる日がある。何もしてないのに、夜になってる」'],
+             2: ['「働いてないの、ほんとは面接ぜんぶ落ちたからなんだよね」'],
+             3: ['「……時間あるのがこわいの、たぶん、ひとりだからだと思う」'] },
+    },
+  };
+  // 刺さっていない話題で、たまたま掘れたとき
+  const GENERIC_DEEP = {
+    101: { 1: '「……そこまで、考えたことなかったです」', 2: '「……あの。ちょっとだけ、分かる気がします」', 3: '「……こういう話、あんまりしないんです」' },
+    102: { 1: '「え、そこ聞く？ まあいいけど」', 2: '「……なんか、ちょっとまじめな話になってない？」', 3: '「うち、こういうの言うの初めてかも」' },
+    103: { 1: '「……ふうん。それ、わたしの話？」', 2: '「……考えたことは、ある」', 3: '「……君、変なとこ聞くね」' },
+  };
+  const ASKBACK = {                  // 言うことがないとき、ラウンドの頭は聞き返しにする
+    101: ['「……あなたは、どうなんですか」', '「……あの、そっちは？」'],
+    102: ['「てかそっちは？ どうなん」', '「え、そっちはどうなの」'],
+    103: ['「……君は？」', '「……そっちの話も、聞きたい」'],
+  };
+  const BACK = {                     // 話の途中のあいづち
+    101: ['「……はい。そうなんです」', '「……ふふ」'],
+    102: ['「それな」', '「えー、分かるー」'],
+    103: ['「……うん」', '「……そうかも」'],
+  };
+  const POLITE = { 101: true };     // 丁寧語の汎用行（miss／moreDefault）を言わせていいのは あおい だけ
+  const MISS_OWN = { 102: '「え、なにそれ。うち分かんないかも」', 103: '「……それ、わたしの知らない世界」' };
+  const REOPEN = { 101: '「……さっきの続き、ですよね」', 102: '「……さっきの話？ まあ、うん」', 103: '「……さっきの、続き」' };
+  const THINK = { 101: '（あおいは少し黙って、グラスを置いた）', 102: '（ゆなが、ちょっとだけ真顔になった）', 103: '（めいは、しばらく天井を見ていた）' };
+  const STRAINED = { 101: '「……あの、はい」', 102: '「……てか、なんだっけ」', 103: '「……」' };
+  const REACT = {
+    go: {
+      stmt: { 101: '「……ですよね」', 102: '「でしょ！？」', 103: '「……ふふ。同じだ」' },
+      ask:  { 101: '「……そうなんですね」', 102: '「え、ウケる」', 103: '「……ふうん」' },
+      miss: { 101: '「……ふふ。ありがとうございます」', 102: '「え、優しいじゃん」', 103: '「……気にしてないよ」' },
+      deep: { 101: '「……はい」', 102: '「……うん。ありがと」', 103: '「……そっか」' },
+    },
+    fail:   { 101: '「……ごめんなさい。それは、ちょっと」', 102: '「え、急にどしたん。重っ」', 103: '「……それ、今きく？」' },
+    tease:  { 101: '「……もう。笑わせないでください」', 102: '「ちょ、ひど！」', 103: '「……ふっ」' },
+    rescue: { 101: '「……いえ。大丈夫です」', 102: '「……まあ、いいけど」', 103: '「……ゆるす」' },
+  };
+  // 自分の台詞: 相手の直前の台詞の型 → 手
+  const PLAYER = {
+    stmt: {
+      go:    ['「わかる、俺もそれずっと思ってた」', '「え、まじで。俺もまったく同じなんだけど」', '「待って、それ俺もめっちゃある」',
+              '「あー、俺もそれで毎回やられる」', '「それ、俺だけじゃなかったんだ」'],
+      dig:   ['「え、いつから？ きっかけあったの」', '「待って、それどういうこと。詳しく」', '「それってさ、なんで？ 気になる」'],
+      tease: ['「で、オチは？」', '「え、それだけ？」'],
+    },
+    ask: {
+      go:    ['「俺？ いや、ほんと普通だよ」', '「あー、それ聞かれると弱いんだけど」', '「俺はね……まあ、ぼちぼち」'],
+      dig:   ['「俺は普通。てか、なんでそれ気になったの」', '「俺は全然。そっちは？ ほんとは」'],
+      tease: ['「それ聞く？ 聞いちゃう？」', '「秘密。……って言ったら怒る？」'],
+    },
+    miss: {
+      go:    ['「いや、知らなくて全然いいやつだから」', '「あ、ごめん、狭い話だったわ」'],
+      goF:   ['「大丈夫、俺もいまいち分かってない」', '「こいつらの話、たまに狭いんだよ」'],   // 友達が出した話題で置いていかれた子に
+      dig:   ['「逆に、そっちはどうなの。そういうの」', '「じゃあ、そっちの話も聞かせてよ」'],
+      tease: ['「置いてかないで、俺もたぶん分かってない」', '「今のはなかったことにしよ。な」'],
+    },
+    deep: {
+      go:    ['「……なんか、俺もちょっと分かる」', '「俺も似たようなことあったな」', '「……そっか」'],
+      dig:   { 1: ['「なんでそうなったの。聞いていい？」', '「それ、今もずっとそうなの？」'],
+               2: ['「……それ、誰かに話したことある？」', '「今は、どう思ってんの。ほんとは」'] },
+      tease: ['「いや重い重い、急に深いって」', '「待って、俺ちょっと泣きそうなんだけど」'],
+    },
+    askedF: {                          // 女子が友達に聞き、友達が答えたあと。その女子に返す
+      go:    ['「それ、俺もずっと気になってた」', '「こいつ、それ毎回同じこと言うんだよ」'],
+      dig:   ['「てか、なんでそれ気になったの」', '「そっちは？ そういうのある？」'],
+      tease: ['「こいつに聞いても、ろくな答え出ないよ」'],
+    },
+    friend: {
+      go:    ['「いや、それはほんとにそう」', '「それな。俺も横で見てたし」'],
+      dig:   ['「てかお前、あの話してやれよ」', '「お前のあれ、話してよ。ほら」'],
+      tease: ['「お前はちょっと黙っとけ」', '「はいはい、お前の話はいいから」'],
+    },
+    rescue:  ['「ごめん、今のなし。忘れて」', '「あ、ごめん。変なこと聞いた」'],
+  };
+  const FRIEND = {
+    back:   { 1: ['「それな！ わかるわー」', '「うわ、あるある！」'], 4: ['「あー、あるある」', '「それ、ちょっと分かる」'] },
+    dug:    { 1: '「いやそれがさ、聞いてよ」', 4: '「え、俺？ ……まあ、ちょっとだけ」' },
+    story:  { 1: ['「こないだ朝まで飲んで、起きたら知らない駅のベンチだった」', '「一回だけ、店長に間違えて客の酒出したことあってさ」'],
+              4: ['「……前に店で、お客さんに店長と間違われたことある」', '「……こいつが寝てる間に、俺が全部片付けたこともある」'] },
+    backed: { 1: '「だろ！？」', 4: '「……だよね」' },
+    teased: { 1: '「なんでだよ！」', 4: '「ひどくない？」' },
+  };
+  // あるある話題を出す人は、先に自分の事情を言う（唐突にならないように）
+  const BRIDGE = {
+    juku_tantou:    '「俺も塾で教えてるんだけど。担当の子が受かったときって、あれヤバくない」',
+    culture_nushi:  '「俺、文化系のサークルなんだけど。部室にさ、なんか住んでる先輩っていない？」',
+    sports_asaren:  '「俺サッカー部なんだけどさ。朝練って、起きた瞬間がいちばんきついよな」',
+    send_shiokuri:  '「俺、仕送りもらってんだけど。仕送りの日って、ちょっとだけ気が大きくなるよな」',
+    izakaya_kinyou: '「俺居酒屋なんだけど。金曜の21時ってさ、あれ何なんだろうな」',
+    cafe_latte:     '「……俺、カフェでバイトしてて。ラテアート、あれいつできるようになるんだろ」',
+    nosend_denki:   '「……俺、仕送りなしで一人暮らしなんだけど。電気代の請求くるとき、ちょっと息止めない？」',
+  };
+  // 女子が友達に聞き返したら、友達が答える（話題 → 友達）
+  const FRIEND_ANSWER = {
+    baito_intro:    { 1: '「居酒屋。もう三年。店長より詳しい」', 4: '「……カフェ。もう二年くらい」' },
+    sumai_intro:    { 1: '「一人暮らし！ 部屋は寝るだけ」', 4: '「……一人暮らし。仕送りなしで、わりとギリ」' },
+    jimoto_intro:   { 1: '「地方！ 田んぼしかない」', 4: '「……関東。ここから一時間くらい」' },
+    sports_asaren:  { 1: '「ない！ 気合い！ ……嘘、目覚まし五個」' },
+    send_shiokuri:  { 1: '「焼肉。一人で。毎回」' },
+    izakaya_kinyou: { 1: '「団体の乾杯が、三つ同時にくるんだよ」' },
+    cafe_latte:     { 4: '「……多い日は百杯くらい。教わってない、動画で」' },
+    nosend_denki:   { 4: '「……言えない。言ったら今日おごられる側になる」' },
+  };
+  // 友達が掘られたときの小話（話題 → 友達）。ないときは友達ごとの汎用
+  const FRIEND_STORY = {
+    baito_intro:    { 1: '「居酒屋でさ、団体客の靴を全部そろえたら店長に泣かれた」', 4: '「……カフェで、常連さんに名前覚えられてた。俺のほうが覚えてなかった」' },
+    sumai_intro:    { 1: '「一人暮らし初日、カーテンなくて朝四時に起きた」', 4: '「……仕送りなしだと、冬は毛布三枚」' },
+    jimoto_intro:   { 1: '「地元の祭り、俺いまだに神輿担ぎに帰ってる」', 4: '「……地元の駅、改札がひとつしかない」' },
+    sports_asaren:  { 1: '「朝練で、寝ながら走ってたことある。気づいたら三周してた」' },
+    send_shiokuri:  { 1: '「仕送り日の翌日に全部使って、残り一か月もやしだった」' },
+    izakaya_kinyou: { 1: '「金曜の21時、生ビール三十杯を一気に出したことある」' },
+    cafe_latte:     { 4: '「……ハート作ろうとすると、毎回お尻になる」' },
+    nosend_denki:   { 4: '「……真夏にエアコン我慢して、こいつの家に避難してた」' },
+    culture_nushi:  { 4: '「……うちの部室の主、たぶん四年目」' },
+  };
+  // 自分の話題で聞き返されたときの、自分の答え（話題 → 手）
+  const PLAYER_ANS = {
+    baito_intro:   { go: ['「塾で、もう二年。気づいたら古株」', '「塾。小学生の算数、たまに俺が解けない」'],
+                     dig: ['「塾で二年。……そっちは、なんでそこにしたの」'], tease: ['「秘密。……塾だけど。言っちゃった」'] },
+    sumai_intro:   { go: ['「実家。楽だけど、帰る時間は毎回聞かれる」', '「実家。飯は出るけど、門限みたいな空気がある」'],
+                     dig: ['「実家。……そっちは？ 一人でさみしくない？」'], tease: ['「実家。親が俺より先に寝ない」'] },
+    jimoto_intro:  { go: ['「大学がこっちだっただけ。……ってことにしてる」', '「地元、店が全部夜九時に閉まるから」'],
+                     dig: ['「なんとなく。……そっちは、なんで？」'], tease: ['「都会に憧れて。……笑うとこだよ、今の」'] },
+    juku_tantou:   { go: ['「覚えてる。むしろそっちのほうが覚えてる」', '「二年くらい。途中から、俺のほうが緊張してた」'],
+                     dig: ['「覚えてる。……そっちも、忘れられない子いる？」'], tease: ['「それ聞く？ 今日いちばん重いやつ」'] },
+    jikka_juku:    { go: ['「ソファで寝落ちして、毎回遅刻しかける」', '「冷蔵庫あけて、閉めて、また開けてる」'],
+                     dig: ['「寝落ちしてる。……そっちは、出たくなくなるの、なんで」'], tease: ['「外で時間つぶしてる。ほぼ不審者」'] },
+    culture_nushi: { go: ['「決まってる。誰も座らない椅子がある」', '「たぶん、卒業しても来ると思う」'],
+                     dig: ['「誰も座らない。……そっちの部室にも、そういう人いる？」'], tease: ['「俺がその先輩になりかけてる」'] },
+  };
+  const NARR = {
+    unknown:  '（知らない話だ。少し聞いてみる）',
+    learned:  '（だいたい分かってきた）',
+    twoWorld: '（まわりの声が、少し遠くなった）',
+    stall:    '（しばらく、グラスの音だけが続いた）',
+    slip:     '（……ちょっと、滑った）',
+    let:      '（そのまま、流した）',
+    cold:     '（場が、すっかり冷えてしまった）',
+  };
+  const ACT = { open: '話題を出した', go: '乗った', dig: '掘った', tease: '茶化した', rescue: '笑ってごまかした' };
+
+  function create(CardTopics) {
+    const T = CardTopics.TOPICS;
+    const turn = new Map();                              // 配列ごとに順番に回す
+    const pick = arr => { const i = turn.get(arr) || 0; turn.set(arr, i + 1); return arr[i % arr.length]; };
+    const lastType = {};                                 // 相手ごとの、直前の台詞の型
+    const opener = {};                                   // 話題 → 出した人
+    const talkTo = {};                                   // 話題:ヒロイン → 自分が一度でも反応したら、以降は自分に向けて話す
+    const ok = x => x && !x.includes('俺');              // 男の口調の行はヒロインに言わせない
+    const politeOk = (h, x) => ok(x) && (POLITE[h] || !/(です|ます)/.test(x));
+    const once = new Set();                              // 1つの話題で1回だけ使う行
+    const first = key => (once.has(key) ? false : (once.add(key), true));
+
+    // → { text, type, act }
+    function heroineSay(e) {
+      const t = T[e.topic], h = e.who;
+      if (e.strained) return { text: STRAINED[h], type: 'stmt', act: '黙った' };
+      if (e.depth === 0) {
+        if (e.count === 1) {
+          if (t.bite && t.bite[h]) return { text: t.bite[h], type: 'stmt', act: e.appeal >= 2 ? '食いついた' : '返した' };
+          if (e.appeal >= 2) {
+            const x = ok(t.biteDefault) && t.biteDefault;
+            if (x) return { text: x, type: 'stmt', act: '食いついた' };
+          } else {
+            const x = (politeOk(h, t.miss) && t.miss) || (politeOk(h, t.biteDefault) && t.biteDefault) || MISS_OWN[h];
+            if (x) return { text: x, type: 'miss', act: '返した' };
+          }
+        }
+        if (e.count === 2 && e.appeal >= 2) {
+          if (t.more && t.more[h]) return { text: t.more[h], type: 'ask', act: '聞き返した' };
+          if (politeOk(h, t.moreDefault) && first(e.topic + ':moreDefault')) return { text: t.moreDefault, type: 'ask', act: '聞き返した' };
+          if (first(e.topic + ':askback:' + h)) return { text: pick(ASKBACK[h]), type: 'ask', act: '聞き返した' };
+        }
+      } else {
+        const rows = DEEP[e.topic] && DEEP[e.topic][h] && DEEP[e.topic][h][e.depth];
+        if (rows && rows[e.count - 1]) return { text: rows[e.count - 1], type: 'deep', act: '打ち明けた' };
+        if (e.count === 1) return { text: GENERIC_DEEP[h][e.depth], type: 'deep', act: '打ち明けた' };
+        if (first(e.topic + ':reopen:' + h)) return { text: REOPEN[h], type: 'deep', act: '話を続けた' };
+      }
+      if (e.lead && first(e.topic + ':askback:' + h)) return { text: pick(ASKBACK[h]), type: 'ask', act: '聞き返した' };
+      return { text: pick(BACK[h]), type: 'stmt', act: 'うなずいた' };
+    }
+
+    // 出来事 → 画面に出す1行 { speaker, to, act, text, narr }
+    function line(e) {
+      switch (e.t) {
+        case 'open': {
+          opener[e.topic] = e.by;
+          if (e.by === 'P') return null;           // 自分が出したときは player 出来事で出す
+          return { speaker: e.by, to: 'all', act: ACT.open, text: BRIDGE[e.topic] || T[e.topic].open };
+        }
+        case 'player': {
+          if (e.cmd === 'open') return { speaker: 'P', to: 'all', act: ACT.open, text: BRIDGE[e.topic] || T[e.topic].open };
+          if (e.cmd === 'rescue') return { speaker: 'P', to: e.to, act: ACT.rescue, text: pick(PLAYER.rescue) };
+          const toF = e.to === 1 || e.to === 4;
+          const type = toF ? 'friend' : (lastType[e.to] || 'stmt');
+          if (!toF) talkTo[e.topic + ':' + e.to] = 'P';
+          let rows = (type === 'miss' && e.cmd === 'go' && opener[e.topic] !== 'P') ? PLAYER.miss.goF : PLAYER[type][e.cmd];
+          const mine = opener[e.topic] === 'P' || ['baito_intro', 'sumai_intro', 'jimoto_intro'].includes(e.topic);
+          if (type === 'ask' && mine && PLAYER_ANS[e.topic]) rows = PLAYER_ANS[e.topic][e.cmd];
+          if (!Array.isArray(rows)) rows = rows[Math.min(Math.max(e.depth, 1), 2)];
+          return { speaker: 'P', to: e.to, act: ACT[e.cmd], text: pick(rows) };
+        }
+        case 'say': {
+          const r = heroineSay(e);
+          lastType[e.who] = r.type;
+          const to = e.to;
+          return { speaker: e.who, to, act: r.act, text: r.text };
+        }
+        case 'react': {
+          if (e.kind === 'ok') return { narr: true, text: THINK[e.who] };
+          const act = { go: '笑った', fail: '引いた', tease: '笑った', rescue: '許した' }[e.kind];
+          const text = e.kind === 'go' ? (REACT.go[lastType[e.who]] || REACT.go.stmt)[e.who] : REACT[e.kind][e.who];
+          if (e.kind !== 'go') lastType[e.who] = 'stmt';
+          return { speaker: e.who, to: 'P', act, text };
+        }
+        case 'friend': {
+          const f = e.who, t = T[e.topic];
+          if (e.mode === 'go') {
+            const own = e.first && e.playerOpened && t.friend;          // 「こいつ〜からな」は女子に向けて言う
+            return { speaker: f, to: own ? 'all' : (e.playerOpened ? 'P' : 'all'), act: '乗った', text: own ? t.friend : pick(FRIEND.back[f]) };
+          }
+          if (e.mode === 'story') return { speaker: f, to: 'all', act: '話し出した', text: (FRIEND_STORY[e.topic] && FRIEND_STORY[e.topic][f]) || pick(FRIEND.story[f]) };
+          if (e.mode === 'answer') {
+            lastType[e.to] = 'askedF';
+            const x = (FRIEND_ANSWER[e.topic] && FRIEND_ANSWER[e.topic][f]) || pick(FRIEND.back[f]);
+            return { speaker: f, to: e.to, act: '答えた', text: x };
+          }
+          return { speaker: f, to: 'P', act: { dug: '乗せられた', backed: '乗った', teased: 'つっこんだ' }[e.mode], text: FRIEND[e.mode][f] };
+        }
+        case 'narr': return NARR[e.key] ? { narr: true, text: NARR[e.key] } : null;
+        default: return null;
+      }
+    }
+    return { line, NAME };
+  }
+  // 台詞の一覧（tools/lines_review.js が docs/lines-v0.md に書き出す）
+  const DATA = { DEEP, GENERIC_DEEP, ASKBACK, BACK, REACT, PLAYER, PLAYER_ANS, BRIDGE, FRIEND, FRIEND_ANSWER, FRIEND_STORY, NARR };
+  return { create, NAME, NARR, DATA };
+})();
+
+if (typeof module !== 'undefined') module.exports = NightLines;
+
+</script>
+<script>
+// 共通の舞台（案6の灰色）。どの方式もここに描く
+const Stage = (() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const NAME = { 101: 'あおい', 102: 'ゆな', 103: 'めい', 1: 'けんた', 4: 'けいた', P: 'あなた' };
+  const HS = [101, 102, 103], ALL = [101, 102, 103, 1, 4];
+  let gen = 0, tapFn = null, alwaysTap = null, log = [], softFocus = false;
+  const timers = new Set();
+
+  // 方式を始めるたびに世代を進める。古い世代の待ちは、以後ずっと解決しない（止まる）
+  function begin(title) {
+    gen++; tapFn = null; alwaysTap = null; log = []; softFocus = false;
+    timers.forEach(t => clearTimeout(t)); timers.clear();
+    $('home').hidden = true; $('play').hidden = false;
+    $('sheet-end').hidden = true; $('sheet-log').hidden = true; $('dbg').hidden = true;
+    $('ttl').textContent = title; $('dots').innerHTML = '';
+    HS.forEach(h => { expr(h, '真顔'); meter(h, ''); });
+    document.querySelectorAll('.note').forEach(x => x.remove());
+    focus(null); tag(null); air(60); narr('', true); clear(); bar(0);
+    document.querySelectorAll('.fig.gone').forEach(f => f.classList.remove('gone')); scene('');
+    return gen;
+  }
+  const live = g => g === gen;
+  function home() { gen++; tapFn = null; alwaysTap = null; timers.forEach(t => clearTimeout(t)); timers.clear();
+    $('play').hidden = true; $('home').hidden = false; $('sheet-end').hidden = true; $('sheet-log').hidden = true; }
+  function later(fn, ms, g) { const t = setTimeout(() => { timers.delete(t); if (live(g)) fn(); }, ms); timers.add(t); return t; }
+  function cancel(t) { clearTimeout(t); timers.delete(t); }
+  const sleep = (ms, g) => new Promise(res => later(res, ms, g));
+
+  // タップ待ち
+  function waitTap(g, hintText) {
+    $('next').hidden = false;
+    if (hintText !== undefined) hint(hintText);
+    return new Promise(res => { tapFn = v => { if (!live(g)) return; tapFn = null; $('next').hidden = true; res(v || 'tap'); }; });
+  }
+  // タップか時間切れの早い方。下に細い残り時間の線を出す
+  function waitTapOr(ms, g) {
+    bar(ms);
+    return new Promise(res => {
+      let done = false;
+      const fin = how => { if (done || !live(g)) return; done = true; tapFn = null; cancel(t); bar(0); res(how); };
+      const t = later(() => fin('time'), ms, g);
+      tapFn = v => fin(v || 'tap');
+    });
+  }
+  function onTap(fn) { alwaysTap = fn; }
+  function tapNow() { if (tapFn) tapFn(); else if (alwaysTap) alwaysTap(); }
+  function fire(v) { if (tapFn) tapFn(v); }        // 待っている所に、タップ以外の値を渡す（言葉を撃つ・行動する など）
+  function bar(ms) {
+    const b = $('tbar'); b.style.transition = 'none'; b.style.width = '0';
+    if (!ms) return;
+    void b.offsetWidth; b.style.transition = `width ${ms}ms linear`; b.style.width = 'calc(100% - 24px)';
+  }
+
+  // 台詞・地の文
+  function say(sp, to, act, text, o = {}) {
+    $('win').classList.remove('narr');
+    const toTxt = to == null ? '' : to === 'all' ? 'みんな' : NAME[to];
+    $('plate').innerHTML = `<span class="who">${NAME[sp]}</span>` + (toTxt ? `<span>→</span><span class="to">${toTxt}</span>` : '')
+      + (act ? `<span class="act">${act}</span>` : '');
+    if (o.html != null) $('text').innerHTML = o.html; else $('text').textContent = text;
+    if (o.expr) Object.entries(o.expr).forEach(([h, x]) => expr(+h, x));
+    focus(typeof sp === 'number' ? sp : null, o.far);
+    if (!o.nolog) log.push({ sp, who: NAME[sp], to: toTxt, act, text: o.logText || text });
+  }
+  function setText(t) { $('text').textContent = t; }
+  function narr(text, nolog) {
+    $('win').classList.add('narr'); $('plate').innerHTML = ''; $('text').textContent = text;
+    if (!nolog && text) log.push({ narr: text });
+  }
+  function thinking(on, msg) {
+    if (!on) return;
+    $('win').classList.add('narr'); $('plate').innerHTML = '';
+    $('text').innerHTML = `<span class="think">……</span> <span style="font-size:12px">${msg || ''}</span>`;
+  }
+  function expr(h, x) { const b = document.querySelector('#fig-' + h + ' [data-expr]'); if (b) b.textContent = x; }
+  function meter(h, t) { const b = document.querySelector('#fig-' + h + ' [data-meter]'); if (b) b.textContent = t; }
+  function focus(sp, far) {
+    far = far || [];
+    ALL.forEach(id => {
+      const f = $('fig-' + id); f.classList.remove('speak', 'dim', 'far', 'watch');
+      if (id === sp) f.classList.add('speak');
+      else if (id === 1 || id === 4 || far.includes(id)) f.classList.add('far');
+      else f.classList.add(softFocus ? 'watch' : 'dim');
+    });
+  }
+  // 場所が変わる（店の外・カラオケ・駅まで）／場を離れた人を消す
+  function scene(name, place) { const s = $('stage'); s.dataset.scene = name || ''; s.dataset.place = place || ''; }
+  function leave(h) { const f = $('fig-' + h); if (f) f.classList.add('gone'); }
+  function soft(on) { softFocus = !!on; }
+  function watchAll() { HS.forEach(h => { const f = $('fig-' + h); f.classList.remove('dim', 'far', 'speak'); f.classList.add('watch'); }); }
+  function tag(t) { const e = $('tag'); if (t) { e.hidden = false; e.textContent = t; } else e.hidden = true; }
+  function air(v) { $('shade').style.opacity = String(Math.max(0, Math.min(0.45, (60 - v) / 100))); }
+  function note(h, mark) {
+    const f = $('fig-' + h); if (!f) return;
+    const n = document.createElement('div'); n.className = 'note'; n.textContent = mark; f.appendChild(n);
+    setTimeout(() => n.remove(), 1900);
+  }
+  function dots(n, of) {
+    const d = $('dots'); d.innerHTML = '';
+    for (let i = 1; i <= of; i++) { const s = document.createElement('span'); s.className = 'dot' + (i > n ? ' on' : ''); d.appendChild(s); }
+  }
+  function dotsText(t) { $('dots').textContent = t; }
+
+  // 手の欄
+  function clear() { $('cmds').innerHTML = ''; }
+  function hint(t) { $('cmds').innerHTML = ''; if (t) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = t; $('cmds').appendChild(h); } }
+  function put(...nodes) { const c = $('cmds'); c.innerHTML = ''; nodes.forEach(n => n && c.appendChild(n)); }
+  function btn(label, sub, cls, fn) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd ' + (cls || '');
+    b.innerHTML = label + (sub ? `<small>${sub}</small>` : '');
+    b.addEventListener('click', ev => { ev.stopPropagation(); fn(); });
+    return b;
+  }
+  function row(nodes, cols) {
+    const r = document.createElement('div'); r.className = 'row';
+    r.style.gridTemplateColumns = `repeat(${cols || nodes.length || 1}, minmax(0, 1fr))`;
+    nodes.forEach(n => r.appendChild(n)); return r;
+  }
+  function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+  // メニュー
+  let menuItems = [];
+  function menu(items) { menuItems = items; }
+  function renderMenu() {
+    const m = $('menu'); m.innerHTML = '';
+    [{ label: 'ログ', fn: openLog }].concat(menuItems).forEach(it => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = typeof it.label === 'function' ? it.label() : it.label;
+      b.addEventListener('click', ev => { ev.stopPropagation(); closeMenu(); it.fn(); }); m.appendChild(b);
+    });
+  }
+  const closeMenu = () => { $('menu').hidden = true; $('btn-menu').setAttribute('aria-expanded', 'false'); };
+
+  // ログ・結果
+  function logRound(n) { log.push({ r: n }); }
+  // ログ：3つの見せ方（チャット／台本／振り返り）。どれも同じ記録から描く
+  let logStyle = 'mix';
+  try { logStyle = localStorage.getItem('cmp_logStyle2') || 'mix'; } catch (e) {}
+  const INI = { 101: 'あ', 102: 'ゆ', 103: 'め', 1: 'け', 4: 'い', S: '店', P: '自' };
+  const KINDJ = { dig: '聞く', go: '乗る', tease: 'ツッコむ', card: '手札', furu: '話しかける', topic: '話題を出す', silence: '黙る', cue: '気づき', listen: '聞き届けた', cut: '遮った' };
+  function sections() {
+    const out = []; let cur = { h: null, items: [] };
+    log.forEach(x => { if (x.r) { if (cur.items.length || cur.h) out.push(cur); cur = { h: x.r, items: [] }; } else cur.items.push(x); });
+    if (cur.items.length || cur.h) out.push(cur);
+    return out;
+  }
+  const fxText = d => Object.entries(d).map(([h, v]) => `${NAME[h]} ${v > 0 ? '+' : ''}${Math.round(v)}`).join('　');
+  function chatItem(x) {
+    if (x.sp != null) {
+      const me = x.sp === 'P';
+      return `<div class="lc-row ${me ? 'me' : ''}">${me ? '' : `<span class="lc-av">${INI[x.sp] || '・'}</span>`}<div class="lc-col">`
+        + (me ? '' : `<div class="lc-name">${x.who}${x.to && x.to !== 'あなた' ? ` <i>→ ${x.to}</i>` : ''}</div>`)
+        + `<div class="lc-b">${esc(x.text)}</div>${x.act && me ? `<div class="lc-act">${x.act}</div>` : ''}</div></div>`;
+    }
+    if (x.narr) return `<div class="lc-n">${esc(x.narr)}</div>`;
+    if (x.fx) return `<div class="lc-fx">${fxText(x.fx)}</div>`;
+    if (x.pick && (x.kind === 'silence' || x.kind === 'listen')) return `<div class="lc-n">（${esc(x.pick)}）</div>`;
+    if (x.vote) return `<div class="lc-n">${x.vote[0]} → <b>${x.vote[1]}</b></div>`;
+    return '';
+  }
+  function renderChat() {
+    return sections().map(sec => (sec.h ? `<div class="lc-h"><span>${esc(sec.h)}</span></div>` : '') + sec.items.map(chatItem).join('')).join('');
+  }
+  function secSummary(sec) {
+    const kinds = {}, sum = {};
+    sec.items.forEach(x => { if (x.pick) kinds[x.kind] = (kinds[x.kind] || 0) + 1; if (x.fx) Object.entries(x.fx).forEach(([h, v]) => { sum[h] = (sum[h] || 0) + v; }); });
+    return { kindLine: Object.entries(kinds).map(([k, n]) => `${KINDJ[k] || k} ${n}`).join('・'), sumLine: Object.keys(sum).length ? fxText(sum) : '変化なし' };
+  }
+  // 複合：話題ごとのカード（振り返りの要約）を開くと、中はチャット
+  function renderMix() {
+    const secs = sections().filter(sec => sec.h || sec.items.some(x => x.sp != null));
+    return secs.map((sec, si) => {
+      const { kindLine, sumLine } = secSummary(sec);
+      return `<details class="lm-card" ${si === secs.length - 1 ? 'open' : ''}><summary><span class="lm-h">${esc(sec.h || 'はじめ')}</span>`
+        + `<span class="lm-k">${kindLine ? kindLine + '　' : ''}<b>${sumLine}</b></span></summary>`
+        + `<div class="lm-body">${sec.items.map(chatItem).join('')}</div></details>`;
+    }).join('');
+  }
+  function renderScript() {
+    return sections().map(sec => (sec.h ? `<div class="ls-h">${esc(sec.h)}</div>` : '') + sec.items.map(x => {
+      if (x.sp != null) return `<div class="ls-row ${x.sp === 'P' ? 'me' : ''}"><div class="ls-name">${x.who}${x.act ? `<small>${x.act}</small>` : ''}</div><div class="ls-text">${esc(x.text)}</div></div>`;
+      if (x.narr) return `<div class="ls-n">${esc(x.narr)}</div>`;
+      if (x.fx) return `<div class="ls-fx">${fxText(x.fx)}</div>`;
+      if (x.pick && (x.kind === 'silence' || x.kind === 'listen')) return `<div class="ls-n">（${esc(x.pick)}）</div>`;
+      if (x.vote) return `<div class="ls-row"><div class="ls-name">${x.vote[0]}</div><div class="ls-text">→ ${x.vote[1]}</div></div>`;
+      return '';
+    }).join('')).join('');
+  }
+  function renderRecap() {
+    const secs = sections();
+    return secs.map((sec, si) => {
+      const kinds = {}, sum = {}, acts = [];
+      sec.items.forEach((x, i) => {
+        if (x.pick) kinds[x.kind] = (kinds[x.kind] || 0) + 1;
+        if (x.fx) Object.entries(x.fx).forEach(([h, v]) => { sum[h] = (sum[h] || 0) + v; });
+        if (x.sp === 'P') {
+          const reply = sec.items.slice(i + 1).find(y => y.sp != null && y.sp !== 'P');
+          acts.push(`<li><b>${x.act || '話した'}</b> ${esc(x.text)}${reply ? `<br><span>→ ${reply.who} ${esc(reply.text)}</span>` : ''}</li>`);
+        }
+      });
+      const kindLine = Object.entries(kinds).map(([k, n]) => `${KINDJ[k] || k} ${n}`).join('・');
+      const sumLine = Object.keys(sum).length ? fxText(sum) : '変化なし';
+      const all = sec.items.filter(x => x.sp != null || x.narr).map(x => x.sp != null ? `<p><b>${x.who}</b> ${esc(x.text)}</p>` : `<p class="n">${esc(x.narr)}</p>`).join('');
+      return `<div class="lr-card"><div class="lr-h">${esc(sec.h || 'はじめ')}</div>`
+        + (kindLine ? `<div class="lr-k">あなたの手：${kindLine}</div>` : '')
+        + `<div class="lr-k">反応：${sumLine}</div>`
+        + (acts.length ? `<ul class="lr-acts">${acts.join('')}</ul>` : '<div class="lr-k">（自分からは何も言わなかった）</div>')
+        + `<details ${si === secs.length - 1 ? 'open' : ''}><summary>この区切りの会話をぜんぶ見る</summary>${all}</details></div>`;
+    }).join('');
+  }
+  function openLog() {
+    const box = $('log'); box.innerHTML = '';
+    const head = el('div', 'loghead', '<h2>ログ</h2>');
+    const tabs = el('div', 'logtabs');
+    [['mix', '複合'], ['chat', 'チャット'], ['script', '台本'], ['recap', '振り返り']].forEach(([k, l]) => {
+      const b = el('button', 'ltab' + (k === logStyle ? ' on' : ''), l); b.type = 'button';
+      b.addEventListener('click', ev => { ev.stopPropagation(); logStyle = k; try { localStorage.setItem('cmp_logStyle2', k); } catch (e) {} openLog(); });
+      tabs.appendChild(b);
+    });
+    const close = el('button', 'lclose', '閉じる'); close.type = 'button';
+    close.addEventListener('click', ev => { ev.stopPropagation(); $('sheet-log').hidden = true; });
+    head.appendChild(tabs); head.appendChild(close); box.appendChild(head);
+    const body = el('div', 'logbody ' + logStyle);
+    body.innerHTML = log.length ? (logStyle === 'mix' ? renderMix() : logStyle === 'chat' ? renderChat() : logStyle === 'script' ? renderScript() : renderRecap()) : '<p class="small">まだ何もない</p>';
+    box.appendChild(body);
+    $('sheet-log').hidden = false;
+    if (logStyle === 'chat' || logStyle === 'script') requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
+  }
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const RESULT = {
+    home: { title: '一緒に帰る', lead: '駅まで、二人で歩いた。' },
+    contact: { title: '連絡先を交換', lead: '帰りぎわに、連絡先を交換した。' },
+    none: { title: '今夜は、なし', lead: 'そのまま、解散になった。' },
+  };
+  // hearts: {101:数}, base: {101:数}
+  function end(o) {
+    const R = RESULT[o.result] || { title: o.title, lead: o.lead };
+    let h = `<h2>${R.title}</h2><p>${o.lead || R.lead}</p>`;
+    if (o.said) h += `<p>${o.said}</p>`;
+    if (o.hearts) {
+      h += '<h3>好感度（本番では見せない）</h3><div class="hearts">' + HS.map(id => {
+        const v = Math.round(o.hearts[id]), d = o.base ? v - Math.round(o.base[id]) : null;
+        return `<div>${NAME[id]}<b>${v}</b>${d == null ? '' : (d >= 0 ? '+' : '') + d}</div>`;
+      }).join('') + '</div>';
+    }
+    (o.sections || []).forEach(s => { h += `<h3>${s.h}</h3>` + s.p.map(p => `<p class="small">${p}</p>`).join(''); });
+    h += '<div class="row" style="grid-template-columns:1fr 1fr 1fr;margin-top:14px"></div>';
+    $('end').innerHTML = h;
+    const r = $('end').querySelector('.row');
+    r.appendChild(btn('ログ', null, 'quiet', openLog));
+    r.appendChild(btn('一覧へ', null, 'quiet', () => { $('sheet-end').hidden = true; if (o.back) o.back(); }));
+    r.appendChild(btn('もう一回', null, '', () => { $('sheet-end').hidden = true; o.again(); }));
+    $('sheet-end').hidden = false; clear();
+  }
+  function dbg(html) { const d = $('dbg'); if (html == null) { d.hidden = true; return; } d.hidden = false; d.innerHTML = html; }
+  const dbgOn = () => !$('dbg').hidden;
+
+  // つなぎ
+  $('stage').addEventListener('click', tapNow);
+  $('cmds').addEventListener('click', e => { if (e.target === $('cmds') || e.target.classList.contains('hint')) tapNow(); });
+  $('btn-menu').addEventListener('click', ev => { ev.stopPropagation(); const m = $('menu'); if (m.hidden) renderMenu(); m.hidden = !m.hidden; $('btn-menu').setAttribute('aria-expanded', String(!m.hidden)); });
+  document.addEventListener('click', closeMenu);
+  $('sheet-log').addEventListener('click', e => { if (e.target === $('sheet-log')) $('sheet-log').hidden = true; });
+
+  return { NAME, HS, fire, begin, home, live, later, cancel, sleep, waitTap, waitTapOr, onTap, bar, say, setText, narr, thinking, expr, meter,
+           focus, soft, watchAll, scene, leave, tag, air, note, dots, dotsText, clear, hint, put, btn, row, el, menu, logRound, openLog, end, dbg, dbgOn, esc,
+           get log() { return log; } };
+})();
+
+</script>
+<script>
+// 案A（グノーシア＝今の遊べる版）と 案B（同じ夜を、AIが台詞を書く）
+// 進行は js/v0/night-engine.js をそのまま使う。Bは台詞の文字だけを差し替える
+const EngineMode = (() => {
+  'use strict';
+  const NAME = Stage.NAME;
+  const CMD = { go: '乗る', dig: '掘る', tease: '茶化す' };
+  const INTRO = '（乾杯。向かいに あおい・ゆな・めい。両隣には、連れてきた けんた と けいた）';
+
+  let E, L, night, seen, queue, hist, aiText, ai, g, pending, busy, opened, stepping, back;
+  let samplePromise = null, tier = 'quick', aiCalls = 0, aiMs = 0, aiNote = null;
+  let lastSeed = null;
+
+  // ── AI（案B）────────────────────────────────────────────
+  const PEOPLE = [
+    'あなた（プレイヤー・男・大学2年）: 塾で小学生を教えるバイト、実家暮らし、文化系サークル。一人称「俺」。',
+    'けんた（連れてきた友達）: 居酒屋バイト、一人暮らし（仕送りあり）、運動部。場を仕切りたがり、あなたをいじる。',
+    'けいた（連れてきた友達）: カフェバイト、一人暮らし（仕送りなし）、写真サークル。落ち着いていて、少し皮肉っぽい。',
+    'あおい: 清楚、図書委員タイプ。関西出身だがふだんは標準語。実家暮らしで門限11時。塾で小学5年に国語を教えている。文芸部。丁寧語、「……」で間をとる。自分の話は控えめで、本音は小さく言う。',
+    'ゆな: ギャル、陽気。一人暮らし（仕送りあり。親に内緒でバイトを増やしている）。カフェでバイト（ラテアートのハートが歪む）。テニス部で朝練が苦手。一人称「うち」、タメ口、テンション高め。',
+    'めい: 不思議ちゃん。地方出身、一人暮らし（仕送りなし。電気代が気になる）。バイトはしていない（「いらっしゃいませ」が苦手）。天文サークル。短く言う、間が多い、ずれた角度から本音を言う。',
+  ].join('\n');
+  const RULES = [
+    '- 直前の発言を受けてつなぐ。ただし「その◯◯、」のように要約して受けない。相手を評価しない（いいね・すごい・偉い は使わない）。',
+    '- 共感は「自分も同じ側にいる」で出す。質問は具体的に、2つ重ねてもよい。',
+    '- 1行は10〜30字くらい。口語。全部の行をきれいに閉じない（言いかけ、語尾の脱落）。文末に「w」は使わない。',
+    '- 好感度・空気・深さなどのゲームの言葉は書かない。地の文は書かない。各行は「」で囲む。',
+    '- 指定された話し手・相手・行為・深さ・表情を守る。「参考」は仮の台詞。事実（誰が何をしているか）は守り、言い回しは前後の流れに合わせて書き直す。',
+    '- 深さ: 0=表面の話 / 1=少し本音 / 2=二人だけの話（まわりには聞こえていない） / 3=誰にもしていない話。',
+    '- あなたの行為: 乗った=自分も同じだと差し出す / 掘った=一歩踏み込んで具体を聞く / 茶化した=笑いにして軽くする / 笑ってごまかした=踏み込みすぎたのを笑いで戻す。',
+    '- ヒロインの行為: 引いた=踏み込まれすぎて困っている / 許した=笑って流してくれた / 返した=話題にあまり通じていない / 打ち明けた=深さに合った本音。',
+  ].join('\n');
+
+  function ctxText() {
+    return Stage.log.slice(-28).map(x => x.r ? `── ${x.r}` : x.narr ? x.narr : `${x.who}${x.to ? '→' + x.to : ''}［${x.act}］${x.text}`).join('\n') || '（まだ何も話していない）';
+  }
+  function slotText(s, j) {
+    const e = s.e, l = s.l, T = CardTopics.TOPICS;
+    const tid = e.topic || (e.topicNow && e.topicNow.id);
+    const to = l.to === 'all' ? 'みんな' : NAME[l.to];
+    const a = [`[${j}] ${NAME[l.speaker]}→${to}／行為:${l.act}`];
+    if (tid) a.push(`話題:${T[tid].label}`);
+    if (e.t === 'say') a.push(`深さ:${e.depth}`);
+    if (e.expr) a.push(`表情:${e.expr}`);
+    a.push(`参考:${l.text}`);
+    return a.join('／');
+  }
+  function buildPrompt(slots) {
+    let j = 0;
+    const body = slots.map(s => s.l.narr ? `（地の文）${s.l.text}` : slotText(s, j++)).join('\n');
+    return `合コンを舞台にしたノベルゲームの台詞を書いてください。場面は居酒屋、大学生の合コン、乾杯のあと。\n\n【人物】\n${PEOPLE}\n\n【書き方】\n${RULES}\n\n【ここまでの会話】\n${ctxText()}\n\n【これから書く行】（この順に続けて起きる。地の文はそのまま入る）\n${body}\n\n【返し方】JSONだけを返す。{"lines":["「…」", …]} 要素は ${j} 個で、[0]〜[${j - 1}] の順。`;
+  }
+  const toD = n => { let k = 0; while (!n.decision && n.phase !== 'end' && k++ < 80) n.advance(); return n.decision; };
+  // 今の状態から「黙って聞き続けたら起きること」を、別の夜で先読みする（同じ種・同じ選択なら同じ出来事になる）
+  function lookahead(from) {
+    const c = E.newNight(night.seed), L2 = NightLines.create(CardTopics);
+    for (const h of hist) { toD(c); c.choose(h); }
+    let d = toD(c), k = 0;
+    while (d && d.kind === 'react' && k++ < 40) { c.choose({ cmd: 'wait' }); d = toD(c); }
+    const out = [];
+    c.events.forEach((e, i) => {
+      if (e.t === 'round' || e.t === 'roundEnd' || e.t === 'end') return;
+      const l = L2.line(e); if (!l || i < from) return;
+      out.push({ i, e, l });
+    });
+    return out;
+  }
+  async function aiFill(from) {
+    const sample = await samplePromise;
+    if (!sample) throw { code: 'unavailable' };
+    const slots = lookahead(from);
+    const speak = slots.filter(s => !s.l.narr);
+    if (!speak.length) return;
+    const t0 = Date.now(); aiCalls++;
+    const r = await sample.json(buildPrompt(slots), { modelTier: tier });
+    aiMs += Date.now() - t0;
+    const arr = r && Array.isArray(r.lines) ? r.lines : [];
+    speak.forEach((s, j) => {
+      let x = typeof arr[j] === 'string' ? arr[j].trim() : '';
+      if (x && !x.startsWith('「')) x = '「' + x.replace(/^『|』$/g, '') + '」';
+      aiText[s.i] = x || false;
+    });
+  }
+
+  // ── 進行（screens/night_v0.html と同じ手順）───────────────
+  function start(o) {
+    ai = !!o.ai; back = o.back;
+    g = Stage.begin(ai ? 'B AI' : 'A グノーシア');
+    E = NightEngine.create({ HEROINES, CardTopics }); L = NightLines.create(CardTopics);
+    night = E.newNight(o.seed == null ? Math.floor(Math.random() * 1e9) : o.seed); lastSeed = night.seed;
+    seen = 0; queue = []; hist = []; aiText = {}; pending = 'first'; busy = false; opened = false; stepping = false;
+    aiCalls = 0; aiMs = 0; aiNote = null;
+    if (ai && !samplePromise) samplePromise = (window.claude && claude.use) ? claude.use('sample').catch(() => null) : Promise.resolve(null);
+    Stage.dots(0, night.cfg.ROUNDS);
+    Stage.narr(INTRO);
+    Stage.hint(ai ? 'タップで始める（台詞は1ラウンドごとにAIが書く。数秒待つ）' : 'タップで始める');
+    Stage.onTap(tap);
+    const items = [{ label: () => '数値：' + (Stage.dbgOn() ? '隠す' : '見る'), fn: () => { if (Stage.dbgOn()) Stage.dbg(null); else renderDbg(true); } },
+                   { label: 'この夜をもう一回', fn: () => start({ ai, seed: night.seed, back }) }];
+    if (ai) items.push({ label: () => 'AI：' + (tier === 'quick' ? '速い（いま）→ 丁寧にする' : '丁寧（いま）→ 速くする'), fn: () => { tier = tier === 'quick' ? 'default' : 'quick'; } });
+    Stage.menu(items);
+  }
+  function pump() {
+    if (night.phase !== 'end') night.advance();
+    for (; seen < night.events.length; seen++) {
+      const e = night.events[seen];
+      if (e.t === 'round') { queue.push({ round: e }); continue; }
+      if (e.t === 'roundEnd' || e.t === 'end') { queue.push({ scene: e }); continue; }
+      const l = L.line(e); if (!l) continue;
+      queue.push({ line: l, e, i: seen });
+    }
+  }
+  async function step() {
+    if (busy || !Stage.live(g)) return;
+    if (pending === 'first') { pending = null; pump(); }
+    while (queue.length) {
+      const q = queue[0];
+      if (q.round) { queue.shift(); Stage.dots(q.round.n, night.cfg.ROUNDS); Stage.logRound('ラウンド ' + q.round.n); continue; }
+      if (q.scene) { queue.shift(); scene(q.scene); continue; }
+      if (ai && !q.line.narr && aiText[q.i] === undefined) {
+        busy = true; Stage.clear(); Stage.thinking(true, 'AIが台詞を書いています');
+        const my = g;
+        try { await aiFill(q.i); if (aiText[q.i] === undefined) aiText[q.i] = false; }
+        catch (err) {
+          ai = false;
+          aiNote = err && err.code === 'unavailable' ? 'この画面ではAIが使えませんでした' : err && err.code === 'not_granted' ? 'AIの利用が許可されませんでした' : 'AIの呼び出しに失敗しました（' + ((err && err.code) || '不明') + '）';
+          queue.unshift({ line: { narr: true, text: '（' + aiNote + '。この先はテンプレの台詞で続けます）' }, e: q.e, i: -1 });
+        }
+        if (!Stage.live(my)) return;
+        busy = false;
+        continue;
+      }
+      queue.shift();
+      const l = Object.assign({}, q.line);
+      if (ai && !l.narr && aiText[q.i]) l.text = aiText[q.i];
+      show(l, q.e);
+      stepping = true; renderCmds(true);
+      return;
+    }
+    stepping = false;
+    if (night.decision) {
+      if (night.decision.kind === 'end') { showEnd(); return; }
+      renderCmds(false);
+    } else { pump(); step(); }
+  }
+  function scene(e) {
+    if (e.exprs) Object.entries(e.exprs).forEach(([h, x]) => Stage.expr(+h, x));
+    Stage.air(e.air == null ? 60 : e.air);
+    const t = e.topicNow;
+    Stage.tag(t ? '#' + CardTopics.TOPICS[t.id].label + '　' + '●'.repeat(t.depth) + '○'.repeat(t.max - t.depth) : null);
+    renderDbg();
+  }
+  function show(l, e) {
+    scene(e);
+    if (l.narr) { Stage.narr(l.text); return; }
+    const t = e.topicNow;
+    const far = (t && t.depth >= 2 && t.partner) ? Stage.HS.filter(h => h !== t.partner) : [];
+    Stage.say(l.speaker, l.to, l.act, l.text, { far });
+  }
+  function tap() {
+    if (busy) return;
+    if (pending === 'first' || stepping) { step(); return; }
+    const d = night && night.decision;
+    if (!opened && d && (d.kind === 'start' || d.kind === 'react')) choose({ cmd: 'wait' });
+  }
+  function renderCmds(isStepping) {
+    if (isStepping) { Stage.hint('タップで続き'); return; }
+    const d = night.decision;
+    if (!opened && d.kind !== 'rescue') {
+      const bar = Stage.el('div', 'bar');
+      const hint = Stage.el('div', 'hint', d.kind === 'start'
+        ? (night.topic ? 'タップで様子を見る（続きを聞く） ▸' : 'タップで様子を見る（誰かが話し出す） ▸')
+        : (night.topic && !night.topic.known ? '知らない話。タップで様子を見る ▸' : 'タップで様子を見る ▸'));
+      const cut = Stage.el('button', 'cut', d.kind === 'start' ? '話題を出す' : '割って入る'); cut.type = 'button';
+      cut.addEventListener('click', ev => { ev.stopPropagation(); opened = true; renderCmds(false); });
+      bar.appendChild(hint); bar.appendChild(cut); Stage.put(bar);
+      return;
+    }
+    const holder = Stage.el('div', 'panelcmd');
+    const top = Stage.el('div', 'top2', `<span>${d.kind === 'start' ? 'どの話題を出す？' : NAME[d.speaker] + ' に'}</span>`);
+    if (d.kind !== 'rescue') {
+      const x = Stage.el('button', null, '✕ やめる'); x.type = 'button';
+      x.addEventListener('click', ev => { ev.stopPropagation(); opened = false; renderCmds(false); }); top.appendChild(x);
+    }
+    holder.appendChild(top);
+    if (d.kind === 'start') {
+      holder.appendChild(Stage.row(d.options.filter(o => o.cmd === 'open').map(o =>
+        Stage.btn('#' + CardTopics.TOPICS[o.topic].label, null, 'topic', () => choose(o))), 2));
+    } else {
+      const opts = d.options.filter(o => o.cmd !== 'wait');
+      holder.appendChild(Stage.row(opts.map(o => Stage.btn(CMD[o.cmd], d.kind === 'rescue' ? '笑ってごまかす' : (o.cmd === 'tease' && !night.topic.known ? '知らない話' : null), '', () => choose(o)))));
+      if (d.kind === 'rescue') holder.appendChild(Stage.btn('流す', null, 'quiet', () => choose({ cmd: 'wait' })));
+    }
+    Stage.put(holder);
+  }
+  function choose(o) {
+    if (busy) return;
+    const d = night.decision;
+    if (o.cmd === 'wait') Stage.log.push({ narr: d && d.kind === 'start' ? '▶ 様子を見る' : '▷ 様子を見る' });
+    const base = night.events.length;
+    if (!(d && d.kind === 'react' && o.cmd === 'wait')) Object.keys(aiText).forEach(k => { if (+k >= base) delete aiText[k]; });
+    hist.push(o); opened = false;
+    night.choose(o); pump(); step();
+  }
+  function renderDbg(force) {
+    if (!force && !Stage.dbgOn()) return;
+    const t = night.topic;
+    const rows = Stage.HS.map(h => `${NAME[h]} 好感度${night.hearts[h].toFixed(0)}${t ? ` 許容${night.tolerance(h, t.id).toFixed(1)} 残り${t.left[h]}` : ''}`);
+    Stage.dbg(`空気 ${night.air.toFixed(0)}　seed ${night.seed}<br>${rows.join('<br>')}${t ? `<br>深さ ${t.depth}/${t.max}${t.known ? '' : '（知らない話）'}` : ''}`);
+  }
+  function countStrings(o) {
+    if (typeof o === 'string') return 1;
+    if (Array.isArray(o)) return o.reduce((a, x) => a + countStrings(x), 0);
+    if (o && typeof o === 'object') return Object.values(o).reduce((a, x) => a + countStrings(x), 0);
+    return 0;
+  }
+  function templateCount() {
+    let n = countStrings(NightLines.DATA);
+    const T = CardTopics.TOPICS;
+    Object.keys(T).forEach(id => ['open', 'bite', 'miss', 'more', 'moreDefault', 'friend', 'biteDefault'].forEach(k => { n += countStrings(T[id][k]); }));
+    return n;
+  }
+  function showEnd() {
+    const d = night.decision, h = HEROINES.find(x => x.id === d.honmei);
+    const said = d.result === 'home' ? h.result_lines.contact : d.result === 'contact' ? h.result_lines.good : h.result_lines.normal;
+    const sections = [];
+    if (ai || aiCalls) sections.push({ h: 'AIの手ごたえ', p: [`AIを呼んだ回数 ${aiCalls}回、待ち時間 合計 約${Math.round(aiMs / 1000)}秒（1回 平均 約${aiCalls ? (aiMs / aiCalls / 1000).toFixed(1) : '-'}秒）。`, aiNote ? aiNote + '。' : '一覧のAで「さっきの夜で」を押すと、同じ夜をテンプレの台詞で見比べられます。'] });
+    else sections.push({ h: 'この方式の台詞', p: [`部品 ${templateCount()}行（話題3＋α、ヒロイン3人のぶん）。話題・子・深さ・手を足すほど、掛け算で増える。`] });
+    Stage.end({ result: d.result, said: `${NAME[d.honmei]}：${said}`, hearts: night.hearts, sections,
+      again: () => start({ ai, back }), back });
+  }
+
+  return { start, get lastSeed() { return lastSeed; } };
+})();
+
+</script>
+<script>
+// 案C〜F: 台本型。場面・人・事情はAと同じ（自分＝塾バイト・実家・文化系）
+// 行の書き方: [話し手, 相手, 「台詞」, 行為?, 表情?]。話し手 'n' は地の文、'P' は自分
+const Scripted = (() => {
+  'use strict';
+  const S = Stage, NAME = S.NAME, HS = S.HS;
+  const BASE = 25;
+  const INTRO = ['n', '（乾杯。向かいに あおい・ゆな・めい。両隣には、連れてきた けんた と けいた）'];
+
+  function newState() { return { h: { 101: BASE, 102: BASE, 103: BASE }, air: 60, picks: [] }; }
+  function show(x) {
+    if (x[0] === 'n') { S.narr(x[1]); return; }
+    S.say(x[0], x[1], x[3] || null, x[2], { expr: x[4] });
+  }
+  async function play(lines, g, st) {
+    for (const x of (typeof lines === 'function' ? lines(st) : lines)) { show(x); await S.waitTap(g, 'タップで続き'); }
+  }
+  function fx(st, d, marks) {
+    if (typeof d === 'function') d = d(st);
+    Object.entries(d || {}).forEach(([k, v]) => {
+      if (k === 'air') { st.air = Math.max(0, Math.min(100, st.air + v)); S.air(st.air); return; }
+      st.h[k] += v;
+      if (marks !== false && v) S.note(+k, v >= 8 ? '♪♪' : v > 0 ? '♪' : '…');
+    });
+    const shown = {}; Object.entries(d || {}).forEach(([k, v]) => { if (k !== 'air' && v) shown[k] = v; });
+    if (Object.keys(shown).length) S.log.push({ fx: shown });   // ログの「振り返り」用
+  }
+  function result(st, force) {
+    const F = HS.slice().sort((a, b) => st.h[b] - st.h[a])[0];
+    const r = force || (st.h[F] >= 48 ? 'home' : st.h[F] >= 32 ? 'contact' : 'none');
+    return { r, F: force === 'home' && st.homeWith ? st.homeWith : F };
+  }
+  function countLines(o) {
+    if (typeof o === 'string') return o.startsWith('「') ? 1 : 0;
+    if (Array.isArray(o)) return o.reduce((a, x) => a + countLines(x), 0);
+    if (typeof o === 'function') return 0;
+    if (o && typeof o === 'object') return Object.values(o).reduce((a, x) => a + countLines(x), 0);
+    return 0;
+  }
+  const SAID = {
+    101: { home: '「……今日、楽しかったです。ほんとに」', contact: '「……また、話しましょう」', none: '静かに微笑んで帰っていった' },
+    102: { home: '「えー、駅まで一緒じゃん。歩こ」', contact: '「今日のメンツ楽しかった！ また誘って」', none: '「まあ悪くなかったかな」（もう別の話をしていた）' },
+    103: { home: '「……駅まで。星、見えるかな」', contact: '「君とは、また話したい」', none: 'どこか遠い目をして帰っていった' },
+  };
+  function finish(mode, st, g, extra) {
+    const { r, F } = result(st, extra && extra.force);
+    S.end({ result: r, said: `${NAME[F]}：${SAID[F][r]}`, hearts: st.h, base: { 101: BASE, 102: BASE, 103: BASE },
+      sections: [{ h: 'この方式の台詞', p: [`このデモで書いた台詞 ${mode.count}行（地の文を除く）。` + mode.costNote] }].concat(extra && extra.sections || []),
+      again: () => mode.start(mode.back), back: mode.back });
+  }
+
+  // ════════════════════════════════════════════════════════
+  // D 3択（ペルソナのコミュ・ときメモ）
+  // ════════════════════════════════════════════════════════
+  const D = [
+    INTRO,
+    ['n', '（この方式では、要所で自分の返しを3つから選ぶ。相手に合うと ♪ が出る）'],
+    [1, 'all', '「じゃ、とりあえずバイトの話からいくか」', '話を振った'],
+    [102, 'all', '「うちカフェ。まかない目当てで入ったんだけどね」'],
+    [4, 102, '「え、俺もカフェ。どこの」'],
+    [102, 4, '「駅の裏の、ちっちゃいとこ」'],
+    [101, 'all', '「わたしは、塾で……小学生を」'],
+    [103, 'all', '「してない。……向いてなくて」'],
+    [1, 'P', '「で、お前は。塾だっけ」'],
+    { choice: 'けんたに聞かれた', opts: [
+      { say: '「そう、塾。小4の算数見てる」', to: 'all', fx: { 101: 8 }, lines: [
+        [101, 'P', '「……え、同じです。わたしは5年の国語」', null, { 101: 'はにかみ' }],
+        [101, 'P', '「あの子たち、こわいくらい正直じゃないですか」'],
+        [1, 'all', '「こいつ、字が汚いって毎週言われてるからな」'],
+        [101, 'P', '「……ふふ。言いますね、あの子たち」', null, { 101: '笑' }]] },
+      { say: '「めいちゃん、向いてないって何が」', to: 103, fx: { 103: 8 }, lines: [
+        [103, 'P', '「……いらっしゃいませ、が」'],
+        [1, 103, '「それ言えないのはやばいだろ」'],
+        [103, 'P', '「言えるけど。言うたびに、ちょっと減る」', null, { 103: 'はにかみ' }]] },
+      { say: '「てかカフェ二人いるじゃん。かぶってる」', to: 'all', fx: { 102: 6 }, lines: [
+        [102, 'P', '「かぶってないし。うち個人店だから」', null, { 102: '笑' }],
+        [4, 102, '「俺チェーン。ラテは機械が描く」'],
+        [102, 4, '「え、ずる。うち手で描いてハート歪むのに」']] },
+    ] },
+    ['n', '（店員が来た。次の飲み物）'],
+    [4, 'all', '「なんか頼む？ 俺ハイボール」'],
+    [102, 'all', '「うちレモンサワー。あおいちゃんは」'],
+    [101, 102, '「……あ、わたしは、まだ大丈夫です」'],
+    [103, 'all', '「……わたし、これ何杯目だっけ」'],
+    [1, 103, '「一杯目だろ、まだ」'],
+    { choice: '飲み物の流れ', opts: [
+      { say: '「あおいちゃん、ウーロン茶とかもあるよ」', to: 101, fx: { 101: 6 }, lines: [
+        [101, 'P', '「……じゃあ、ウーロン茶で。すみません」', null, { 101: 'はにかみ' }],
+        [102, 101, '「えー飲まないの。まあいっか」']] },
+      { say: '「数えてないの、なんで」', to: 103, fx: { 103: 6 }, lines: [
+        [103, 'P', '「数えると、酔う気がするから」'],
+        [1, 103, '「そういうもんか？」'],
+        [103, 1, '「そういうもん」', null, { 103: 'はにかみ' }]] },
+      { say: '「もう全員レモンサワーでよくない」', to: 'all', fx: { 102: 6, 101: -6 }, lines: [
+        [102, 'P', '「ノリいいじゃん。すみませーん」', null, { 102: '笑' }],
+        [101, 102, '「……あ、はい」', null, { 101: '困り顔' }]] },
+    ] },
+    ['n', '（話が、住まいのことに移った）'],
+    [102, 'all', '「てかみんな一人暮らし？ うちは一人」'],
+    [101, 'all', '「わたしは実家です。……門限、まだあります」'],
+    [1, 101, '「門限！ 何時」'],
+    [101, 1, '「……11時です」'],
+    [103, 'all', '「ひとり。……部屋の音が、たまに大きい気がする」'],
+    { choice: '住まいの話', opts: [
+      { say: '「俺も実家。親が起きて待ってるやつ」', to: 101, fx: { 101: 10 }, lines: [
+        [101, 'P', '「……玄関の電気、ついてますよね」', null, { 101: 'はにかみ' }],
+        ['P', 101, '「ついてる。消しといてほしいのに」'],
+        [101, 'P', '「……うちもです。何回言っても」']] },
+      { say: '「11時なら、まだ2時間あるじゃん」', to: 101, fx: { 101: -8 }, lines: [
+        [1, 'P', '「おい、帰らせる気ないだろ」'],
+        [101, 'P', '「……えっと」', null, { 101: '困り顔' }]] },
+      { say: '「部屋の音って、冷蔵庫とか？」', to: 103, fx: { 103: 8, 102: 3 }, lines: [
+        [103, 'P', '「冷蔵庫。夜中に、しゃべる」'],
+        [102, 103, '「わかる、ブーンっていうやつ」'],
+        [103, 102, '「……返事したことある」', null, { 103: 'はにかみ', 102: '笑' }]] },
+    ] },
+    ['n', '（けんたが、スマホで時間を見た）'],
+    [1, 'all', '「このあとカラオケ行く人ー」'],
+    [102, 1, '「行く行く！」'],
+    [101, 'all', '「……わたしは、門限が」'],
+    [103, 'all', '「カラオケ。……聞く側なら」'],
+    { choice: 'このあと', opts: [
+      { say: '「俺、あおいちゃん駅まで送るわ」', to: 101,
+        fx: st => st.h[101] >= 38 ? { 101: 8, 102: -3 } : { 102: -3 },
+        home: st => st.h[101] >= 38 ? 101 : null,
+        lines: st => st.h[101] >= 38 ? [
+          [101, 'P', '「……いいんですか。じゃあ、お願いします」', null, { 101: 'はにかみ' }],
+          [102, 'P', '「えー、抜けるんだ」']] : [
+          [101, 'P', '「……あ、大丈夫です。駅、近いので」', null, { 101: '真顔' }],
+          [1, 'P', '「振られてんじゃん」']] },
+      { say: '「行こ。めいちゃん、聞く側でいいし」', to: 103, fx: { 103: 6, 102: 4 }, lines: [
+        [103, 'P', '「……じゃあ、行く。聞く」', null, { 103: 'はにかみ' }],
+        [102, 'all', '「めいちゃん絶対歌わせるから」', null, { 102: '笑' }]] },
+      { say: '「俺も今日は帰るわ。明日早くて」', to: 'all', fx: {}, lines: [
+        [1, 'P', '「えー、お前も？」'],
+        [102, 'all', '「じゃあ解散？ 早くない？」']] },
+    ] },
+    ['n', '（お開きになった）'],
+  ];
+  async function runD(mode, g) {
+    const st = newState();
+    for (const node of D) {
+      if (Array.isArray(node)) { show(node); await S.waitTap(g, 'タップで続き'); continue; }
+      const o = await new Promise(res => {
+        const p = S.el('div', 'panelcmd');
+        p.appendChild(S.el('div', 'top2', '<span>あなたの返し</span>'));
+        node.opts.forEach(op => p.appendChild(S.btn(op.say, null, 'line', () => res(op))));
+        S.put(p);
+      });
+      S.say('P', o.to, '返した', o.say);
+      fx(st, o.fx);
+      const w = o.home && o.home(st); if (w) st.homeWith = w;
+      st.picks.push(node.choice + '→' + o.say);
+      await S.waitTap(g, 'タップで続き');
+      await play(o.lines, g, st);
+    }
+    finish(mode, st, g, { force: st.homeWith ? 'home' : null });
+  }
+
+  // ════════════════════════════════════════════════════════
+  // C 論破（ダンガンロンパのノンストップ議論・逆転裁判のつきつける）
+  // ════════════════════════════════════════════════════════
+  const C_CARDS = [{ id: 'juku', label: '塾バイト' }, { id: 'jikka', label: '実家暮らし' }, { id: 'bushitsu', label: '部室の主' }];
+  const C_SEGS = [
+    { title: '（話題：バイト）', lines: [
+      [1, 'all', '「じゃ、バイトの話からいくか」'],
+      [102, 'all', '「うち[[カフェ|cafe]]。まかない目当てで入ったんだけどね」'],
+      [4, 102, '「え、俺もカフェ。どこの」'],
+      [101, 'all', '「わたしは、[[塾|juku]]で……小学生を見てます」'],
+      [103, 'all', '「[[してない|nobaito]]。……向いてなくて」'],
+      [1, 103, '「じゃあ何なら向いてんの」'],
+      [103, 1, '「……夜の、[[長電話|denwa]]とか」']] },
+    { title: '（話題：住まい）', lines: [
+      [102, 'all', '「てかみんな[[一人暮らし|hitori]]？ うちは一人」'],
+      [101, 'all', '「わたしは実家です。……[[門限|mongen]]、まだあります」'],
+      [1, 101, '「門限あんの！ 何時」'],
+      [101, 1, '「……11時です」'],
+      [103, 'all', '「ひとり。……[[部屋の音|oto]]が、たまに大きい気がする」'],
+      [102, 103, '「わかる、冷蔵庫な」']] },
+    { title: '（話題：サークル）', lines: [
+      [4, 'all', '「サークルは？ 俺は写真」'],
+      [102, 'all', '「うちテニス。[[朝練|asaren]]がほんと無理」'],
+      [1, 102, '「朝練は無理だよな、分かる」'],
+      [103, 'all', '「天文。……[[部室|bushitsu103]]に、ずっといる人がいる」'],
+      [101, 'all', '「……文芸です。[[部室|bushitsu101]]、静かで好きで」']] },
+  ];
+  const C_HOOK_OWNER = { cafe: 102, juku: 101, nobaito: 103, denwa: 103, hitori: 102, mongen: 101, oto: 103, asaren: 102, bushitsu103: 103, bushitsu101: 101 };
+  const C_HITS = {
+    juku: { juku: { fx: { 101: 12, air: 5 }, lines: [
+      ['P', 101, '「え、塾？ 俺も塾。小4の算数」', 'つながった'],
+      [101, 'P', '「……え。わたし、5年の国語です」', null, { 101: 'はにかみ' }],
+      [101, 'P', '「あの子たち、こわいくらい正直ですよね」'],
+      ['P', 101, '「字が汚いって毎週言われる」'],
+      [101, 'P', '「……ふふ。言いますね、あの子たち」', null, { 101: '笑' }]] } },
+    mongen: { jikka: { fx: { 101: 12, air: 5 }, lines: [
+      ['P', 101, '「俺も実家。親が起きて待ってんの」', 'つながった'],
+      [101, 'P', '「……玄関の電気、ついてますよね」', null, { 101: 'はにかみ' }],
+      ['P', 101, '「ついてる。消しといてほしい」'],
+      [101, 'P', '「……うちもです。何回言っても」']] } },
+    bushitsu103: { bushitsu: { fx: { 103: 12, air: 5 }, lines: [
+      ['P', 103, '「部室に住んでる先輩、うちにもいる」', 'つながった'],
+      [103, 'P', '「いる。あれはもう、部屋の一部」', null, { 103: 'はにかみ' }],
+      [103, 'P', '「……椅子、その人の形になってない？」'],
+      ['P', 103, '「なってる。座ると怒られる」'],
+      [103, 'P', '「……今度、見に行っていい。君のとこの」']] } },
+    bushitsu101: { bushitsu: { fx: { 101: 12, air: 5 }, lines: [
+      ['P', 101, '「部室にずっといる先輩、そっちもいる？」', 'つながった'],
+      [101, 'P', '「……います。いつ行っても、いるんです」', null, { 101: 'はにかみ' }],
+      [101, 'P', '「卒業したら、どうなるんでしょうね」'],
+      ['P', 101, '「たぶん卒業しない」'],
+      [101, 'P', '「……ふふ」', null, { 101: '笑' }]] } },
+  };
+  const C_MISS_SAY = { juku: '「あ、俺は塾でバイトしてて」', jikka: '「俺は実家なんだけどさ」', bushitsu: '「部室にさ、住んでる先輩いない？」' };
+  const C_MISS_BACK = { 101: '「……え、あ、はい」', 102: '「え、今その話？」', 103: '「……うん？」' };
+  function kwHtml(t, used) {
+    return S.esc(t).replace(/\[\[(.+?)\|(.+?)\]\]/g, (m, w, id) => used.has(id) ? `<button type="button" class="kw used" disabled>${w}</button>` : `<button type="button" class="kw" data-kw="${id}" data-w="${w}">${w}</button>`);
+  }
+  async function runC(mode, g) {
+    const st = newState(), used = new Set(), shot = new Set();
+    show(INTRO); await S.waitTap(g, 'タップで続き');
+    show(['n', '（この方式では、会話は勝手に流れる。光った言葉をタップして、手札の話題を重ねる。合えば話がつながる。流れた言葉は戻らない）']);
+    await S.waitTap(g, 'タップで始める');
+    for (const seg of C_SEGS) {
+      S.narr(seg.title); await S.sleep(900, g);
+      let hit = false;
+      for (let i = 0; i < seg.lines.length && !hit; i++) {
+        const x = seg.lines[i];
+        const plain = x[2].replace(/\[\[(.+?)\|.+?\]\]/g, '$1');
+        S.say(x[0], x[1], null, plain, { html: kwHtml(x[2], shot), logText: plain });
+        document.querySelectorAll('#text .kw[data-kw]').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); S.fire({ kw: b.dataset.kw, w: b.dataset.w }); }));
+        handHint(used);
+        const ms = 1300 + plain.length * 110;
+        const v = await S.waitTapOr(ms, g);
+        if (!v || !v.kw) continue;
+        // 言葉を撃った: 手札を選ぶ
+        const card = await new Promise(res => {
+          const p = S.el('div', 'panelcmd');
+          const top = S.el('div', 'top2', `<span>「${v.w}」に、どの話題を重ねる？</span>`);
+          const xb = S.el('button', null, '✕ やめる'); xb.type = 'button'; xb.addEventListener('click', ev => { ev.stopPropagation(); res(null); });
+          top.appendChild(xb); p.appendChild(top);
+          p.appendChild(S.row(C_CARDS.map(c => { const b = S.btn('#' + c.label, used.has(c.id) ? '使った' : null, 'card', () => res(c)); b.disabled = used.has(c.id); return b; })));
+          S.put(p);
+        });
+        if (!card) { i--; continue; }
+        used.add(card.id); shot.add(v.kw);
+        const h = C_HOOK_OWNER[v.kw];
+        const H = C_HITS[v.kw] && C_HITS[v.kw][card.id];
+        if (H) {
+          fx(st, H.fx); st.picks.push(`「${v.w}」×${card.label} つながった`);
+          await play(H.lines, g, st); hit = true;
+        } else {
+          fx(st, { [h]: -3, air: -5 }); st.picks.push(`「${v.w}」×${card.label} ずれた`);
+          await play([['P', h, C_MISS_SAY[card.id], 'ずれた'], [h, 'P', C_MISS_BACK[h], null, { [h]: '困り顔' }], ['n', '（話が、噛み合わなかった）']], g, st);
+          S.expr(h, '真顔');
+        }
+      }
+      if (!hit) { S.narr('（話は、そのまま流れていった）'); await S.waitTap(g, 'タップで続き'); }
+    }
+    S.narr('（お開きになった）'); await S.waitTap(g, 'タップで結果');
+    finish(mode, st, g);
+  }
+  function handHint(used) {
+    const left = C_CARDS.filter(c => !used.has(c.id)).map(c => '#' + c.label).join('　') || '（手札なし）';
+    S.put(S.el('div', 'hint', `手札：${left}<br>光った言葉をタップ ／ 画面タップで次の発言`));
+  }
+
+  // ════════════════════════════════════════════════════════
+  // E 割り込み（Oxenfree・Night in the Woods）
+  // ════════════════════════════════════════════════════════
+  // bubble: at 'start'＝話している最中から出る（途中で押すと遮る） ／ 'end'＝話し終わってから出る
+  const E = [
+    ['n', '（乾杯。けんたが仕切りはじめた）'],
+    [1, 'all', '「じゃ、とりあえず一人ずつ。バイトとか」'],
+    { line: [102, 'all', '「うちカフェ。まかない目当てで入ったんだけどね」'], bubble: { at: 'end', ms: 4500, opts: [
+      { label: 'まかないの話', say: '「まかない何出んの。毎日？」', to: 102, fx: { 102: 6 }, lines: [[102, 'P', '「毎日！ でもほぼパスタ」', null, { 102: '笑' }]] },
+      { label: '俺は塾', say: '「俺は塾。小学生の」', to: 'all', fx: { 101: 4 }, lines: [[102, 'P', '「え、先生じゃん」', null, { 101: 'はにかみ' }]] }],
+      silence: { fx: {}, lines: [[4, 102, '「え、俺もカフェ。どこの」'], [102, 4, '「駅の裏！ ちっちゃいとこ」', null, { 102: '笑' }]] } } },
+    { line: [101, 'all', '「わたしも、塾で……小学生を、見てて。国語なんですけど」'], bubble: { at: 'start', extra: 1800, opts: [
+      { label: 'え、同じ！', say: '「え、俺も塾！ どこの」', to: 101,
+        fx: { 101: 8 }, lines: [[101, 'P', '「……え、先生なんですか。何年生の」', null, { 101: 'はにかみ' }]],
+        cutFx: { 101: -3 }, cutLines: [[101, 'P', '「……あ、えっと。駅前の」', null, { 101: '困り顔' }]] }],
+      silence: { fx: {}, lines: [] } } },
+    [103, 'all', '「わたしは、してない。……向いてなくて」'],
+    [1, 103, '「向いてないって、何が」'],
+    { line: [103, 1, '「……いらっしゃいませ、が」'], bubble: { at: 'end', ms: 4500, opts: [
+      { label: 'からかう', say: '「言えないの、いらっしゃいませ」', to: 103, fx: { 103: 2, air: 5 }, lines: [[103, 'P', '「言えるけど。言うたびに減る」'], [102, 103, '「減るって何」', null, { 102: '笑' }]] },
+      { label: '俺も電話むり', say: '「分かる。俺もバイト先の電話むり」', to: 103, fx: { 103: 8 }, lines: [[103, 'P', '「……電話。声が、自分じゃなくなる」', null, { 103: 'はにかみ' }]] }],
+      silence: { fx: { 103: -3 }, lines: [[1, 103, '「言えよ、それくらい」'], [103, 1, '「……」', null, { 103: '困り顔' }]] } } },
+    ['n', '（飲み物が来た。グラスが入れ替わる）'],
+    [102, 'all', '「てか、みんな一人暮らし？」'],
+    [101, 'all', '「実家です。……門限、11時で」'],
+    { line: [1, 101, '「11時！ じゃあ、あと2時間は余裕で」'], bubble: { at: 'start', extra: 1000, opts: [
+      { label: 'やめとけ', say: '「おい、時間数えんなって」', to: 1,
+        fx: { 101: 3 }, lines: [[1, 'P', '「数えてねえよ」']],
+        cutFx: { 101: 8, air: 5 }, cutLines: [[1, 'P', '「数えてねえよ！」'], [101, 'P', '「……ふふ」', null, { 101: '笑' }]] }],
+      silence: { fx: { 101: -4 }, lines: [[101, 1, '「……えっと」', null, { 101: '困り顔' }]] } } },
+    [102, 'all', '「うちは一人。親には内緒でバイト増やしてる」'],
+    { line: [103, 'all', '「ひとり。……部屋の音が、たまに大きい」'], bubble: { at: 'end', ms: 5000, opts: [
+      { label: '冷蔵庫な', say: '「冷蔵庫な。夜中にしゃべる」', to: 103, fx: { 103: 6, 102: 2 }, lines: [[103, 'P', '「……しゃべる。返事したことある」', null, { 103: 'はにかみ' }]] },
+      { label: '玄関の電気', say: '「俺実家でさ、玄関の電気ずっとついてる」', to: 101, fx: { 101: 8 }, lines: [[101, 'P', '「……うちもです。消してって言ってるのに」', null, { 101: 'はにかみ' }]] }],
+      silence: { fx: {}, lines: [[102, 103, '「わかる、冷蔵庫な」'], [103, 102, '「……しゃべるよね」']] } } },
+  ];
+  // 1行を1文字ずつ出す。cut() で遮れる
+  function typeLine(x, g, cps) {
+    const full = x[2];
+    S.say(x[0], x[1], x[3] || null, '', { expr: x[4], nolog: true });
+    let i = 0, t = null, finished = false, resolve;
+    const done = new Promise(r => { resolve = r; });
+    const tick = () => { i++; S.setText(full.slice(0, i)); if (i >= full.length) { finished = true; S.log.push({ sp: x[0], who: NAME[x[0]], to: x[1] === 'all' ? 'みんな' : NAME[x[1]], act: x[3] || '', text: full }); resolve('done'); } else t = S.later(tick, cps, g); };
+    tick();
+    return {
+      done, get finished() { return finished; },
+      cut() { if (finished) return; S.cancel(t); finished = true; const s = full.slice(0, Math.max(1, i)) + '——'; S.setText(s); S.log.push({ sp: x[0], who: NAME[x[0]], to: '', act: '遮られた', text: s }); resolve('cut'); },
+      skip() { if (finished) return; S.cancel(t); i = full.length - 1; tick(); },
+    };
+  }
+  let slowHint = null;   // 流れている間の下の一行（I は手札を出す）
+  async function saySlow(x, g, hold) {
+    if (x[0] === 'n') { S.narr(x[1]); await S.sleep(1500, g); return; }
+    const ty = typeLine(x, g, 60);
+    S.hint(slowHint ? slowHint() : '（会話は勝手に進む）');
+    const skip = () => ty.skip();
+    S.onTap(skip);
+    await ty.done; S.onTap(null);
+    await S.sleep(hold == null ? 1000 : hold, g);
+  }
+  function bubbles(b, g, ms) {
+    return new Promise(res => {
+      const p = S.el('div', 'panelcmd');
+      p.appendChild(S.el('div', 'top2', '<span>口を挟む？（黙っていれば話は進む）</span>'));
+      const clock = S.el('div', 'clock', '<i></i>'); p.appendChild(clock);
+      let done = false;
+      const fin = v => { if (done) return; done = true; S.cancel(t); res(v); };
+      p.appendChild(S.row(b.opts.map(o => S.btn(o.label, null, 'pill', () => fin(o)))));
+      S.put(p);
+      const i = clock.firstChild; i.style.transition = 'none'; i.style.width = '100%'; void i.offsetWidth;
+      i.style.transition = `width ${ms}ms linear`; i.style.width = '0%';
+      const t = S.later(() => fin(null), ms, g);
+    });
+  }
+  async function runE(mode, g) {
+    slowHint = null;
+    const st = newState(); let silent = 0;
+    show(INTRO); await S.waitTap(g, 'タップで続き');
+    show(['n', '（この方式では、会話は勝手に進む。吹き出しが出ている間だけ口を挟める。話している最中に押すと、遮る）']);
+    await S.waitTap(g, 'タップで始める');
+    for (const node of E) {
+      if (Array.isArray(node)) {
+        if (node[0] === 'n') { show(node); await S.sleep(1600, g); } else await saySlow(node, g);
+        continue;
+      }
+      const b = node.bubble;
+      let o = null, cut = false;
+      if (b.at === 'start') {
+        const ty = typeLine(node.line, g, 75);
+        const total = node.line[2].length * 75 + b.extra;
+        o = await bubbles(b, g, total);
+        if (o && !ty.finished) { ty.cut(); cut = true; } else await ty.done;
+      } else {
+        await saySlow(node.line, g, 250);
+        o = await bubbles(b, g, b.ms);
+      }
+      S.clear();
+      if (!o) { silent++; fx(st, b.silence.fx); st.picks.push('黙った'); for (const x of b.silence.lines) await saySlow(x, g); continue; }
+      st.picks.push(o.label + (cut ? '（遮った）' : ''));
+      await saySlow(['P', o.to, o.say, cut ? '割り込んだ' : '口を挟んだ'], g, 600);
+      fx(st, cut ? o.cutFx : o.fx);
+      for (const x of (cut ? o.cutLines : o.lines)) await saySlow(x, g);
+    }
+    if (silent >= 4) { fx(st, { air: -8 }); await saySlow([1, 'P', '「おい、さっきから静かだな」'], g); }
+    show(['n', '（けんたが、カラオケの話をしはじめた）']);
+    await S.waitTap(g, 'タップで結果');
+    finish(mode, st, g, { sections: [{ h: 'この夜の口の挟み方', p: [st.picks.join(' ／ ')] }] });
+  }
+
+  // ════════════════════════════════════════════════════════
+  // F 気配り（VA-11 Hall-A・Coffee Talk ＋ 場の手）
+  // ════════════════════════════════════════════════════════
+  const F = [
+    ['n', '（この方式では、会話に口は出さない。グラス・皿・話に入れていない子を見て、動く）'],
+    INTRO,
+    [1, 'all', '「じゃ、とりあえずバイトの話？」'],
+    [102, 'all', '「うちカフェ。まかない目当てで入ったんだけどね」'],
+    [4, 102, '「え、俺もカフェ。どこの」'],
+    { glass: { 103: 0 } }, { cue: 'drink103', on: true },
+    [102, 4, '「駅の裏！ ちっちゃいとこ」'],
+    [101, 'all', '「わたしは、塾で小学生を」'],
+    [103, 'all', '「……してない。向いてなくて」'],
+    [1, 103, '「向いてないって、何が」'],
+    [103, 1, '「いらっしゃいませ、が」'],
+    { cue: 'drink103', on: false, miss: [['n', '（めいは、自分で水を頼んでいた）']] },
+    { glass: { 103: 2 } },
+    { cue: 'plateAll', on: true },
+    ['n', '（大皿の唐揚げが来た）'],
+    [102, 'all', '「てかみんな一人暮らし？」'],
+    { expr: { 103: '窓の外' } }, { cue: 'furu103', on: true },
+    ['n', '（あおいが、唐揚げに手をのばして……やめた）'],
+    [101, 'all', '「わたしは実家です。門限があって」'],
+    { glass: { 102: 0 } }, { cue: 'drink102', on: true },
+    [1, 101, '「門限！ 何時」'],
+    [101, 1, '「……11時です」'],
+    { cue: 'plateAll', on: false, miss: [[4, 'all', '「唐揚げ取るよ。皿かして」'], ['n', '（けいたが、手際よく取り分けた）']] },
+    { cue: 'furu103', on: false, miss: [] }, { expr: { 103: '真顔' } },
+    [4, 101, '「本とか読む？ なんか文芸っぽい」'],
+    { expr: { 102: 'スマホ' } }, { cue: 'furu102', on: true },
+    [101, 4, '「……読みます。いま、止まってる一冊があって」'],
+    { cue: 'drink102', on: false, miss: [[102, 'all', '「すみませーん、レモンサワー」']] },
+    { glass: { 102: 3 } },
+    [103, 101, '「わかる。……わたしも、ずっと同じページ」'],
+    [4, 103, '「何の本？」'],
+    [103, 4, '「宇宙の。……終わらないの」'],
+    { cue: 'furu102', on: false, miss: [['n', '（ゆなは、ずっとスマホを見ていた）']], missFx: { 102: -4 } },
+    { expr: { 102: '真顔' } },
+    ['n', '（本の話が、ふっと途切れた）'],
+    { cue: 'quiet101', on: true },
+    [101, 'all', '「……あの、塾でひとり、落ちちゃった子がいて」'],
+    [101, 'all', '「最後まで、わたしの言ったとおりにやってたんです」'],
+    [101, 'all', '「……言ったとおりにやって、落ちたんです」'],
+    [1, 101, '「……そっか」'],
+    { cue: 'quiet101', on: false, quietOk: { fx: { 101: 16 }, lines: [['n', '（あおいが、こっちを見て少し笑った）'], [101, 'P', '「……すみません。なんか、重くなって」', null, { 101: 'はにかみ' }]] } },
+    ['n', '（けんたが、カラオケの話をしはじめた）'],
+  ];
+  const F_ACT = { drink: '注文を聞く', plate: '取り分ける', furu: '話を振る' };
+  const F_OK = {
+    drink103: { act: 'drink', h: 103, fx: { 103: 8 }, glass: { 103: 3 }, lines: [['P', 103, '「めいちゃん、次なに飲む」', '気づいた'], [103, 'P', '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]] },
+    furu103: { act: 'furu', h: 103, fx: { 103: 10 }, expr: { 103: 'はにかみ' }, lines: [['P', 103, '「めいちゃんは？ 一人？」', '気づいた'], [103, 'P', '「ひとり。……部屋の音が、たまに大きい気がする」', null, { 103: 'はにかみ' }], [102, 103, '「わかる、冷蔵庫な」']] },
+    plateAll: { act: 'plate', h: 'all', fx: { 101: 6, 102: 2, 103: 2, air: 6 }, lines: [['P', 'all', '「唐揚げ取るよ。皿かして」', '気づいた'], [102, 'P', '「ありがと〜」', null, { 102: '笑' }], [101, 'P', '「……あ、すみません。レモン、かけないでもらえますか」', null, { 101: 'はにかみ' }]] },
+    drink102: { act: 'drink', h: 102, fx: { 102: 6 }, glass: { 102: 3 }, lines: [['P', 102, '「ゆなちゃん、グラス空いてる。頼む？」', '気づいた'], [102, 'P', '「え、ありがと！ レモンサワー」', null, { 102: '笑' }]] },
+    furu102: { act: 'furu', h: 102, fx: { 102: 12, air: 5 }, expr: { 102: '笑' }, lines: [['P', 102, '「ゆなちゃん、朝練ってまだやってんの」', '気づいた'], [102, 'P', '「やってる！ 聞いて、今朝さ」', null, { 102: '笑' }], [102, 'P', '「目覚まし三つ、全部止めてた」'], [4, 102, '「全部は無理だろ」']] },
+  };
+  const F_PLAIN = {
+    drink: { say: '「なんか頼む？」', back: { 101: '「……まだ、大丈夫です」', 102: '「まだ入ってるって」', 103: '「……まだある」' }, fx: 0 },
+    plate: { say: '「これ、取ろうか」', back: { 101: '「……あ、ありがとうございます」', 102: '「ありがと〜」', 103: '「……ありがと」' }, fx: 1 },
+    furu: { say: h => `「${NAME[h]}ちゃんは、どう」`, back: { 101: '「……わたしですか。えっと」', 102: '「え、うち？ なんだろ」', 103: '「……わたし？」' }, fx: 0, air: -2 },
+  };
+  const F_CUT = { drink: '「あ、なんか頼む？」', plate: '「唐揚げ、取ろうか」', furu: '「てかさ、ゆなちゃんは？」' };
+  async function runF(mode, g) {
+    const st = newState(), glass = { 101: 3, 102: 3, 103: 2 }, cues = new Set();
+    let extra = 0, mom = false, skipTo = null, served = false;
+    S.soft(true); S.focus(null);
+    const drawGlass = () => HS.forEach(h => S.meter(h, 'グラス ' + '▮'.repeat(glass[h]) + '▯'.repeat(3 - glass[h])));
+    drawGlass();
+    const actPanel = () => {
+      const p = S.el('div', 'panelcmd');
+      p.appendChild(S.el('div', 'top2', '<span>動く？（タップで会話の続き）</span>'));
+      p.appendChild(S.row(Object.entries(F_ACT).map(([k, l]) => S.btn(l, k === 'plate' ? 'みんなに' : null, '', () => k === 'plate' ? S.fire({ act: k, h: 'all' }) : pickTarget(k))), 3));
+      S.put(p);
+    };
+    const pickTarget = k => {
+      const p = S.el('div', 'panelcmd');
+      const top = S.el('div', 'top2', `<span>${F_ACT[k]}：だれに？</span>`);
+      const xb = S.el('button', null, '✕ やめる'); xb.type = 'button'; xb.addEventListener('click', ev => { ev.stopPropagation(); actPanel(); });
+      top.appendChild(xb); p.appendChild(top);
+      p.appendChild(S.row(HS.map(h => S.btn(NAME[h], null, '', () => S.fire({ act: k, h }))), 3));
+      S.put(p);
+    };
+    for (const node of F) {
+      if (!Array.isArray(node)) {
+        if (node.glass) { Object.assign(glass, node.glass); drawGlass(); }
+        if (node.expr) Object.entries(node.expr).forEach(([h, x]) => S.expr(+h, x));
+        if (node.cue && node.on) cues.add(node.cue);
+        if (node.cue && !node.on) {
+          if (node.cue === 'plateAll') served = true;
+          if (skipTo === node.cue) skipTo = null;
+          if (cues.has(node.cue)) {
+            cues.delete(node.cue);
+            if (node.quietOk) { fx(st, node.quietOk.fx); await play(node.quietOk.lines, g, st); st.picks.push('あおいの話を黙って聞いた'); }
+            else { if (node.missFx) fx(st, node.missFx, false); if (node.miss && node.miss.length) await play(node.miss, g, st); }
+          }
+        }
+        continue;
+      }
+      if (skipTo) continue;
+      show(node);
+      actPanel();
+      const v = await S.waitTap(g);
+      if (v === 'tap' || !v || !v.act) continue;
+      // 動いた
+      const quiet = cues.has('quiet101');
+      const key = [...cues].find(c => F_OK[c] && F_OK[c].act === v.act && F_OK[c].h === v.h);
+      S.clear();
+      if (quiet) {
+        cues.delete('quiet101'); skipTo = 'quiet101';
+        fx(st, { 101: -6, air: -6 }); st.picks.push(`${F_ACT[v.act]}（あおいの話の途中）`);
+        await play([['P', v.h, F_CUT[v.act], '割って入った'], [101, 'P', '「……あ、はい。大丈夫です」', null, { 101: '困り顔' }], ['n', '（あおいの話は、そこで終わった）']], g, st);
+        continue;
+      }
+      if (key) {
+        const ok = F_OK[key]; cues.delete(key); if (key === 'plateAll') served = true;
+        if (ok.glass) { Object.assign(glass, ok.glass); drawGlass(); }
+        fx(st, ok.fx); st.picks.push(`${F_ACT[v.act]}→${NAME[v.h] || 'みんな'}（気づいた）`);
+        await play(ok.lines, g, st);
+        continue;
+      }
+      const P = F_PLAIN[v.act]; extra++;
+      st.picks.push(`${F_ACT[v.act]}→${NAME[v.h] || 'みんな'}`);
+      if (v.h === 'all') await play([['P', 'all', '「なんか取ろうか」'], [1, 'P', served ? '「もう取ったって」' : '「まだ何も来てないって」']], g, st);
+      else {
+        fx(st, { [v.h]: P.fx, air: P.air || 0 }, P.fx > 0 ? undefined : false);
+        await play([['P', v.h, typeof P.say === 'function' ? P.say(v.h) : P.say], [v.h, 'P', P.back[v.h]]], g, st);
+      }
+      if (extra >= 3 && !mom) { mom = true; fx(st, { air: 3 }); await play([[1, 'P', '「お前、お母さんか」', null, { 102: '笑' }]], g, st); }
+    }
+    await S.waitTap(g, 'タップで結果');
+    finish(mode, st, g, { sections: [{ h: 'この夜の動き', p: [st.picks.join(' ／ ') || '（何もしなかった）'] }] });
+  }
+
+  // ════════════════════════════════════════════════════════
+  // G・H ミックス：話題ごとの小さな台本（B・D）× 光る言葉（C）× 掘る／乗る（C・E）× 場の手（F）
+  //   G＝時間で流れる（E） ／ H＝タップで進む（C を止めて読む形）。中身は同じ
+  // ════════════════════════════════════════════════════════
+  const GH_INTRO = [
+    INTRO,
+    ['n', '（話は、話題ごとに流れていく。光った言葉をタップすると「掘る（聞いて踏み込む）」か「乗る（自分の話を重ねる）」。手を出せるのは、1つの話題で1回）'],
+    ['n', '（はにかんでいる子は、聞いてほしそう。真顔の子には、自分の話を重ねるほうが届く。グラス・皿・話に入れていない子にも気を配れる）'],
+  ];
+  const GH = [
+    [ // バイト
+      [1, 'all', '「じゃ、バイトの話からいくか」', '話を振った'],
+      [102, 'all', '「うちカフェ。[[まかない|makanai]]目当てで入ったんだけどね」', null, { 102: '笑' }],
+      [4, 102, '「え、俺もカフェ。どこの」'],
+      [102, 4, '「駅の裏。ちっちゃいとこ」', null, { 102: '真顔' }],
+      [101, 'all', '「わたしは、[[塾|juku]]で……小学生を見てます」', null, { 101: '真顔' }],
+      { glass: { 103: 0 } }, { cue: 'drink103', on: true },
+      [103, 'all', '「わたしは、[[してない|nobaito]]。……向いてなくて」', null, { 103: 'はにかみ' }],
+      [1, 103, '「向いてないって何が」'],
+      [103, 1, '「……いらっしゃいませ、が」'],
+      [102, 103, '「え、それ言えないの」', null, { 102: '笑' }],
+      { cue: 'drink103', on: false, miss: [['n', '（めいは、自分で水を頼んでいた）']], glass: { 103: 2 } },
+    ],
+    [ // 住まい
+      { cue: 'plateAll', on: true }, ['n', '（唐揚げの大皿が来た）'],
+      [102, 'all', '「てかみんな[[一人暮らし|hitori]]？ うちは一人」', null, { 102: '笑' }],
+      [101, 'all', '「わたしは実家です。……[[門限|mongen]]、まだあります」', null, { 101: '真顔' }],
+      { glass: { 102: 0 } }, { cue: 'drink102', on: true },
+      [1, 101, '「門限あんの！ 何時」'],
+      [101, 1, '「……11時です」'],
+      { cue: 'plateAll', on: false, miss: [[4, 'all', '「唐揚げ取るよ。皿かして」'], ['n', '（けいたが、手際よく取り分けた）']] },
+      [103, 'all', '「ひとり。……[[部屋の音|oto]]が、たまに大きい気がする」', null, { 103: 'はにかみ' }],
+      [102, 103, '「わかる、冷蔵庫な」'],
+      [103, 102, '「……冷蔵庫、しゃべるよね」'],
+      { cue: 'drink102', on: false, miss: [[102, 'all', '「すみませーん、レモンサワー」']], glass: { 102: 3 } },
+    ],
+    [ // サークル・本
+      ['n', '（話が、サークルのことに移った）'],
+      [4, 'all', '「サークルは？ 俺は写真」'],
+      [101, 'all', '「……文芸です。[[部室|bushitsu]]、静かで好きで」', null, { 101: 'はにかみ' }],
+      { expr: { 102: 'スマホ' } }, { cue: 'furu102', on: true },
+      [4, 101, '「本とか、いま何読んでる？」'],
+      [101, 4, '「……[[止まってる一冊|hon]]があって。ずっと同じところ」', null, { 101: 'はにかみ' }],
+      [103, 101, '「わかる。……わたしも、ずっと同じページ」'],
+      [4, 103, '「何の本？」'],
+      [103, 4, '「宇宙の。……[[終わらない|owaranai]]の」', null, { 103: 'はにかみ' }],
+      { cue: 'furu102', on: false, miss: [['n', '（ゆなは、ずっとスマホを見ていた）']], missFx: { 102: -3 } },
+    ],
+    [ // しめ
+      ['n', '（けんたが、スマホで時間を見た）'],
+      [1, 'all', '「このあとカラオケ行く人ー」'],
+      [102, 1, '「行く行く！」', null, { 102: '笑' }],
+      [101, 'all', '「……わたしは、門限が」'],
+      [103, 'all', '「カラオケ。……聞く側なら」'],
+    ],
+  ];
+  // 光る言葉 → 掘る（dig）／乗る（go）。表情がサイン：はにかみ＝掘っていい／真顔＝掘ると引く（乗るなら届く）／笑＝どちらも軽く
+  const GH_HOOK = {
+    makanai: { h: 102, w: 'まかない',
+      dig: { fx: { 102: 6 }, lines: [['P', 102, '「まかない何出んの。毎日？」', '掘った'], [102, 'P', '「毎日！ でもほぼパスタ」', null, { 102: '笑' }], [102, 'P', '「店長、パスタしか作れないの」']] },
+      go: { fx: { 102: 4, 101: 2 }, lines: [['P', 102, '「いいな。塾なんも出ないよ」', '乗った'], [102, 'P', '「えー、お菓子とかないの」'], ['P', 102, '「生徒がくれる。うまい棒」'], [102, 'P', '「先生じゃん」', null, { 102: '笑', 101: 'はにかみ' }]] } },
+    juku: { h: 101, w: '塾',
+      go: { fx: { 101: 10 }, lines: [['P', 101, '「え、塾？ 俺も塾。小4の算数」', '乗った'], [101, 'P', '「……え。わたし、5年の国語です」', null, { 101: 'はにかみ' }], [101, 'P', '「あの子たち、こわいくらい正直ですよね」'], ['P', 101, '「字が汚いって毎週言われる」'], [101, 'P', '「……ふふ。言いますね」', null, { 101: '笑' }]] },
+      dig: { fx: { 101: -4 }, lines: [['P', 101, '「なんで塾にしたの。教えるの好きなの？」', '掘った'], [101, 'P', '「……えっと。……なんとなく、です」', null, { 101: '困り顔' }], ['n', '（少し、踏み込みすぎた）']] } },
+    nobaito: { h: 103, w: 'してない',
+      dig: { fx: { 103: 10 }, lines: [['P', 103, '「向いてないって、何が」', '掘った'], [103, 'P', '「……いらっしゃいませ、が」'], [103, 'P', '「言うたびに、ちょっと減る気がする」'], ['P', 103, '「減るって、何が」'], [103, 'P', '「……わかんない。何か」', null, { 103: 'はにかみ' }]] },
+      go: { fx: { 103: 5 }, lines: [['P', 103, '「分かる。俺もバイト先の電話むり」', '乗った'], [103, 'P', '「……電話。声が、自分じゃなくなる」', null, { 103: 'はにかみ' }]] } },
+    hitori: { h: 102, w: '一人暮らし',
+      dig: { fx: { 102: 6 }, lines: [['P', 102, '「何年目？ 自炊してる？」', '掘った'], [102, 'P', '「2年目。自炊は……パスタ」'], [102, 'P', '「あ、まかないと一緒じゃん。今気づいた」', null, { 102: '笑' }]] },
+      go: { fx: { 102: 3 }, lines: [['P', 102, '「いいな。俺実家だから、ちょっと憧れる」', '乗った'], [102, 'P', '「えー、実家のほうが楽じゃん」']] } },
+    mongen: { h: 101, w: '門限',
+      go: { fx: { 101: 10 }, lines: [['P', 101, '「俺も実家。親が起きて待ってるやつ」', '乗った'], [101, 'P', '「……玄関の電気、ついてますよね」', null, { 101: 'はにかみ' }], ['P', 101, '「ついてる。消しといてほしいのに」'], [101, 'P', '「……うちもです。何回言っても」']] },
+      dig: { fx: { 101: -5 }, lines: [['P', 101, '「門限って何時？ 厳しいの？」', '掘った'], [101, 'P', '「……11時です。厳しい、のかな」', null, { 101: '困り顔' }], [1, 101, '「11時！ じゃああと2時間いけるな」'], ['n', '（あおいは、グラスに目を落とした）']] } },
+    oto: { h: 103, w: '部屋の音',
+      dig: { fx: { 103: 10 }, lines: [['P', 103, '「部屋の音って、どんな音」', '掘った'], [103, 'P', '「……冷蔵庫と、時計と。あと、自分の息」'], [103, 'P', '「ひとりだと、ぜんぶ聞こえる」', null, { 103: 'はにかみ' }]] },
+      go: { fx: { 103: 5, 102: 2 }, lines: [['P', 103, '「冷蔵庫な。夜中しゃべる」', '乗った'], [103, 'P', '「……しゃべる。返事したことある」'], [102, 103, '「ある！」', null, { 102: '笑' }]] } },
+    bushitsu: { h: 101, w: '部室',
+      go: { fx: { 101: 6 }, lines: [['P', 101, '「部室にずっといる先輩、そっちもいる？」', '乗った'], [101, 'P', '「……います。いつ行っても、いるんです」'], [101, 'P', '「卒業したら、どうなるんでしょうね」', null, { 101: '笑' }]] },
+      dig: { fx: { 101: 6 }, lines: [['P', 101, '「部室の、どこが好きなの」', '掘った'], [101, 'P', '「……誰も、何も聞いてこないところ、かな」', null, { 101: 'はにかみ' }], ['P', 101, '「あ、今めっちゃ聞いてるわ」'], [101, 'P', '「……ふふ。いいです、今は」', null, { 101: '笑' }]] } },
+    hon: { h: 101, w: '止まってる一冊',
+      dig: { fx: { 101: 12 }, deep: true, lines: [['P', 101, '「どこで止まってんの。読みたくないとこ？」', '掘った'], ['n', '（ほかの声が、少し遠くなった）'], [101, 'P', '「……主人公が、家を出るところで」', null, { 101: 'はにかみ' }], [101, 'P', '「そこから先、読めないんです。なんでか」'], ['P', 101, '「……分かる気がする。実家だと」'], [101, 'P', '「……はい」']] },
+      go: { fx: { 101: 1 }, lines: [['P', 101, '「あるある。俺も積んでるのある」', '乗った'], [101, 'P', '「……積んでる、のとは、ちょっと違うんですけど」', null, { 101: '真顔' }]] } },
+    owaranai: { h: 103, w: '終わらない',
+      dig: { fx: { 103: 10 }, lines: [['P', 103, '「終わらないって、話が？」', '掘った'], [103, 'P', '「……話が。宇宙、ずっと広がってるから」'], [103, 'P', '「読み終わったら、閉じちゃうでしょ」', null, { 103: 'はにかみ' }]] },
+      go: { fx: { 103: 5 }, lines: [['P', 103, '「分かる。俺も途中のままの本ある」', '乗った'], [103, 'P', '「……途中のまま、いいよね」']] } },
+  };
+  const GH_BA_OK = {
+    plateAll: F_OK.plateAll, drink103: F_OK.drink103, drink102: F_OK.drink102,
+    furu102: Object.assign({ endBlock: true }, F_OK.furu102),
+  };
+  async function runGH(mode, g, timed) {
+    const st = newState(), glass = { 101: 3, 102: 3, 103: 2 }, cues = new Set(), shot = new Set();
+    let extra = 0, mom = false, served = false;
+    S.soft(true); S.focus(null);
+    const drawGlass = () => HS.forEach(h => S.meter(h, 'グラス ' + '▮'.repeat(glass[h]) + '▯'.repeat(3 - glass[h])));
+    drawGlass();
+    const panel = canHook => {
+      const p = S.el('div', 'panelcmd');
+      p.appendChild(S.el('div', 'top2', `<span>${canHook ? '光った言葉をタップ（この話題で1回）' : '（話は流れていく）'}</span><span>${timed ? '画面タップで次へ' : 'タップで続き ▸'}</span>`));
+      p.appendChild(S.row([
+        S.btn('取り分ける', 'みんなに', 'quiet', () => S.fire({ ba: 'plate', h: 'all' })),
+        S.btn('注文を聞く', null, 'quiet', () => target('drink')),
+        S.btn('話を振る', null, 'quiet', () => target('furu'))], 3));
+      S.put(p);
+    };
+    const target = k => {
+      const p = S.el('div', 'panelcmd');
+      const top = S.el('div', 'top2', `<span>${F_ACT[k]}：だれに？</span>`);
+      const xb = S.el('button', null, '✕ やめる'); xb.type = 'button'; xb.addEventListener('click', ev => { ev.stopPropagation(); S.fire({ cancel: true }); });
+      top.appendChild(xb); p.appendChild(top);
+      p.appendChild(S.row(HS.map(h => S.btn(NAME[h], null, '', () => S.fire({ ba: k, h }))), 3));
+      S.put(p);
+    };
+    const hand = v => new Promise(res => {
+      const H = GH_HOOK[v.kw];
+      const p = S.el('div', 'panelcmd');
+      const top = S.el('div', 'top2', `<span>「${H.w}」に（${NAME[H.h]}）</span>`);
+      const xb = S.el('button', null, '✕ やめる'); xb.type = 'button'; xb.addEventListener('click', ev => { ev.stopPropagation(); res(null); });
+      top.appendChild(xb); p.appendChild(top);
+      p.appendChild(S.row([S.btn('掘る', '聞いて踏み込む', '', () => res('dig')), S.btn('乗る', '自分の話を重ねる', '', () => res('go'))]));
+      S.put(p);
+    });
+    const closeCue = async node => {
+      if (node.cue === 'plateAll') served = true;
+      if (!cues.has(node.cue)) return;
+      cues.delete(node.cue);
+      if (node.missFx) fx(st, node.missFx, false);
+      if (node.miss && node.miss.length) await play(node.miss, g, st);
+      if (node.glass) { Object.assign(glass, node.glass); drawGlass(); }
+    };
+    // 場の手
+    async function ba(v) {
+      const key = [...cues].find(c => GH_BA_OK[c] && GH_BA_OK[c].act === v.ba && GH_BA_OK[c].h === v.h);
+      if (key) {
+        const ok = GH_BA_OK[key]; cues.delete(key); if (key === 'plateAll') served = true;
+        if (ok.glass) { Object.assign(glass, ok.glass); drawGlass(); }
+        fx(st, ok.fx); st.picks.push(`${F_ACT[v.ba]}→${NAME[v.h] || 'みんな'}（気づいた）`);
+        await play(ok.lines, g, st);
+        return !!ok.endBlock;
+      }
+      extra++; st.picks.push(`${F_ACT[v.ba]}→${NAME[v.h] || 'みんな'}`);
+      if (v.h === 'all') await play([['P', 'all', '「なんか取ろうか」'], [1, 'P', served ? '「もう取ったって」' : '「まだ何も来てないって」']], g, st);
+      else {
+        const P = F_PLAIN[v.ba];
+        fx(st, { [v.h]: P.fx, air: P.air || 0 }, P.fx > 0 ? undefined : false);
+        await play([['P', v.h, typeof P.say === 'function' ? P.say(v.h) : P.say], [v.h, 'P', P.back[v.h]]], g, st);
+      }
+      if (extra >= 3 && !mom) { mom = true; fx(st, { air: 3 }); await play([[1, 'P', '「お前、お母さんか」', null, { 102: '笑' }]], g, st); }
+      return false;
+    }
+
+    for (const x of GH_INTRO) { show(x); await S.waitTap(g, 'タップで続き'); }
+    if (timed) { show(['n', '（会話は時間で流れていく。手を出している間だけ、止まる）']); await S.waitTap(g, 'タップで始める'); }
+    for (const blk of GH) {
+      HS.forEach(h => S.expr(h, '真顔'));
+      let i = 0, end = false;
+      for (; i < blk.length && !end; i++) {
+        const x = blk[i];
+        if (!Array.isArray(x)) {
+          if (x.glass && x.on !== false && !x.cue) { Object.assign(glass, x.glass); drawGlass(); }
+          if (x.expr) Object.entries(x.expr).forEach(([h, e]) => S.expr(+h, e));
+          if (x.cue && x.on) cues.add(x.cue);
+          if (x.cue && x.on === false) await closeCue(x);
+          continue;
+        }
+        const hasHook = /\[\[/.test(x[2] || '');
+        if (x[0] === 'n') S.narr(x[1]);
+        else {
+          const plain = x[2].replace(/\[\[(.+?)\|.+?\]\]/g, '$1');
+          S.say(x[0], x[1], x[3] || null, plain, { html: kwHtml(x[2], shot), logText: plain, expr: x[4] });
+          document.querySelectorAll('#text .kw[data-kw]').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); S.fire({ kw: b.dataset.kw }); }));
+        }
+        panel(hasHook);
+        const len = (x[0] === 'n' ? x[1] : x[2]).length;
+        const v = timed ? await S.waitTapOr(1500 + len * 110, g) : await S.waitTap(g);
+        if (!v || v === 'tap' || v === 'time') continue;
+        if (v.cancel) { i--; continue; }
+        if (v.kw) {
+          const H = GH_HOOK[v.kw];
+          const k = await hand(v);
+          if (!k) { i--; continue; }
+          shot.add(v.kw);
+          const B = H[k];
+          st.picks.push(`「${H.w}」を${k === 'dig' ? '掘った' : '乗った'}`);
+          S.clear();
+          fx(st, B.fx);
+          if (B.deep) {
+            for (const y of B.lines) { show(y); if (y[0] !== 'n') S.focus(y[0] === 'P' ? null : y[0], HS.filter(h => h !== H.h)); await S.waitTap(g, 'タップで続き'); }
+          } else await play(B.lines, g, st);
+          end = true; continue;
+        }
+        if (v.ba) { S.clear(); if (await ba(v)) end = true; }
+      }
+      // 話題が早く終わったら、開いたままの気配りは、ここで閉じる（まだ開いていないものは開かない）
+      for (; i < blk.length; i++) { const x = blk[i]; if (!Array.isArray(x) && x.cue && x.on === false) await closeCue(x); }
+      HS.forEach(h => S.expr(h, '真顔'));
+    }
+    show(['n', '（お開きになった）']);
+    await S.waitTap(g, 'タップで結果');
+    finish(mode, st, g, { sections: [{ h: 'この夜の手', p: [st.picks.join(' ／ ') || '（何もしなかった）'] }] });
+  }
+
+  // ════════════════════════════════════════════════════════
+  // I  流れる会話（E）× 手札の話題（C）× 目立ち（グノーシアの「疑い」）× 気づき（グノーシアの「嘘に気づく」）
+  //    × 話題を出すか待つか（グノーシアのラウンドの頭）× 帰り道（投票）
+  //   10/2（1回目）：ボタンは少なく／話題は自分で選ぶ／黙るにも喋りすぎにも損／気配りは「その瞬間に気づけるか」
+  //   10/2（2回目）：返しは自然につながるものだけ／気づけるかは空気読みと目立ち次第／取り分けは「各自で取ろ」
+  //   10/2（3回目）：会話が途切れたら「話題を出す」か「待つ」か。待つと友達が話題を出す（最後は あおいが話し出す）
+  //         スマホの札はやめた（あからさますぎる）→ 退屈そうな子には、話しかけるか、好きそうな話題を出す
+  //         取り分けてもらったら「ありがと」が言える。連絡先は全員と交換が筋 → 最後は「帰り道、だれの隣を歩くか」
+  //   10/4：パン屋・居酒屋の返しを「減る」に頼らない形に、LINEでスタンプを選べる、場所が変わると背景と札も変わる
+  //   10/3（2回目）：冷蔵庫の台詞、あおいの話の前ぶれ、二次会で場所が変わる・帰る子は場を離れる、ヒントは友達→メタの順、「黙って聞く」ボタン
+  //   10/3：自分の設定を3通り（A 塾・文化系・実家／B 居酒屋・フットサル・一人暮らし／C パン屋の朝番・軽音・寮）。話題を2つ足した
+  // ════════════════════════════════════════════════════════
+  NAME.S = '店員';
+  const I_CARDS = { juku: '#塾バイト', jikka: '#実家', bushitsu: '#部室の主' };
+  const I_CUE = {
+    glass103: { at: 103, label: 'グラス空', need: 40, m: 4, fx: { 103: 6 }, lines: [['n', '（めいのグラスに気づいて、メニューを渡した）'], [103, 'P', '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], miss: [['n', '（めいは、空のグラスをしばらく持っていた）']] },
+    tong: { noBridge: true, at: 101, label: 'トング', need: 35, m: 6, fx: { 101: 8, 102: 2, air: 4 }, lines: [['P', 'all', '「あ、各自で取ろ。好きなだけ」', '声をかけた'], [101, 'P', '「……あ、はい。じゃあ、自分の分だけ」', null, { 101: 'はにかみ' }]],
+      miss: [['n', '（あおいが、みんなの分を取り分けはじめた）'],
+        { line: [101, 'P', '「……どうぞ」'], b: { at: 'end', ms: 4500, opts: [
+          { k: 'go', label: 'ありがと', say: '「あ、ありがと」', fx: { 101: 3 }, lines: [[101, 'P', '「……いえ」', null, { 101: 'はにかみ' }]] },
+          { k: 'go', label: '任せちゃってごめん', say: '「ごめん、任せちゃった。ありがと」', fx: { 101: 5 }, lines: [[101, 'P', '「……いえ。慣れてるので」', null, { 101: 'はにかみ' }]] }],
+          silence: { fx: { 101: -1 }, lines: [[102, 101, '「あおいちゃん、ありがと〜」']] } } }] },
+    glass102: { at: 102, label: '店員を探してる', need: 45, m: 4, fx: { 102: 6 }, lines: [['n', '（ゆなの代わりに、店員を呼んだ）'], [102, 'P', '「え、ありがと！ レモンサワー」', null, { 102: '笑' }]],
+      miss: [[102, 'all', '「すみませーん！ ……あれ、聞こえてない」'], ['n', '（ゆなは、しばらく店員を呼べずにいた）']] },
+    chaser103: { mem: { h: 103, send: '「昨日、ちゃんと帰れた？」', echo: '「……帰れた。水、ありがと」' }, at: 103, label: 'ほろ酔い', need: 60, m: 2, fx: { 103: 10 }, lines: [['n', '（何も言わずに、めいの分の水を頼んだ）'], [103, 'P', '「……あ。……ありがと」', null, { 103: 'はにかみ' }]], miss: [['n', '（めいは、少し眠そうにしていた）']] },
+    order: { noBridge: true, at: 'table', label: 'ラストオーダー', need: 0, m: 6, fx: { 101: 2, 102: 2, 103: 2, air: 6 }, quietSay: '「あ、みんな最後なに飲む？」', lines: [['P', 'all', '「すみません、お願いします。みんな最後なに飲む？」', 'まとめた'], [102, 'P', '「うちレモンサワー！」', null, { 102: '笑' }], [101, 'P', '「……ウーロン茶で」']], miss: [[1, 'all', '「あ、ラストオーダー！ 全員ウーロン茶で！」'], ['n', '（けんたが、雑にまとめた）']], missFfx: { 102: { 1: 3 } } },
+  };
+  // 話題（途切れたときに出せる）。openP＝自分が出す一言、openF＝待ったときに友達が出す一言。fans＝その話題で上がる子
+  const I_TOPICS = {
+    sumai: { label: '住まいの話', fans: { 101: 2, 102: 2, 103: 2 }, openP: '「みんな、実家？ 一人暮らし？」', openF: [1, 'all', '「てかさ、みんな一人暮らし？」'], nodes: [
+      { line: [102, 'all', '「うちは[[一人暮らし]]。2年目」'], b: { at: 'end', ms: 5000, opts: [
+        { k: 'dig', label: '自炊してる？', need: 0, say: '「自炊とかしてる？」', mem: { h: 102, send: '「今日もパスタ？」', echo: '「なんでわかるの」' }, ok: { fx: { 102: 6 }, lines: [[102, 'P', '「してない。……パスタだけ」'], [102, 'P', '「あ、まかないと一緒じゃん」', null, { 102: '笑' }]] } },
+        { k: 'card', card: 'jikka', label: 'ちょっと憧れる', say: '「俺実家。一人暮らし、ちょっと憧れる」', fx: { 102: 3, 101: 3 }, lines: [[102, 'P', '「えー、実家のほうが楽じゃん」'], [101, 'P', '「……楽、ですよね」', null, { 101: 'はにかみ' }]] }],
+        silence: { lines: [] } } },
+      { cue: 'glass102', life: 3 },
+      [101, 'all', '「わたしは実家です。……門限、11時で」'],
+      { line: [1, 101, '「11時！ じゃあ、まだ2時間いられるじゃん」'], b: { at: 'start', extra: 1400, opts: [
+        { k: 'tease', label: '帰さない気か', say: '「お前、帰さない気だろ」',
+          fx: { 101: 3 }, lines: [[1, 'P', '「ちげーよ」']],
+          cut: { fx: { 101: 8, air: 5 }, lines: [[1, 'P', '「ちげーよ！ ……ちょっとある」', null, { 101: '笑' }], [101, 'P', '「……ふふ」', null, { 101: '笑' }]] } },
+        { k: 'card', card: 'jikka', label: '俺も実家', say: '「俺も実家。親が起きて待ってるやつ」', mem: { h: 101, send: '「玄関の電気、昨日もついてた？」', echo: '「……ついてました。やっぱり」' }, fx: { 101: 10 }, lines: [[101, 'P', '「……玄関の電気、ついてますよね」', null, { 101: 'はにかみ' }], ['P', 101, '「ついてる。消しといてほしいのに」'], [101, 'P', '「……うちもです。何回言っても」']] }],
+        silence: { fx: { 101: -4 }, ffx: { 101: { 1: -6 } }, lines: [[101, 1, '「……えっと」', null, { 101: '困り顔' }]] } } },
+      { line: [103, 'all', '「ひとり。……[[部屋の音]]が、たまに大きい」'], b: { at: 'end', ms: 5500, opts: [
+        { k: 'dig', label: 'どんな音？', need: 30, say: '「部屋の音って、どんな音」', mem: { h: 103, send: '「昨日の夜も、冷蔵庫ブーンって鳴った？」', echo: '「……鳴った。また、びくってした」' },
+          ok: { fx: { 103: 10 }, lines: [[103, 'P', '「……冷蔵庫と、時計と。あと、自分の息」'], [103, 'P', '「ひとりだと、ぜんぶ聞こえる」', null, { 103: 'はにかみ' }]] },
+          ng: { fx: { 103: 1 }, lines: [[103, 'P', '「……ふつうの音」', null, { 103: '真顔' }]] } },
+        { k: 'go', label: '夜中の冷蔵庫', say: '「冷蔵庫な。夜中に急にブーンって鳴るやつ」', mem: { h: 103, send: '「昨日の夜も、冷蔵庫ブーンって鳴った？」', echo: '「……鳴った。また、びくってした」' }, fx: { 103: 6, 102: 2 }, lines: [[103, 'P', '「……鳴る。毎回、びくってする」'], [102, 103, '「する！ 誰かいるのかと思う」', null, { 102: '笑' }]] },
+        { k: 'card', card: 'jikka', label: '実家はうるさい', say: '「実家だと、逆に静かになんないよ」', fx: { 103: 3 }, lines: [[103, 'P', '「……うらやましい、かも」']] }],
+        silence: { lines: [[102, 103, '「わかる、冷蔵庫な。夜中に急に鳴るやつ」'], [103, 102, '「……鳴る。びくってする」']] } } }] },
+    circle: { label: 'サークルの話', fans: { 101: 3, 103: 3 }, openP: '「サークルって、みんな何やってる？」', openF: [4, 'all', '「サークルは？ 俺は写真」'], nodes: [
+      [102, 'all', '「うちテニス。朝練がほんと無理」'],
+      { line: [103, 'all', '「天文。……[[部室]]に、ずっといる人がいる」'], b: { at: 'end', ms: 5000, opts: [
+        { k: 'dig', label: 'ずっと？', need: 0, say: '「ずっといるって、住んでんの？」', ok: { fx: { 103: 5 }, lines: [[103, 'P', '「たぶん。椅子が、その人の形になってる」']] } },
+        { k: 'card', card: 'bushitsu', label: 'うちにもいる', say: '「部室の主な。うちにもいる」', mem: { h: 103, send: '「うちの部室の主、今日もいた」', echo: '「……やっぱり。見に行きたい」' }, fx: { 103: 10 }, lines: [[103, 'P', '「いる。あれはもう、部屋の一部」', null, { 103: 'はにかみ' }], [103, 'P', '「……今度、見に行っていい。君のとこの」']] }],
+        silence: { lines: [] } } },
+      { expr: { 102: '退屈' } },
+      { line: [101, 'all', '「……文芸です。わたしも、ほぼ[[部室]]にいて」'], b: { at: 'end', ms: 5000, opts: [
+        { k: 'dig', label: '部室の何が？', need: 40, say: '「部室の、どこがいいの」', mem: { h: 101, send: '「今日も部室、静かだった？」', echo: '「……静かでした。少しだけ、さみしかったです」' },
+          ok: { fx: { 101: 8 }, lines: [[101, 'P', '「……誰も、何も聞いてこないところ、かな」', null, { 101: 'はにかみ' }], ['P', 101, '「あ、今めっちゃ聞いてるわ」'], [101, 'P', '「……ふふ。いいです、今は」', null, { 101: '笑' }]] },
+          ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……静か、なので」', null, { 101: '真顔' }]] } },
+        { k: 'card', card: 'bushitsu', label: 'そっちにも主？', say: '「文芸部にも、主っている？」', mem: { h: 101, send: '「文芸部の主、元気？」', echo: '「……今日もいました」' }, fx: { 101: 6 }, lines: [[101, 'P', '「……います。いつ行っても、いるんです」']] }],
+        silence: { lines: [] } } },
+      { ffx: { 101: { 4: 6 } } },
+      [4, 101, '「本とか、いま何読んでる？」'],
+      [101, 4, '「……止まってる一冊があって。ずっと同じところ」'],
+      [103, 101, '「わかる。……わたしも、ずっと同じページ」'],
+      { line: [102, 'all', '「……へー」', null, { 102: '退屈' }], b: { at: 'end', ms: 5000, opts: [
+        { k: 'furu', label: 'ゆなに：朝練の話', say: '「ゆなちゃん、テニスの朝練って何時から？」', mem: { h: 102, send: '「朝練、起きれた？」', echo: '「起きれなかった！ 目覚まし三つ止めた」' }, fx: { 102: 10, air: 4 }, lines: [[102, 'P', '「6時！ ありえなくない？」', null, { 102: '笑' }], [4, 102, '「それは無理だわ」']] },
+        { k: 'furu', label: 'ゆなに：漫画は？', say: '「ゆなちゃんは、漫画とか読む？」', fx: { 102: 5 }, lines: [[102, 'P', '「漫画なら読む！ 最近のやつ」', null, { 102: '笑' }]] }],
+        silence: { fx: { 102: -3 }, ffx: { 102: { 1: 6 } }, lines: [['n', '（ゆなは、けんたと別の話をはじめていた）']] } } },
+      { expr: { 102: '真顔' } }] },
+    latte: { label: 'ラテアートの話', fans: { 102: 5 }, openP: '「ゆなちゃん、ラテアートとかやるの？」', openTo: 102, openF: [4, 102, '「そういえば、ラテアートってやる？」'], nodes: [
+      [102, 'all', '「やる！ でも、ハートが毎回歪むの」', null, { 102: '笑' }],
+      { line: [4, 102, '「あれ、最初は全部[[歪む]]よな」'], b: { at: 'end', ms: 5000, opts: [
+        { k: 'dig', label: '写真ある？', need: 0, say: '「写真ある？ 見たい」', mem: { h: 102, send: '「ハートの写真、また見せて」', echo: '「今日のやつ、もっと歪んだ」' }, ok: { fx: { 102: 8, 101: 2 }, lines: [[102, 'P', '「ある！ ……ほら、これ」', null, { 102: '笑' }], ['n', '（スマホの画面に、歪んだハートが写っていた）'], [101, 102, '「……かわいい」']] } },
+        { k: 'tease', label: 'それ心臓では', say: '「それもう心臓じゃん」', fx: { 102: 4, air: 6 }, lines: [[102, 'P', '「ひど！ ……でも、ちょっとわかる」', null, { 102: '笑' }]] }],
+        silence: { ffx: { 102: { 4: 8 } }, lines: [[4, 102, '「俺のは雲になる」'], [102, 4, '「雲！」', null, { 102: '笑' }]] } } },
+      [101, 102, '「……カフェ、行ってみたいです。ゆなさんのとこ」'],
+      { line: [103, 'all', '「……ラテの泡って、[[宇宙]]みたい」'], b: { at: 'end', ms: 5000, opts: [
+        { k: 'dig', label: 'どこが？', need: 30, say: '「どこが宇宙なの」', mem: { h: 103, send: '「ラテ混ぜたら、ほんとに渦だった」', echo: '「……でしょ」' },
+          ok: { fx: { 103: 8 }, lines: [[103, 'P', '「混ぜると、渦になるとこ」', null, { 103: 'はにかみ' }]] },
+          ng: { fx: { 103: 1 }, lines: [[103, 'P', '「……なんとなく」', null, { 103: '真顔' }]] } }],
+        silence: { lines: [[102, 103, '「わかる！ わかんないけど」', null, { 102: '笑' }]] } } }] },
+  };
+  I_TOPICS.jimoto = { label: '地元の話', fans: { 101: 2, 102: 3, 103: 1 }, openP: '「みんな地元どこ？ 俺けっこう遠くてさ」', openF: [1, 'all', '「てか、みんな地元どこ？」'], nodes: [
+    [102, 'all', '「関西！ ……あ、もう出てる？ 関西弁」', null, { 102: '笑' }],
+    { line: [101, 'all', '「……わたしも、[[関西]]です」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: 'どのへん？', need: 30, say: '「え、関西のどのへん？」', mem: { h: 101, send: '「京都の端っこって、どのへん？」', echo: '「……川がふたつ、合流するとこです」' },
+        ok: { fx: { 101: 7 }, lines: [[101, 'P', '「……京都の、端っこです。何もないところ」', null, { 101: 'はにかみ' }], [102, 101, '「え、京都！ 近いじゃん」', null, { 102: '笑' }]] },
+        ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……京都の、ほうです」', null, { 101: '真顔' }]] } },
+      { k: 'tease', label: '関西弁出して', say: '「関西弁、出してみてよ」', fx: { 102: 4, 101: -2, air: 4 }, lines: [[102, 'P', '「なんでやねん！ ……これでええ？」', null, { 102: '笑' }], [101, 'P', '「……わたしは、出ないです」', null, { 101: '困り顔' }]] }],
+      silence: { lines: [[102, 101, '「え、関西どこ？ うち大阪」'], [101, 102, '「……京都です」']] } } },
+    [103, 'all', '「わたしは、北のほう。……雪がすごいとこ」'],
+    { line: [1, 103, '「雪！ 冬とか[[どうしてんの]]」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '冬、帰る？', need: 0, say: '「冬、帰ったりすんの？」', mem: { h: 103, send: '「そっち、もう雪降った？」', echo: '「……まだ。でも、空がそういう色」' },
+        ok: { fx: { 103: 6 }, lines: [[103, 'P', '「……帰らない。帰ると、戻ってこれない気がする」', null, { 103: 'はにかみ' }]] } },
+      { k: 'go', label: '俺も遠い', say: '「俺も地元遠いから、ちょっとわかる」', fx: { 103: 4, 101: 2 }, lines: [[103, 'P', '「……遠いと、帰るのに理由がいる」'], [101, 'P', '「……わかります。少しだけ」']] }],
+      silence: { ffx: { 103: { 1: 4 } }, lines: [[103, 1, '「……こたつから、出ない」'], [1, 103, '「それ冬眠じゃん」', null, { 103: '笑' }]] } } }] };
+  // 10/3 追加の話題（サブエージェント作）
+  I_TOPICS.holiday = { label: '休みの日の話', fans: { 101: 2, 102: 1, 103: 2 }, openP: '「休みの日って、みんな何してる？ 俺はだいたい寝てる」', openF: [1, 'all', '「てかさ、みんな休みの日なにしてんの」'], nodes: [
+    [102, 'all', '「うち、昼まで寝る！ 起きたらもう夕方」', null, { 102: '笑' }],
+    [1, 102, '「うわ、真逆だわ。俺は朝イチで走ってる」'],
+    { line: [101, 'all', '「……電車に乗って、[[終点]]まで行きます。ひとりで」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '終点で何する？', need: 25, say: '「終点で何するの？ 降りたりする？」', mem: { h: 101, send: '「今日の終点、どこだった？」', echo: '「……海の見える駅でした。誰もいなくて」' },
+        ok: { fx: { 101: 7 }, lines: [[101, 'P', '「……降ります。ホームの自販機で、コーヒーだけ」'], [101, 'P', '「飲み終わったら、反対の電車で帰ります」', null, { 101: 'はにかみ' }], [102, 101, '「え、それだけ！？ もっとなんかあるでしょ」', null, { 102: '笑' }]] },
+        ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……降りて、また戻ります。それだけです」', null, { 101: '真顔' }]] } },
+      { k: 'go', label: '俺は乗り過ごす', say: '「俺は逆。乗り過ごして、終点に着くほう」', mem: { h: 101, send: '「昨日は乗り過ごさなかった。終点はまた今度」', echo: '「……ふふ。わたしは昨日も、終点まで行きました」' }, fx: { 101: 4, 102: 2 }, lines: [[101, 'P', '「……それも、終点には着きますね」', null, { 101: '笑' }], [102, 'P', '「うちも！ 起きたら知らん駅だった」', null, { 102: '笑' }]] },
+      { k: 'tease', label: 'もう旅人', say: '「ひとり旅の人じゃん。行き先は決めてんの」', mem: { h: 101, send: '「今日はどこまで旅してきた？」', echo: '「……旅では、ないです。終点まででした」' }, fx: { 101: 2, 102: 3 }, lines: [[101, 'P', '「……旅では、ないです。ただ、乗るだけで」', null, { 101: '困り顔' }], [102, 101, '「ただ乗るだけって、うちスマホ見ちゃう」']] }],
+      silence: { ffx: { 101: { 4: 6 } }, lines: [[4, 101, '「終点って、着いたあと何するの」'], [101, 4, '「……何も。コーヒーを、飲むだけです」', null, { 101: 'はにかみ' }]] } } },
+    [4, 'all', '「俺はカメラ持って散歩。撮らない日のほうが多い」'],
+    { line: [103, 'all', '「……洗濯機の前に、座ってる。[[電気代]]の見張り」'], b: { at: 'end', ms: 5500, opts: [
+      { k: 'dig', label: '何分見てる？', need: 30, say: '「何分くらい見てるの？ 洗濯終わるまで？」', mem: { h: 103, send: '「今日も洗濯機、最後まで見てた？」', echo: '「……見てた。靴下が、一枚だけ迷子で」' },
+        ok: { fx: { 103: 8 }, lines: [[103, 'P', '「……四十分。ぜんぶ見る」'], [103, 'P', '「止まると、ちょっとだけ、さみしい」', null, { 103: 'はにかみ' }]] },
+        ng: { fx: { 103: 1 }, lines: [[103, 'P', '「……洗い終わるまで。それだけ」', null, { 103: '真顔' }]] } },
+      { k: 'go', label: 'ぐるぐる見ちゃう', say: '「わかる。ドラム式のぐるぐる、つい見ちゃう」', mem: { h: 103, send: '「今日も洗濯機、ぐるぐる見てた」', echo: '「……見てた。ぐるぐる、まだ回ってる」' }, fx: { 103: 5, 102: 2 }, lines: [[103, 'P', '「……ぐるぐる。止まるまで、見れる」'], [102, 103, '「うちも見る！ 靴下消えるやつ！」', null, { 102: '笑' }]] },
+      { k: 'tease', label: '見ても変わらない', say: '「見てても、電気代は変わらなくない？」', fx: { 103: -2, air: 3 }, lines: [[103, 'P', '「……わかってる。……言わないで」', null, { 103: '困り顔' }], [102, 103, '「でも見ちゃうよね！ うちもわかる」', null, { 102: '笑' }]] }],
+      silence: { lines: [[102, 103, '「うち、洗濯機の前で絶対寝る」'], [103, 102, '「……寝ても、洗濯機は、回ってる」']] } } },
+    [102, 'all', '「うち、ひとりだと三十分で誰か呼んじゃう」']] };
+
+  I_TOPICS.osake = { label: 'お酒の強さの話', fans: { 101: 2, 102: 1, 103: 2 }, openP: '「お酒って、みんな強い方？ 弱い方？」', openF: [1, 'all', '「てかさ、みんな酒つよい？ 俺はザル」'], nodes: [
+    [102, 'all', '「うちは強い方！ あ、でも次の日が」', null, { 102: '笑' }],
+    { line: [1, 'all', '「俺はザルだけど。弱い人[[挙手]]な、正直に」'], b: { at: 'start', extra: 1400, opts: [
+      { k: 'dig', label: 'ほんとにザル？', need: 0, say: '「お前、ほんとにザル？ 証拠あんの」', mem: { h: 102, send: '「けんたのザル疑惑、結局どうなった？」', echo: '「記憶ないだけだった！ 証拠なし！」' },
+        ok: { fx: { 102: 5, air: 3 }, lines: [[1, 'P', '「証拠はない。覚えてないからな」'], [102, 1, '「それザルじゃなくて、記憶ないだけじゃん」', null, { 102: '笑' }]] },
+        ng: { fx: { 102: 1 }, lines: [[1, 'P', '「ザルだよ。見てりゃわかるだろ」']] } },
+      { k: 'go', label: '弱い側です', say: '「はい、俺は弱いほう。ウーロンでいいや」', mem: { h: 101, send: '「昨日のウーロン、正解だったよな」', echo: '「……はい。わたしも、ウーロンで助かりました」' }, fx: { 101: 4, 103: 2, air: 4 }, lines: [[1, 'P', '「おっけ、一人目な。飲めないやつは飲まなくていいぞ」'], [102, 'P', '「うちもウーロンの日あるよ、わりと」']] },
+      { k: 'tease', label: '仕切り方が圧', say: '「ザルが仕切ると、弱い側は手あげづらいだろ」', mem: { h: 102, send: '「けんたの圧、昨日も健在だったな」', echo: '「健在！ 解散するまで圧だった！」' }, fx: { 102: 4, 101: 2, air: 4 }, lines: [[1, 'P', '「いや、圧かけてねえだろ」'], [102, 1, '「かけてる！ 声がもう圧！」', null, { 102: '笑' }]],
+        cut: { fx: { 102: 6, 101: 3, air: 6 }, lines: [[1, 'P', '「まだ言い終わってねえよ！ ……圧あった？」'], [101, 'P', '「……ふふ。ちょっとだけ、ありました」', null, { 101: '笑' }]] } }],
+      silence: { ffx: { 103: { 1: 4 } }, lines: [[1, 'all', '「いないな！ よし、全員つよい扱いで」'], [103, 1, '「……いるよ。手、あげてないだけ」', null, { 103: '真顔' }]] } } },
+    [4, 1, '「ザルって言う奴ほど、帰りに自販機と話してる」'],
+    { line: [101, 'all', '「……わたしは、弱いです。一口で、[[赤く]]なって」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '乾杯だけで？', need: 25, say: '「一口で赤くなるの？ 乾杯のときとか」', mem: { h: 101, send: '「今日は赤くならずに済んだ？」', echo: '「……お茶だったので。大丈夫でした」' },
+        ok: { fx: { 101: 7 }, lines: [[101, 'P', '「……はい。耳まで。乾杯のときが、いちばん」'], [101, 'P', '「だから写真には、あまり入りません」', null, { 101: 'はにかみ' }]] },
+        ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……はい、すぐに、です」', null, { 101: '真顔' }]] } },
+      { k: 'go', label: '俺も一杯が長い', say: '「俺も一杯が長い。氷が溶けるまで粘る」', mem: { h: 101, send: '「今日の氷、どのくらい粘った？」', echo: '「……ずっと、粘りました。薄いのも、好きです」' }, fx: { 101: 6, air: 2 }, lines: [[101, 'P', '「……氷、わかります。薄くなっても、飲みます」', null, { 101: '笑' }]] }],
+      silence: { ffx: { 101: { 1: 6 } }, lines: [[1, 101, '「あおいちゃんは、無理に飲まなくていいからな」'], [101, 1, '「……はい。ありがとうございます」', null, { 101: 'はにかみ' }]] } } },
+    [103, 'all', '「……顔には、出ない。ぜんぶ、あとで」'],
+    [1, 103, '「顔に出ないやつが、一番あぶないんだよ。水いる？」']] };
+
+  I_TOPICS.oshi = { label: '最近ハマってる話', fans: { 101: 1, 102: 4, 103: 1 }, openP: '「最近ハマってるものって、みんなある？」', openF: [4, 'all', '「最近ハマってるもの、ある？ 俺はフィルム現像」'], nodes: [
+    [102, 'all', '「あるある！ ありすぎて、一個に絞れない」', null, { 102: '笑' }],
+    { line: [102, 'all', '「最近ね、[[推し]]できた。五人組の、右から二番目」', null, { 102: '笑' }], b: { at: 'end', ms: 5500, opts: [
+      { k: 'dig', label: 'どこで知った？', need: 0, say: '「右から二番目、どこで知ったの？ いつから」', mem: { h: 102, send: '「右から二番目、今日も見た？」', echo: '「見た！ 昨日の夜も三周した」' },
+        ok: { fx: { 102: 6, 101: 2 }, lines: [[102, 'P', '「バイト帰りに動画が流れてきて！ 三秒で落ちた」', null, { 102: '笑' }], ['n', '（ゆなが見せたスマホに、五人組が並んでいた）'], [101, 102, '「……右から二番目は、背の低い方ですか」']] },
+        ng: { fx: { 102: 1 }, lines: [[102, 'P', '「ネットで、たまたま流れてきて」', null, { 102: '真顔' }]] } },
+      { k: 'card', card: 'juku', label: '塾の小4も', say: '「うちの塾の小4にもいる。推しの話ばっか」', mem: { h: 102, send: '「小4にまた推しの名前、消しゴムに書かれてた」', echo: '「やっぱ右から二番目でしょ！」' }, fx: { 102: 8, air: 3 }, lines: [[102, 'P', '「小4で推し！？ ちゃんと授業聞いてる？」'], ['P', 102, '「消しゴムに名前書いてある。使えないやつ」'], [102, 'P', '「それ絶対、右から二番目でしょ！」', null, { 102: '笑' }]] },
+      { k: 'tease', label: '位置で覚えてる', say: '「推しを位置で覚えてんの？ 名前は？」', mem: { h: 102, send: '「右から二番目の名前、結局言えた？」', echo: '「言えた！ 今日は調べたから！」' }, fx: { 102: 3, air: 5 }, lines: [[102, 'P', '「名前も言えるし！ ……言える。たぶん」', null, { 102: '笑' }], [4, 102, '「右から二番目で、だいたい通じるしな」']] }],
+      silence: { ffx: { 102: { 4: 8 } }, lines: [[4, 102, '「五人組って、全員の名前言える？」'], [102, 4, '「言える！ 右から順に！ ……一人だけ怪しい」', null, { 102: '笑' }]] } } },
+    [1, 'all', '「俺は筋トレ。プロテインの味、全制覇した」'],
+    [101, 'all', '「……朝、みんなが起きる前に、お茶を淹れるのが」', null, { 101: 'はにかみ' }],
+    { line: [103, 'all', '「……わたしは、[[人工衛星]]。夜、ベランダで探してて」'], b: { at: 'end', ms: 5500, opts: [
+      { k: 'dig', label: '見つかる？', need: 30, say: '「どうやって探すの？ ほんとに見つかる？」', mem: { h: 103, send: '「昨日の夜、動く点は見つかった？」', echo: '「……ひとつ、見つけた。ゆっくり、通ってった」' },
+        ok: { fx: { 103: 8 }, lines: [[103, 'P', '「……星のあいだを、ゆっくり動く点がいる」'], [103, 'P', '「ひとりで、ずっと旅してるみたいで」', null, { 103: 'はにかみ' }]] },
+        ng: { fx: { 103: 1 }, lines: [[103, 'P', '「……アプリで、調べるだけ」', null, { 103: '真顔' }]] } },
+      { k: 'go', label: '夜のベランダ', say: '「夜のベランダ、わかる。外の空気だけ吸いにいく」', mem: { h: 103, send: '「昨日もベランダ出た？ 寒くなかった？」', echo: '「……出た。寒いと、星が近い気がする」' }, fx: { 103: 5, 102: 2 }, lines: [[103, 'P', '「……空気、冷たいと、星がよく見える」'], [102, 103, '「うちは寒くて三分で戻る〜」', null, { 102: '笑' }]] },
+      { k: 'tease', label: 'UFOでは？', say: '「動く点って、UFOじゃないの？」', mem: { h: 103, send: '「昨日の点、UFOだった？」', echo: '「……手、振った。返事は、なかった」' }, fx: { 103: 2, air: 4 }, lines: [[103, 'P', '「……UFOだったら、手、振る」', null, { 103: 'はにかみ' }], [102, 103, '「振って！ うちも一緒に振る！」', null, { 102: '笑' }]] }],
+      silence: { lines: [[102, 103, '「動く星って、うち見たことない。どこにいんの」'], [103, 102, '「……ベランダから、見える。今度、教える」', null, { 103: 'はにかみ' }]] } } },
+    [102, 'all', '「あ、来週ライブ当たったんだ。右から二番目、見てくる」', null, { 102: '笑' }]] };
+  // 夜の流れ。lull＝会話が途切れたところ（話題を出すか、待つか）
+  const I_FLOW = [
+    { heading: 'バイトの話' },
+    ['n', '（乾杯。けんたが仕切りはじめた）'],
+    [1, 'all', '「じゃ、とりあえず一人ずつ。バイトとか」'],
+    { line: [102, 'all', '「うちカフェ。[[まかない]]目当てで入ったんだけどね」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: 'まかない何？', need: 0, say: '「まかない何出んの。毎日？」', mem: { h: 102, send: '「今日のまかない、パスタだった？」', echo: '「パスタだった。もう笑うしかない」' }, ok: { fx: { 102: 6 }, lines: [[102, 'P', '「毎日！ でもほぼパスタ」', null, { 102: '笑' }], [102, 'P', '「店長、パスタしか作れないの」']] } },
+      { k: 'card', card: 'juku', label: '塾は何も出ない', say: '「いいな。塾なんも出ないよ」', mem: { h: 102, send: '「うまい棒、また生徒にもらったわ」', echo: '「先生の給料それなの」' }, fx: { 102: 4, 101: 3 }, lines: [[102, 'P', '「えー、お菓子とかないの」'], ['P', 102, '「生徒がくれる。うまい棒」'], [102, 'P', '「先生じゃん」', null, { 102: '笑', 101: 'はにかみ' }]] }],
+      silence: { ffx: { 102: { 4: 12 } }, lines: [[4, 102, '「え、俺もカフェ。どこの」'], [102, 4, '「駅の裏！ ちっちゃいとこ」', null, { 102: '笑' }]] } } },
+    { line: [101, 'all', '「わたしも、[[塾]]で……小学生を、見てて。国語なんですけど」'], b: { at: 'start', extra: 2200, opts: [
+      { k: 'dig', label: 'どこの塾？', need: 35, say: '「え、どこの塾？」', mem: { h: 101, send: '「青い看板の塾、帰りに見つけた」', echo: '「……見つかっちゃいましたか」' },
+        ok: { fx: { 101: 5 }, lines: [[101, 'P', '「……駅前の。青い看板の」', null, { 101: 'はにかみ' }]] },
+        ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……駅前の、です」', null, { 101: '真顔' }]] } },
+      { k: 'card', card: 'juku', label: '俺も塾！', say: '「え、俺も塾！ 小4の算数」', mem: { h: 101, send: '「今日も、字が汚いって言われた」', echo: '「……ふふ。言われましたか」' }, fx: { 101: 10 }, lines: [[101, 'P', '「……え、先生なんですか」', null, { 101: 'はにかみ' }], [101, 'P', '「あの子たち、思ったことそのまま言いますよね」'], ['P', 101, '「字が汚いって毎週言われる」'], [101, 'P', '「……ふふ。言いますね」', null, { 101: '笑' }]] }],
+      silence: { lines: [] } } },
+    { cue: 'glass103', life: 3 },
+    ['n', '（あおいのスマホが一度光った。あおいは、画面を伏せた）'],
+    [103, 'all', '「わたしは、してない。……向いてなくて」'],
+    [1, 103, '「向いてないって、何が」'],
+    { line: [103, 1, '「……[[いらっしゃいませ]]、が」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '言えないの？', need: 28, say: '「いらっしゃいませ、言えないの？」', mem: { h: 103, send: '「いらっしゃいませ、減ってない？」', echo: '「……今日は、まだ一回も言ってない」' },
+        ok: { fx: { 103: 8 }, lines: [[103, 'P', '「言えるけど。言うたびに、ちょっと減る気がする」', null, { 103: 'はにかみ' }]] },
+        ng: { fx: { 103: 0 }, lines: [[103, 'P', '「……言えるよ」', null, { 103: '真顔' }]] } },
+      { k: 'tease', label: '言ってみて', say: '「いらっしゃいませ、言ってみて」', mem: { h: 103, send: '「昨日のいらっしゃいませ、よかった」', echo: '「……忘れて」' }, fx: { 103: 3, air: 5 }, lines: [[103, 'P', '「……いらっしゃいませ」', null, { 103: 'はにかみ' }], [102, 103, '「言えてる！」', null, { 102: '笑' }]] }],
+      silence: { fx: { 103: -3 }, ffx: { 103: { 1: -6 } }, lines: [[1, 103, '「言えよ、それくらい」'], [103, 1, '「……」', null, { 103: '困り顔' }]] } } },
+    { block: true },
+    ['n', '（店員が、大皿を持ってきた）'],
+    ['S', 'all', '「お待たせしましたー、シーザーサラダです」'],
+    ['n', '（大皿が、あおいの前に置かれた）'],
+    { cue: 'tong', life: 2 },
+    { lull: 1, wait: 'friend' },
+    { block: true },
+    { cue: 'chaser103', life: 4, expr: { 103: 'ぽやっと' } },
+    ['n', '（あおいが、伏せたスマホにまた目をやった）'],
+    { lull: 2, wait: 'aoi' },
+  ];
+  // 待ったときに あおいが話し出す（最後のくぎり）
+  const I_STORY = [
+    { heading: 'あおいの話' },
+    [102, 101, '「あおいちゃん、さっきからスマホ気にしてない？ 大丈夫？」'],
+    [101, 102, '「……あ、すみません。塾の子から、連絡が来てて」', null, { 101: '困り顔' }],
+    ['n', '（あおいが、グラスを両手で持ちなおした）'],
+    { quiet: true },
+    { story: [
+      [101, 'all', '「今日、漢検の結果が出たんです。……落ちちゃったって」'],
+      { cue: 'order', life: 5 },
+      ['S', 'all', '「失礼しますー、ラストオーダーのお時間です」'],
+      [101, 'all', '「最後まで、わたしの言ったとおりにやってたんです」'],
+      [101, 'all', '「……言ったとおりにやって、落ちたんです」'],
+      [1, 101, '「……そっか」']] },
+    { quiet: false, ok: { fx: { 101: 10 }, lines: [['n', '（あおいが、こっちを見て少し笑った）'], [101, 'P', '「……すみません。なんか、重くなって」', null, { 101: 'はにかみ' }]] } },
+    { ifCue: 'order', line: ['S', 'all', '「……ご注文、またあとで伺いますねー」'] },
+  ];
+  // 話題を出してあおいの番を流した場合のしめ
+  const I_LAST = [
+    { cue: 'order', life: 2 },
+    ['S', 'all', '「失礼しますー、ラストオーダーのお時間です」'],
+  ];
+  // 10/3 自分の設定（サブエージェント作）
+  Object.assign(I_CARDS, { izakaya: '#居酒屋バイト', hitori: '#一人暮らし', futsal: '#フットサル', panya: '#パン屋の朝番', ryo: '#学生寮', keion: '#軽音' });
+  const I_PROFILES = {
+    A: { name: '塾バイト・文化系・実家', cards: ['juku', 'jikka', 'bushitsu'], intro: '（今日の自分：塾のバイト帰り。サークルは部室に入り浸り。家は実家）' },
+    B: { name: '居酒屋バイト・フットサル・一人暮らし', cards: ['izakaya', 'futsal', 'hitori'], intro: '（今日の自分：居酒屋のバイトを抜けてきた。週末はフットサル。家は一人暮らし）' },
+    C: { name: 'パン屋の朝番・軽音・学生寮', cards: ['panya', 'keion', 'ryo'], intro: '（今日の自分：明日もパン屋の朝番。軽音の部室に入り浸り。家は学生寮）' },
+  };
+  // 既存の行に手札の返しを足す。where: 'FLOW'（I_FLOW）か I_TOPICS のキー。match: その行の台詞に含まれる文字列（where の中で一意）
+  // B（居酒屋/フットサル/一人暮らし）は ゆな(102)、C（パン屋/軽音/寮）は めい(103) に刺さる。★＝その子への本命
+  const I_HOOKS = [
+    // ── FLOW：バイトの話（毎回通る）──
+    // ★B ゆな「まかない」
+    { where: 'FLOW', match: 'まかない', opt: { k: 'card', card: 'izakaya', label: 'まかないは刺身', say: '「俺は居酒屋。まかない、刺身の端っこだったり」', mem: { h: 102, send: '「今日のまかない、鯛の頭だった」', echo: '「頭！？ うちパスタなんだけど！」' }, fx: { 102: 8 },
+      lines: [[102, 'P', '「刺身！？ うちなんかパスタだよ、毎日！」', null, { 102: '笑' }], ['P', 102, '「たまに魚の頭も出る。味噌汁にされて」'], [102, 'P', '「頭…… ちょっと食べてみたいんだけど」', null, { 102: '笑' }]] } },
+    // C ゆな「まかない」（C の本命はめいなので +3）
+    { where: 'FLOW', match: 'まかない', opt: { k: 'card', card: 'panya', label: 'まかないはパン', say: '「俺パン屋。まかない、焼きすぎたやつ全部」', fx: { 102: 3, 101: 2 },
+      lines: [[102, 'P', '「パン！ 毎日？ 飽きないの」'], ['P', 102, '「焼きすぎで真っ黒なの、わりと当たり」'], [102, 'P', '「黒いのが当たりって、何それ！」', null, { 102: '笑' }]] } },
+    // B めい「いらっしゃいませ」
+    { where: 'FLOW', match: 'いらっしゃいませ', opt: { k: 'card', card: 'izakaya', label: '一晩に百回言う', say: '「居酒屋だと一晩百回。三回目から口が勝手に言ってる」', mem: { h: 103, send: '「今日、コンビニ入ったとき言いそうになった」', echo: '「……言った？ 見たかった」' }, fx: { 103: 4, 102: 2 },
+      lines: [[103, 'P', '「……勝手に、出るの」'], ['P', 103, '「出る。コンビニ入ったとき、俺が言いそうになる」'], [103, 'P', '「……それは、ちょっと見たい」', null, { 103: 'はにかみ' }]] } },
+    // ★C めい「いらっしゃいませ」
+    { where: 'FLOW', match: 'いらっしゃいませ', opt: { k: 'card', card: 'panya', label: '朝は「おう」で済む', say: '「パン屋の朝、常連のじいさんしか来ない。『おう』で済む」', mem: { h: 103, send: '「今朝も『おう』で済んだ」', echo: '「……おう」' }, fx: { 103: 9 },
+      lines: [[103, 'P', '「……『おう』で、いいの」', null, { 103: 'はにかみ' }], ['P', 103, '「いい。こっちも『おう』って返す」'], [103, 'P', '「……それなら、わたしも言えるかも」', null, { 103: 'はにかみ' }]] } },
+
+    // ── sumai：住まいの話 ──
+    // ★B ゆな「一人暮らし。2年目」
+    { where: 'sumai', match: '2年目', opt: { k: 'card', card: 'hitori', label: '電気つけるの自分', say: '「俺も。電気つけるの自分だけで、最初びびった」', mem: { h: 102, send: '「今日も帰って、電気つけたの自分だった」', echo: '「毎日じゃん！ うちはつけっぱにしてる」' }, fx: { 102: 9, 101: 2 },
+      lines: [[102, 'P', '「わかる！ 最初の日、玄関で固まったもん」', null, { 102: '笑' }], ['P', 102, '「ただいま言いかけて、やめた」'], [102, 'P', '「うちは言う！ 小声で、今でも」', null, { 102: '笑' }]] } },
+    // ★C めい「部屋の音が、たまに大きい」
+    { where: 'sumai', match: 'たまに大きい', opt: { k: 'card', card: 'ryo', label: '寮は壁が薄い', say: '「寮は逆。隣のくしゃみまで聞こえる。夜じゅう」', mem: { h: 103, send: '「今夜も隣のくしゃみ、聞こえてる」', echo: '「……こっちは、冷蔵庫だけ。うらやましい」' }, fx: { 103: 9, 102: 2 },
+      lines: [[103, 'P', '「……くしゃみ。にぎやかだね」'], ['P', 103, '「にぎやかすぎて、自分の音が分かんなくなる」'], [103, 'P', '「……わたしは、自分の音しか聞こえない」', null, { 103: 'はにかみ' }]] } },
+
+    // ── circle：サークルの話 ──
+    // ★B ゆな「朝練がほんと無理」（吹き出しの無い行）
+    { where: 'circle', match: '朝練がほんと無理', bubble: { at: 'end', ms: 5000 }, opt: { k: 'card', card: 'futsal', label: '朝六時のコート', say: '「俺のとこも。フットサル、コート取れるの朝六時」', mem: { h: 102, send: '「今朝、起きれた？ 俺はジャージで寝た」', echo: '「ジャージで寝た！？ うちも今度やる！」' }, fx: { 102: 9, 101: 1 },
+      lines: [[102, 'P', '「六時！？ 同じじゃん。何時に起きんの」'], ['P', 102, '「五時半。前の日から、ジャージで寝てる」'], [102, 'P', '「ジャージで寝る！ うち、メイクしたまま寝たことある」', null, { 102: '笑' }]] } },
+    // C あおい「文芸です。ほぼ部室にいて」
+    { where: 'circle', match: '文芸です', opt: { k: 'card', card: 'keion', label: '軽音の部室は爆音', say: '「俺軽音。部室、爆音。静かな部室とか、あるんだ」', fx: { 101: 4, 103: 2 },
+      lines: [[101, 'P', '「……爆音。……耳、だいじょうぶですか」', null, { 101: '困り顔' }], ['P', 101, '「半分聞こえてない。そっちの静けさ、分けてほしい」'], [101, 'P', '「……ふふ。ページをめくる音しか、しませんよ」', null, { 101: '笑' }]] } },
+
+    // ── holiday：休みの日の話 ──
+    // ★B ゆな「ひとりだと三十分で誰か呼んじゃう」（吹き出しの無い行）
+    { where: 'holiday', match: '三十分で', bubble: { at: 'end', ms: 5000 }, opt: { k: 'card', card: 'hitori', label: 'テレビつけっぱ', say: '「俺ひとりだと、テレビつけっぱ。見てないのに」', mem: { h: 102, send: '「テレビつけっぱで寝た。誰も呼んでない」', echo: '「うちは呼んだ！ 二十八分で！」' }, fx: { 102: 8 },
+      lines: [[102, 'P', '「つけっぱ！ うちは動画流しっぱ」', null, { 102: '笑' }], ['P', 102, '「で、見てない。音だけ」'], [102, 'P', '「音だけでも誰かいるもんね！ うちそれで寝てる」', null, { 102: '笑' }]] } },
+    // ★C めい「洗濯機の前に座ってる。電気代の見張り」
+    { where: 'holiday', match: '見張り', opt: { k: 'card', card: 'ryo', label: '寮は共用洗濯機', say: '「寮の洗濯機、共用だから見張ってないと出される」', mem: { h: 103, send: '「今日の洗濯機、誰にも出されなかった？」', echo: '「……見張った。誰にも触らせてない」' }, fx: { 103: 8, 102: 2 },
+      lines: [[103, 'P', '「……出されるんだ。じゃあ、見張りいるね」', null, { 103: 'はにかみ' }], ['P', 103, '「一回、俺の靴下が廊下の椅子に並べられてた」'], [103, 'P', '「……並べ方、きれいだった？」']] } },
+
+    // ── osake：お酒の強さの話 ──
+    // B けんた「弱い人挙手な、正直に」
+    { where: 'osake', match: '正直に', opt: { k: 'card', card: 'izakaya', label: '居酒屋で見てる', say: '「居酒屋で見てる。弱い人ほど、最初の一杯だけ強気」', fx: { 101: 4, 102: 2, air: 3 },
+      lines: [[1, 'P', '「お、プロの目か。で、俺はどっち」'], ['P', 1, '「最後に、お水ください、って言うほう」'], [101, 'P', '「……ふふ。言いそう、です」', null, { 101: '笑' }]] } },
+  ];
+
+  // 新しい話題2つ（会話が途切れたときに出せる話題の候補に入る）
+  // 手札の出番：吹き出しごとに、A（juku/jikka/bushitsu）B（izakaya/futsal/hitori）C（panya/keion/ryo）から合うものだけ
+  I_TOPICS.asayoru = { label: '朝型・夜型の話', fans: { 101: 2, 102: 2, 103: 2 }, openP: '「みんな朝型？ 夜型？ 俺は気づくと夜になってる」', openF: [1, 'all', '「てかさ、みんな朝型？ 夜型？ 俺は朝」'], nodes: [
+    // あおい：朝の台所。A jikka★ / B futsal / C panya
+    { line: [101, 'all', '「……朝、です。みんなが起きる前の[[台所]]が、好きで」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '何時に起きる？', need: 35, say: '「何時に起きるの？ 家の人は、まだ寝てる？」', mem: { h: 101, send: '「今朝のお茶、何時に淹れた？」', echo: '「……五時でした。誰も、まだ」' },
+        ok: { fx: { 101: 7 }, lines: [[101, 'P', '「……五時です。お茶を淹れて、窓のそばで」'], [101, 'P', '「家の人は、まだ寝てて。お湯の音だけ、します」', null, { 101: 'はにかみ' }]] },
+        ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……早め、です」', null, { 101: '真顔' }]] } },
+      { k: 'go', label: '冷蔵庫の音', say: '「あの時間、冷蔵庫の音だけ急に大きくない？」', fx: { 101: 4, 103: 2 }, lines: [[101, 'P', '「……大きいです。冷蔵庫の音しか、しなくて」'], [103, 101, '「……わかる。急に鳴りだすの」', null, { 103: 'はにかみ' }]] },
+      { k: 'card', card: 'jikka', label: '母親が先にいる', say: '「俺んち、母親が先に台所にいる。毎朝負けてる」', mem: { h: 101, send: '「今朝は台所、先に着いた。味噌汁なかった」', echo: '「……やりましたね。お湯は、わたしが沸かしました」' }, fx: { 101: 10 },
+        lines: [[101, 'P', '「……ふふ。勝負、してるんですか」', null, { 101: '笑' }], ['P', 101, '「五時に起きたのに、もう味噌汁の匂いしてた」'], [101, 'P', '「……それは、お母さんの勝ちです」', null, { 101: 'はにかみ' }]] },
+      { k: 'card', card: 'futsal', label: '朝のコートは静か', say: '「朝六時のコート、ボールの音しかしないんだよ」', fx: { 101: 3, 102: 2 },
+        lines: [[101, 'P', '「……ボールの音だけ。……聞いてみたいです」', null, { 101: 'はにかみ' }], ['P', 101, '「ゴールの鉄、霜ついてて。素手で触ると痛い」'], [101, 'P', '「……うちの台所の水道も、冬は、痛いです」']] },
+      { k: 'card', card: 'panya', label: '朝四時の厨房', say: '「俺バイトで朝四時。誰もいない厨房、わかる」', mem: { h: 101, send: '「今朝も四時、窯の前でひとりだった」', echo: '「……わたしも、台所でひとりでした」' }, fx: { 101: 4, 103: 2 },
+        lines: [[101, 'P', '「……四時、ですか。わたしより、一時間早い」'], ['P', 101, '「窯に火入れるの、俺だけ。ちょっと王様の気分」'], [101, 'P', '「……ふふ。わたしは、やかんの番です」', null, { 101: '笑' }]] }],
+      silence: { lines: [] } } },
+    // けんた → ゆな（友達が子に振る）
+    [1, 102, '「ゆなは？ 朝練とか、ちゃんと行ってんの」'],
+    // ゆな：夜型。B izakaya★ / C keion
+    { line: [102, 'all', '「サボってない！ 行ってない日があるだけ。うち、[[夜]]型だから」', null, { 102: '笑' }], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '何時に寝てる？', need: 10, say: '「何時に寝んの？ 朝はどうやって起きてんの」', mem: { h: 102, send: '「今朝、何時に起きた？ 正直に」', echo: '「正直に！？ ……十一時」' },
+        ok: { fx: { 102: 6 }, lines: [[102, 'P', '「寝るのは三時！ 起きるのは、気合い！」', null, { 102: '笑' }], [102, 'P', '「目覚まし三つかけて、全部止める」']] },
+        ng: { fx: { 102: 1 }, lines: [[102, 'P', '「えー、ふつうに寝てるよ」', null, { 102: '真顔' }]] } },
+      { k: 'tease', label: '朝練ゼロでは', say: '「朝練、今年何回行った？ 数えられる？」', fx: { 102: 4, air: 4 }, lines: [[102, 'P', '「数えられる！ ……片手で」', null, { 102: '笑' }], [1, 102, '「ゼロって言えよ」']] },
+      { k: 'card', card: 'izakaya', label: '閉店が一時すぎ', say: '「居酒屋だと閉店が一時すぎ。朝とか、むしろ敵」', mem: { h: 102, send: '「昨日、閉店三時だった。いま死んでる」', echo: '「うちも死んでる！ 同じ側じゃん」' }, fx: { 102: 9, air: 2 },
+        lines: [[102, 'P', '「わかる！ 一時とか、まだ夕方みたいなもんじゃん」', null, { 102: '笑' }], ['P', 102, '「帰ってシャワー浴びて、気づいたら四時」'], [102, 'P', '「それ！ 寝る気なくなるやつ！」', null, { 102: '笑' }]] },
+      { k: 'card', card: 'keion', label: '夜スタジオ', say: '「軽音の夜スタジオ、窓なくて時間わかんなくなる」', fx: { 102: 3, 103: 2 },
+        lines: [[102, 'P', '「えー、窓ないの？ 閉じ込められるじゃん」'], ['P', 102, '「出たら朝で、ジャージのまま電車乗った」'], [102, 'P', '「絶対みんな見てるって！」', null, { 102: '笑' }]] }],
+      silence: { lines: [[1, 102, '「夜型って言っとけば許されると思ってんだろ」'], [102, 1, '「許されるし！」', null, { 102: '笑' }]] } } },
+    [4, 'all', '「朝の光ってさ、フィルムだと色がちゃんと出る」'],
+    { expr: { 102: '退屈' } },
+    // けいた → めい（友達が子に振る）
+    [4, 103, '「めいちゃんは？ 夜って何時までいるの」'],
+    // めい：夜のベランダで人工衛星。B hitori / C ryo★
+    { line: [103, 'all', '「……夜。ベランダで[[動く点]]を探してると、すぐ二時」'], b: { at: 'end', ms: 5500, opts: [
+      { k: 'dig', label: '二時まで外？', need: 30, say: '「二時まで外にいるの？ 寒くないの、冬とか」', mem: { h: 103, send: '「昨日の夜、何時まで外にいた？」', echo: '「……一時四十分。毛布、持ってった」' },
+        ok: { fx: { 103: 8 }, lines: [[103, 'P', '「……毛布かぶって、ベランダの床に座ってる」'], [103, 'P', '「寒いほうが、点が増える気がする」', null, { 103: 'はにかみ' }]] },
+        ng: { fx: { 103: 1 }, lines: [[103, 'P', '「……ふつうに、立ってる」', null, { 103: '真顔' }]] } },
+      { k: 'go', label: '気づくと二時', say: '「夜って、気づくと二時とか三時になってんだよな」', fx: { 103: 4, 102: 2 }, lines: [[103, 'P', '「……なってる。さっきまで、九時だった」'], [102, 103, '「それ！ 瞬間移動するよね！」', null, { 102: '笑' }]] },
+      { k: 'card', card: 'hitori', label: '一人は止める人なし', say: '「ひとりだと止める人いなくて、気づいたら朝」', fx: { 103: 4, 102: 2 },
+        lines: [[103, 'P', '「……朝は、星が消える時間」', null, { 103: 'はにかみ' }], ['P', 103, '「そこで鳥が鳴きだして、俺だけ取り残される」'], [103, 'P', '「……わかる。わたしも、取り残される」']] },
+      { k: 'card', card: 'ryo', label: '寮の屋上の鍵', say: '「寮の屋上、鍵かかってなくて。夜、星よく見える」', mem: { h: 103, send: '「屋上、まだ鍵かかってなかった」', echo: '「……ほんと？ ……行く。いつ」' }, fx: { 103: 10, 102: 2 },
+        lines: [[103, 'P', '「……屋上。ほんとに開いてるの」', null, { 103: 'はにかみ' }], ['P', 103, '「管理人が忘れてるだけ。月曜の夜は、だいたい」'], [103, 'P', '「……月曜。覚えた」']] }],
+      silence: { lines: [[102, 103, '「二時！ うち、まだ元気な時間！」', null, { 102: '笑' }], [103, 102, '「……じゃあ、一緒に見る？」', null, { 103: 'はにかみ' }]] } } },
+    [1, 'all', '「朝組と夜組、ちょうど半分か。夜組は昼から集合な」']] };
+
+  I_TOPICS.photo = { label: 'カメラロールの話', fans: { 101: 2, 102: 3, 103: 2 }, openP: '「みんなのカメラロールって、何が一番多い？ 俺はメモ代わりの写真」', openF: [4, 'all', '「カメラロール、何が一番多い？ 俺は光ばっか」'], nodes: [
+    // ゆな：ごはん・ラテ・推し。B futsal★ / C panya
+    { line: [102, 'all', '「うち、[[ごはん]]とラテ。あと推しのスクショ！」', null, { 102: '笑' }], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '推しは何枚？', need: 0, say: '「推しのスクショ、何枚あんの？ 数えたことある？」', mem: { h: 102, send: '「推しのスクショ、結局何枚だった？」', echo: '「数えた！ 三百二十！ ……引いた？」' },
+        ok: { fx: { 102: 6, 101: 1 }, lines: [[102, 'P', '「うーん、三百はある。……あ、引いた？」', null, { 102: '笑' }], ['P', 102, '「引いてない。待って、スクロール長くない？」'], [102, 'P', '「ほら、ここから全部！」', null, { 102: '笑' }]] } },
+      { k: 'tease', label: 'ごはんは冷める', say: '「ごはんの写真、撮ってる間に冷めない？」', fx: { 102: 4, air: 3 }, lines: [[102, 'P', '「冷める！ だから一口目は、いつも冷めてる！」', null, { 102: '笑' }], [4, 102, '「窓側の席なら、撮るの早く済むぞ」']] },
+      { k: 'card', card: 'futsal', label: '集合写真ばっか', say: '「集合写真ばっか。試合のあと、毎回誰か目つぶってる」', mem: { h: 102, send: '「今日の集合写真、また俺だけ目つぶってた」', echo: '「見せて！ 絶対笑う！」' }, fx: { 102: 8, 101: 2 },
+        lines: [[102, 'P', '「誰！？ 毎回？ 同じ人？」', null, { 102: '笑' }], ['P', 102, '「毎回俺。シャッター切る直前に、閉じる」'], [102, 'P', '「うちも集合写真、半目でしか写んない！」', null, { 102: '笑' }]] },
+      { k: 'card', card: 'panya', label: '焼き上がりの写真', say: '「俺パンの焼き上がり。焼き色で、今日の出来わかる」', fx: { 102: 3, 101: 2 },
+        lines: [[102, 'P', '「えー、見せて！ ……あ、全部おんなじじゃん」', null, { 102: '笑' }], ['P', 102, '「毎回ちょっとだけ違う。左端だけ焦げてたり」'], [102, 'P', '「焦げた端っこ、いちばん食べたいやつ！」']] }],
+      silence: { ffx: { 102: { 4: 6 } }, lines: [[4, 102, '「ごはん、冷める前に撮れてる？」'], [102, 4, '「冷めた！ いつも！」', null, { 102: '笑' }]] } } },
+    [1, 'all', '「俺は筋トレのビフォーアフター。自分でも見ない」'],
+    // あおい：空ばかり。A juku★
+    { line: [101, 'all', '「……わたしは、[[空]]ばかりです。人は、ほとんど」'], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '何時の空？', need: 35, say: '「どんな空が多い？ 撮るのって、帰りとか？」', mem: { h: 101, send: '「今日の空、撮れた？ こっちは曇りだった」', echo: '「……撮りました。端のほうだけ、赤くて」' },
+        ok: { fx: { 101: 7 }, lines: [[101, 'P', '「……はい。電車の窓から。夕方の」'], [101, 'P', '「端のほうだけ、赤い日があって」', null, { 101: 'はにかみ' }]] },
+        ng: { fx: { 101: 1 }, lines: [[101, 'P', '「……いろいろ、です」', null, { 101: '真顔' }]] } },
+      { k: 'go', label: '窓越しに撮る', say: '「わかる、窓越しだと撮れた気になるんだよな」', fx: { 101: 4, 103: 2 }, lines: [[101, 'P', '「……窓に、わたしの顔も、うつるんですけど」', null, { 101: '困り顔' }], [103, 101, '「……それも、写真。わたしも、うつる」']] },
+      { k: 'card', card: 'juku', label: '小4の変顔', say: '「塾の小4に勝手に撮られた変顔が、三十枚ある」', mem: { h: 101, send: '「小4の変顔、また増えた。三十一枚」', echo: '「……ふふ。わたしは、忘れ物が、また増えました」' }, fx: { 101: 10 },
+        lines: [[101, 'P', '「……三十枚。……消さないんですか」', null, { 101: 'はにかみ' }], ['P', 101, '「消すと、翌週また増えてる」'], [101, 'P', '「……わたしは、忘れ物の写真です。消しゴムとか」', null, { 101: '笑' }]] }],
+      silence: { lines: [] } } },
+    [4, 101, '「空は、朝が多い？ 夕方？」'],
+    [101, 4, '「……夕方、です。帰りの電車の窓から」', null, { 101: 'はにかみ' }],
+    // めい：月ばかり。C keion★
+    { line: [103, 'all', '「……月ばっかり。ぜんぶ、[[ぼやけて]]る」'], b: { at: 'end', ms: 5500, opts: [
+      { k: 'dig', label: 'ぼやけてる？', need: 30, say: '「ピント合わないの？ それともわざと」', mem: { h: 103, send: '「昨日の月、ぼやけた？ ちゃんと撮れた？」', echo: '「……ぼやけた。でも、ちゃんと月だった」' },
+        ok: { fx: { 103: 8 }, lines: [[103, 'P', '「……手が震える。息、止めてるのに」'], [103, 'P', '「ぼやけてるほうが、本物に近い気がする」', null, { 103: 'はにかみ' }]] },
+        ng: { fx: { 103: 1 }, lines: [[103, 'P', '「……ただの、へたくそ」', null, { 103: '真顔' }]] } },
+      { k: 'tease', label: '全部同じ月では', say: '「全部同じ月に見える。日付ごとに、なんか違う？」', fx: { 103: 2, air: 4 }, lines: [[103, 'P', '「……違う。満ち欠けが違う」', null, { 103: '真顔' }], [102, 103, '「あ、ほんとだ。ちょっと欠けてる！」', null, { 102: '笑' }]] },
+      { k: 'card', card: 'keion', label: 'ライブ動画ぶれぶれ', say: '「俺はライブの動画。ぶれぶれで、音だけ一番いい」', mem: { h: 103, send: '「昨日のライブ動画、ぶれたまま残してる」', echo: '「……見たい。ぶれてるとこ」' }, fx: { 103: 9, 102: 2 },
+        lines: [[103, 'P', '「……わかる。わたしのも、ぶれてる」', null, { 103: 'はにかみ' }], ['P', 103, '「音割れてるとこだけ、何回も見返してる」'], [103, 'P', '「……ぼやけたとこばっかり、見ちゃう」', null, { 103: 'はにかみ' }]] }],
+      silence: { lines: [[102, 103, '「うちの推しも、半分ぼやけてるよ！ ライブだし」', null, { 102: '笑' }], [103, 102, '「……ライブも、ぼやけるんだ。一緒だ」', null, { 103: 'はにかみ' }]] } } },
+    [102, 103, '「めい、今日の月は撮った？ もう出てる？」'],
+    [103, 102, '「……まだ。あと、一時間くらい」']] };
+  // 手札の返しを既存の行に差し込む（設定ごとに、口を挟める所が変わる）
+  (function applyHooks() {
+    const text = n => Array.isArray(n) ? n[2] : (n && n.line ? n.line[2] : '');
+    for (const h of I_HOOKS) {
+      const nodes = h.where === 'FLOW' ? I_FLOW : I_TOPICS[h.where].nodes;
+      const i = nodes.findIndex(n => typeof text(n) === 'string' && text(n).includes(h.match));
+      if (i < 0) { console.warn('手札の差し込み先が無い', h.where, h.match); continue; }
+      if (Array.isArray(nodes[i])) nodes[i] = { line: nodes[i], b: Object.assign({ opts: [], silence: { lines: [] } }, h.bubble || { at: 'end', ms: 5000 }) };
+      nodes[i].b.opts.push(h.opt);
+    }
+  })();
+  const I_POS = { 101: '15%', 102: '50%', 103: '84%', table: '50%' };
+  const BRIDGE = { 101: ['「……あ、えっと。どこまで話しましたっけ」'], 102: ['「で、なんの話してたっけ？」', '「あ、そうそう。でさ」'], 103: ['「……なんの話だっけ」'], 1: ['「あ、わりい。で、なんだっけ」', '「で、続き続き」'], 4: ['「……で、さっきの続き」'] };
+  // ヒント：はじめて出てきたときに1回だけ（やりながら覚える）
+  let iTips = true;
+  // 10/3（2回目）：ヒントは「友達が小声で教える」→「メタの説明」の順。世界の中の言葉を先に
+  const TIPS = {
+    bubble: { f: [4, '「無理に喋んなくていいよ。言いたいとこだけ入れば」'], m: '吹き出しが出ている間だけ、口を挟める。黙っていても話は進む' },
+    sign: { f: [4, '「顔見とけ。聞いてほしそうなときだけ聞けばいい」'], m: '表情を見る。はにかみ＝聞いてほしそう。真顔のときに聞くと、浅い返事で終わる' },
+    card: { f: [1, '「お、今じゃね？ お前のネタ」'], m: '「#」がついた返しは手札（自分の経験）。1回ずつしか使えない。どこで使うか選ぶ' },
+    gaugeHi: { k: 'gauge', f: [4, '「ちょっと飛ばしすぎ。いったん様子見な」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損' },
+    gaugeLo: { k: 'gauge', f: [1, '「黙りすぎだろ。なんか言っとけ」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損' },
+    cue: { f: [4, '「グラスとか皿とか、気づいたら動けばいいから」'], m: '何かに気づくと札が出る。出ている間にタップ。黙っている間ほど気づきやすい' },
+    lull: { f: [1, '「切れたな。なんか振る？ 待っててもいいけど」'], m: '会話が途切れた。自分で話題を出すか、待つか。待つと、だれかが話し出す' },
+  };
+  function showTip(T, g) {
+    const old = document.querySelector('.tip'); if (old) old.remove();
+    const t = S.el('div', 'tip whisper');
+    const meta = () => { t.className = 'tip'; t.innerHTML = `<b>ヒント</b>${S.esc(T.m)}`; S.later(() => t.remove(), 5500, g); };
+    t.innerHTML = `<b>${NAME[T.f[0]]}（小声）</b>${S.esc(T.f[1])}`;
+    let step = 0;
+    t.addEventListener('click', ev => { ev.stopPropagation(); if (step === 0) { step = 1; meta(); } else t.remove(); });
+    document.getElementById('stage').appendChild(t);
+    S.later(() => { if (step === 0) { step = 1; meta(); } }, 2800, g);
+  }
+  let iYomi = 50;                           // 空気読み（キャラクリの能力値のつもり。メニューで変えられる）
+
+  async function runI(mode, g) {
+    const prof = I_PROFILES[mode.profile || 'A'];
+    const st = newState(), hand = new Set(prof.cards), live = {}, opened = new Set();
+    const f = { 101: { 1: 30, 4: 30 }, 102: { 1: 30, 4: 30 }, 103: { 1: 30, 4: 30 } };   // 友達それぞれへの好感（帰り道で使う）
+    const tipped = new Set();
+    const tip = k => { const T = TIPS[k], key = T.k || k; if (!iTips || tipped.has(key)) return; tipped.add(key); showTip(T, g); };
+    let m = 25, maxM = 25, lowN = 0, lowFired = false, chatty = false, tooChatty = false, quiet = false, quietBroken = false, seen = 0, missedUnseen = 0, storyHeard = false;
+    const pending = [];
+    S.soft(true); S.focus(null); S.scene('izakaya', '居酒屋');
+    S.menu([{ label: () => `ヒント：${iTips ? 'オン' : 'オフ'}`, fn: () => { iTips = !iTips; } },
+            { label: () => `空気読み：${iYomi}（変えて最初から）`, fn: () => { iYomi = iYomi === 50 ? 70 : iYomi === 70 ? 30 : 50; mode.start(mode.back); } },
+            { label: '最初から', fn: () => mode.start(mode.back) }]);
+    const drawM = () => { maxM = Math.max(maxM, m); if (m >= 55) tip('gaugeHi'); else if (m <= 8) tip('gaugeLo'); document.getElementById('dots').innerHTML = `<span>目立ち</span><span class="mbar"><i style="width:${m}%"></i></span>`; };
+    drawM();
+    const notice = () => iYomi + (50 - m) * 0.5;
+    const handText = () => '手札：' + ([...hand].map(k => I_CARDS[k]).join('　') || 'なし');
+    slowHint = () => `（会話は勝手に進む）　${handText()}`;
+    const idle = () => S.hint(slowHint());
+    const ffx = d => Object.entries(d || {}).forEach(([h, o]) => Object.entries(o).forEach(([k, v]) => { f[h][k] += v; }));
+    const hl = t => S.esc(t).replace(/\[\[(.+?)\]\]/g, '<b class="kwq">$1</b>');
+    const plain = t => t.replace(/\[\[(.+?)\]\]/g, '$1');
+    const pick = (label, kind) => { st.picks.push(label); S.log.push({ pick: label, kind }); };
+    const memories = [];
+    let lastSp = null, inLull = false, bridgeN = 0;                     // 翌朝のLINEで触れられる話（届いた返しだけ）
+
+    // ── 気づきの札 ──
+    function showCue(id, life) {
+      const c = I_CUE[id];
+      if (notice() < c.need) { live[id] = { el: null, life, taken: false, unseen: true }; return; }   // 気づけなかった（札は出ない）
+      seen++; tip('cue');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cue' + (c.at === 'table' ? ' table' : ''); b.textContent = c.label; b.style.left = I_POS[c.at];
+      b.addEventListener('click', ev => { ev.stopPropagation(); const L = live[id]; if (L && !L.taken) { L.taken = true; L.inQuiet = quiet; b.classList.add('done'); b.textContent = '✓'; pending.push(id); } });
+      document.getElementById('stage').appendChild(b);
+      live[id] = { el: b, life, taken: false };
+    }
+    async function tickCues() {
+      for (const id of Object.keys(live)) {
+        const L = live[id]; if (!L || L.taken) continue;
+        if (--L.life <= 0) {
+          if (L.el) L.el.remove(); delete live[id];
+          const c = I_CUE[id];
+          if (L.unseen) missedUnseen++;
+          if (c.missFx) fx(st, c.missFx, false);
+          if (c.missFfx) ffx(c.missFfx);
+          if (id === 'chaser103') S.expr(103, '真顔');
+          if (c.miss) for (const x of c.miss) { if (Array.isArray(x)) await saySlow(x, g, 700); else await bubbleNode(x); }
+        }
+      }
+    }
+    async function flush() {
+      while (pending.length) {
+        const id = pending.shift(), c = I_CUE[id], L = live[id];
+        if (L) { L.el && L.el.remove(); delete live[id]; }
+        if (L && L.inQuiet && quiet) {          // あおいの話の途中で動いた
+          quietBroken = true; quiet = false;
+          fx(st, { 101: -6, air: -6 }); pick(`${c.label}（あおいの話の途中）`, 'cut');
+          await saySlow(['P', 'all', c.quietSay || '「あ、ちょっといい？」', '割って入った'], g, 500);
+          await saySlow([101, 'P', '「……あ、すみません。大丈夫です」', null, { 101: '困り顔' }], g);
+          if (id === 'order') { fx(st, { 102: 2, air: 3 }); await saySlow([102, 'P', '「うちレモンサワー！」'], g, 600); }
+          await saySlow(['n', '（あおいの話は、そこで終わった）'], g);
+          continue;
+        }
+        m = Math.min(100, m + c.m); drawM();
+        fx(st, c.fx); pick(`${c.label}に気づいた`, 'cue'); if (c.mem) memories.push(c.mem);
+        for (const x of c.lines) await saySlow(x, g, 800);
+        // 気配りで会話が一度切れたら、だれかが話を戻す（10/2 の感想：元の会話にそのまま戻るのが不自然）
+        if (!c.noBridge && !inLull && lastSp != null) { const b = BRIDGE[lastSp]; await saySlow([lastSp, 'all', b[bridgeN++ % b.length]], g, 700); }
+      }
+    }
+    async function afterSpeak() {
+      if (m >= 90 && !tooChatty) { tooChatty = true; fx(st, { 101: -4, 102: -4, 103: -4, air: -6 }); await saySlow([1, 'P', '「お前、今日しゃべりすぎな」'], g); }
+      else if (m >= 70 && !chatty) { chatty = true; fx(st, { air: -5 }, false); await saySlow([102, 'P', '「てか、めっちゃ喋るじゃん」', null, { 102: '笑' }], g); }
+    }
+    async function silentTick() {
+      if (quiet) return;
+      m = Math.max(0, m - 4); drawM();
+      if (m === 0 && !lowFired) {
+        lowFired = true; lowN++;
+        fx(st, { 101: -2, 102: -2, 103: -2 });
+        await saySlow([1, 'P', '「おい、お前も何か言えよ」'], g);
+        m = 15; drawM();
+      }
+    }
+    const half = d => { const o = {}; Object.entries(d || {}).forEach(([k, v]) => { o[k] = v > 0 && k !== 'air' ? Math.round(v / 2) : v; }); return o; };
+    const KIND = { dig: '聞く', go: '乗る', tease: 'ツッコむ', furu: '話しかける', topic: '話題を出す' };
+    // 吹き出し（時間で消える）。opts: [{label, sub, ...}]
+    function bubble(opts, ms, title, quietLabel) {
+      return new Promise(res => {
+        let done = false;
+        const fin = v => { if (done) return; done = true; S.cancel(t); res(v); };
+        const p = S.el('div', 'panelcmd');
+        p.appendChild(S.el('div', 'top2', `<span>${title || '口を挟む？（黙っていれば話は進む）'}</span>`));
+        const clock = S.el('div', 'clock', '<i></i>'); p.appendChild(clock);
+        p.appendChild(S.row(opts.map(o => S.btn(o.label, o.sub, 'pill', () => fin(o)))));
+        const q = quietLabel || ['黙って聞く', '口を挟まない'];
+        p.appendChild(S.row([S.btn(q[0], q[1], 'quiet', () => fin(null))]));
+        S.put(p);
+        const i = clock.firstChild; i.style.transition = 'none'; i.style.width = '100%'; void i.offsetWidth;
+        requestAnimationFrame(() => { i.style.transition = `width ${ms}ms linear`; i.style.width = '0%'; });
+        const t = S.later(() => fin(null), ms, g);
+      });
+    }
+    async function line(x) {
+      if (x[0] === 'n') { idle(); S.narr(x[1]); await S.sleep(1500, g); }
+      else { idle(); await saySlow(x, g); if (typeof x[0] === 'number') lastSp = x[0]; }
+      await flush(); await tickCues(); await silentTick();
+    }
+    // 吹き出しつきの1行
+    async function bubbleNode(node) {
+      const b = node.b, sp = node.line[0], isHer = HS.includes(sp);
+      if (typeof sp === 'number') lastSp = sp;
+      const L0 = [node.line[0], node.line[1], plain(node.line[2]), node.line[3], node.line[4]];
+      b.opts.forEach(o => { if (o.k === 'dig' && o.need > 0 && isHer) S.expr(sp, st.h[sp] >= o.need ? 'はにかみ' : '真顔'); });
+      const opts = b.opts.filter(o => o.k !== 'card' || hand.has(o.card)).map(o => Object.assign({ sub: o.k === 'card' ? I_CARDS[o.card] : KIND[o.k] }, o));
+      if (!opts.length) { await line([node.line[0], node.line[1], plain(node.line[2]), node.line[3], node.line[4]]); return; }   // 手札が無い設定では、ふつうの行
+      if (opts.some(o => o.k === 'card')) tip('card'); else if (opts.some(o => o.k === 'dig' && o.need > 0) && isHer) tip('sign'); else tip('bubble');
+      let v = null, cut = false;
+      if (b.at === 'start') {
+        const ty = typeLine(L0, g, 75);
+        v = await bubble(opts, L0[2].length * 75 + b.extra);
+        if (v && !ty.finished) { ty.cut(); cut = true; } else { await ty.done; S.say(L0[0], L0[1], null, L0[2], { html: hl(node.line[2]), nolog: true, expr: L0[4] }); }
+      } else {
+        idle();
+        await saySlow(L0, g, 250);
+        S.say(L0[0], L0[1], null, L0[2], { html: hl(node.line[2]), nolog: true, expr: L0[4] });
+        v = await bubble(opts, b.ms);
+      }
+      S.clear();
+      if (!v) {
+        pick('黙った', 'silence');
+        if (b.silence.fx) fx(st, b.silence.fx);
+        ffx(b.silence.ffx);
+        for (const x of b.silence.lines) await saySlow(x, g);
+        await flush(); await tickCues(); await silentTick();
+        return;
+      }
+      let res;
+      if (v.k === 'dig') res = cut && v.cut ? v.cut : (st.h[sp] == null || st.h[sp] >= v.need) ? v.ok : (v.ng || v.ok);
+      else res = cut && v.cut ? v.cut : v;
+      if (v.k === 'card') hand.delete(v.card);
+      if (v.mem && (v.k !== 'dig' || res === v.ok)) memories.push(v.mem);
+      const high = m >= 70;
+      m = Math.min(100, m + 15 + (cut && isHer ? 8 : 0)); drawM();
+      pick(v.label + (v.k === 'card' ? `（${I_CARDS[v.card]}）` : '') + (cut ? '（遮った）' : ''), v.k);
+      const to = v.k === 'furu' ? 102 : sp;
+      await saySlow(['P', to, v.say, cut ? '割り込んだ' : KIND[v.k] || '自分の話'], g, 600);
+      let eff = res.fx;
+      if (cut && isHer && !v.cut) { eff = Object.assign({}, eff); eff[sp] = (eff[sp] || 0) - 3; await saySlow([sp, 'P', '「……あ、はい」', null, { [sp]: '困り顔' }], g, 600); }
+      if (high) eff = half(eff);
+      fx(st, eff);
+      if (v.k === 'furu') S.expr(102, '笑');
+      for (const x of res.lines) await saySlow(x, g);
+      await afterSpeak();
+      await flush(); await tickCues();
+    }
+    // 会話が途切れた：話題を出すか、待つか
+    async function lull(node) {
+      await flush(); inLull = true; tip('lull');
+      S.narr('（会話が、ふっと途切れた）');
+      const rest = Object.keys(I_TOPICS).filter(k => !opened.has(k));
+      // 出せる話題は3つまで（夜ごとに入れ替わる）。ボタンを増やさない
+      const offer = rest.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+      const opts = offer.map(k => ({ k: 'topic', topic: k, label: I_TOPICS[k].label, sub: I_TOPICS[k].openTo ? 'ゆなに振る' : '話題を出す' }));
+      const waitText = node.wait === 'aoi' ? '待てば、だれかが話し出す' : '待てば、友達が話題を出す';
+      const v = await bubble(opts, 6000, `話題を出す？（${waitText}）`, ['待つ', waitText]);
+      S.clear(); await flush(); inLull = false; lastSp = null;
+      if (!v) {
+        pick('待った', 'silence');
+        await silentTick();
+        if (node.wait === 'aoi') { storyHeard = true; await play2(I_STORY); if (quietBroken) storyHeard = 'cut'; return; }
+        const k = rest.includes('sumai') ? 'sumai' : rest[0];
+        const T = I_TOPICS[k]; opened.add(k);
+        S.logRound('話題：' + T.label);
+        const fid = T.openF[0];
+        HS.forEach(h => { if (T.fans[h]) f[h][fid] += 4; });
+        await line(T.openF);
+        await play2(T.nodes);
+        return;
+      }
+      const T = I_TOPICS[v.topic]; opened.add(v.topic);
+      S.logRound('話題：' + T.label);
+      const high = m >= 70;
+      m = Math.min(100, m + 12); drawM();
+      pick(`${T.label}を出した`, 'topic');
+      await saySlow(['P', T.openTo || 'all', T.openP, '話題を出した'], g, 600);
+      fx(st, high ? half(T.fans) : T.fans);
+      await afterSpeak();
+      await play2(T.nodes);
+      if (node.wait === 'aoi') await play2(I_LAST);      // あおいの番は来なかった
+    }
+    async function play2(nodes) {
+      for (const node of nodes) {
+        if (Array.isArray(node)) { await line(node); continue; }
+        if (node.heading) { S.logRound(node.heading); continue; }
+        if (node.block) { lowFired = false; continue; }
+        if (node.ffx) { ffx(node.ffx); continue; }
+        if (node.expr && !node.cue) { Object.entries(node.expr).forEach(([h, x]) => S.expr(+h, x)); continue; }
+        if (node.cue) { if (node.expr) Object.entries(node.expr).forEach(([h, x]) => S.expr(+h, x)); showCue(node.cue, node.life); continue; }
+        if (node.lull) { lowFired = false; await lull(node); continue; }
+        if (node.story) {
+          for (const x of node.story) {
+            if (quietBroken) break;
+            if (!Array.isArray(x)) { showCue(x.cue, x.life); continue; }
+            idle(); await saySlow(x, g); await flush(); await tickCues();
+          }
+          continue;
+        }
+        if (node.quiet === true) { quiet = true; quietBroken = false; continue; }
+        if (node.quiet === false) {
+          const was = quiet; quiet = false;
+          if (was && !quietBroken) { fx(st, node.ok.fx); pick('あおいの話を黙って聞いた', 'listen'); memories.push({ h: 101, send: '「昨日、話してくれてありがとう」', echo: '「……聞いてくれて、ありがとうございました」' }); for (const x of node.ok.lines) await saySlow(x, g); }
+          await flush();
+          continue;
+        }
+        if (node.ifCue) { if (live[node.ifCue] && !live[node.ifCue].taken) await line(node.line); continue; }
+        if (node.b) await bubbleNode(node);
+      }
+    }
+
+    S.narr(prof.intro); await S.sleep(1800, g);
+    if (iTips) await saySlow([1, 'P', '「今日のネタ、使いどころな。同じ話、二回すんなよ」'], g, 900);
+    S.narr('手札（自分の経験）は ' + prof.cards.map(k => I_CARDS[k]).join('・') + '。1枚1回。会話は勝手に進む。口を挟めるときは、下に吹き出しが出る'); await S.waitTap(g, 'タップで始める');
+    await play2(I_FLOW);
+    Object.keys(live).forEach(id => { if (!live[id].taken) live[id].life = 1; }); await tickCues();
+    Object.keys(live).forEach(id => { if (live[id].el) live[id].el.remove(); delete live[id]; });
+    slowHint = null;
+    await closing(st, f, g, { maxM, lowN, seen, missedUnseen, storyHeard, mode, memories });
+  }
+
+  // ── 終わり方（10/2 調べた流れ）：締め → 会計 → 全員と交換 → 二次会か帰るか（駅まで送る）→ 翌朝のお礼LINE＝結果発表 ──
+  const LINE_A = { 101: '「……今度、駅前の本屋さん、付き合ってもらえますか」', 102: '「てか今度、店来てよ。ハート描いてあげる」', 103: '「……今度、星の見えるとこ、行こ」' };
+  const LINE_B = { 101: '「昨日は、ありがとうございました。楽しかったです」', 102: '「楽しかったー！ またみんなで飲も」', 103: '「ありがと。……たのしかった」' };
+  const LINE_C = { 101: '「ありがとうございました」', 102: '「ありがとー！」', 103: '「うん」' };
+  const LINE_IN = { 101: '「昨日はありがとうございました。……また、お話ししたいです」', 102: '「昨日ありがと〜！ また飲も！」', 103: '「……昨日、ありがと。またね」' };
+  const DATE_TXT = { 101: 'あおいと、本屋に行く約束をした。', 102: 'ゆなの店に行く約束をした。', 103: 'めいと、星を見に行く約束をした。' };
+  const SEND_ACC = { 101: '「……じゃあ、駅まで」', 102: '「え、いいの？ じゃあ駅まで」', 103: '「……うん。駅まで」' };
+  const SEND_NO = { 101: '「……あ、大丈夫です。駅、すぐなので」', 102: '「えー、大丈夫だよ！ またね」', 103: '「……ひとりで、帰れる」' };
+
+  // スタンプ（丸い顔＋ひとこと）。f＝表情
+  const STAMPS = [{ t: 'たのしかった！', f: 'smile' }, { t: 'おつかれ〜', f: 'sleep' }, { t: 'またね', f: 'wave' }];
+  const FACE = {
+    smile: '<path d="M19 26q3-4 6 0M35 26q3-4 6 0" /><path d="M22 36q8 8 16 0" />',
+    sleep: '<path d="M19 27q3 3 6 0M35 27q3 3 6 0" /><path d="M26 37h8" />',
+    wave: '<circle cx="22" cy="26" r="1.8" fill="currentColor"/><circle cx="38" cy="26" r="1.8" fill="currentColor"/><path d="M24 36q6 5 12 0" /><path d="M50 14l5-4M52 20l6-1" />',
+    laugh: '<path d="M18 25l6 2-6 2M42 25l-6 2 6 2" /><path d="M22 34q8 10 16 0z" fill="currentColor"/>',
+  };
+  const stampSvg = f => `<svg viewBox="0 0 60 60" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="var(--card)"/>${FACE[f] || FACE.smile}</svg>`;
+  // スマホの画面（LINE）。舞台の上にかぶせる
+  function openPhone(title) {
+    const ph = S.el('div', 'phone');
+    ph.innerHTML = `<div class="ph-top">${title}</div><div class="ph-body"></div>`;
+    document.getElementById('stage').appendChild(ph);
+    const body = ph.querySelector('.ph-body');
+    const scroll = () => { body.scrollTop = body.scrollHeight; };
+    return {
+      el: ph,
+      title(t) { ph.querySelector('.ph-top').textContent = t; },
+      clear() { body.innerHTML = ''; },
+      msg(sp, text) {
+        const me = sp === 'P';
+        body.insertAdjacentHTML('beforeend', `<div class="lc-row ${me ? 'me' : ''}">${me ? '' : `<span class="lc-av">${{ 101: 'あ', 102: 'ゆ', 103: 'め', 1: 'け', 4: 'い' }[sp]}</span>`}<div class="lc-col">${me ? '' : `<div class="lc-name">${NAME[sp]}</div>`}<div class="lc-b">${S.esc(text.replace(/^「|」$/g, ''))}</div></div></div>`);
+        S.log.push({ sp, who: NAME[sp], to: '', act: 'LINE', text }); scroll();
+      },
+      sys(text) { body.insertAdjacentHTML('beforeend', `<div class="lc-n">${S.esc(text)}</div>`); S.log.push({ narr: text }); scroll(); },
+      stamp(sp, x) {
+        const me = sp === 'P';
+        body.insertAdjacentHTML('beforeend', `<div class="lc-row ${me ? 'me' : ''}">${me ? '' : `<span class="lc-av">${{ 101: 'あ', 102: 'ゆ', 103: 'め', 1: 'け', 4: 'い' }[sp]}</span>`}<div class="lc-col">${me ? '' : `<div class="lc-name">${NAME[sp]}</div>`}<div class="lc-st">${stampSvg(x.f)}<span>${S.esc(x.t)}</span></div></div></div>`);
+        S.log.push({ sp, who: NAME[sp], to: '', act: 'スタンプ', text: `［スタンプ：${x.t}］` }); scroll();
+      },
+      close() { ph.remove(); },
+    };
+  }
+  function choose(title, opts) {
+    return new Promise(res => {
+      const p = S.el('div', 'panelcmd');
+      p.appendChild(S.el('div', 'top2', `<span>${title}</span>`));
+      const btns = opts.map(o => S.btn(o.label, o.sub || null, o.cls || '', () => res(o.v)));
+      if (opts.some(o => o.cls === 'line')) btns.forEach(b => p.appendChild(b));
+      else if (btns.length <= 3) p.appendChild(S.row(btns));
+      else { p.appendChild(S.row(btns.slice(0, 3), 3)); p.appendChild(S.row(btns.slice(3))); }
+      S.put(p);
+    });
+  }
+  async function closing(st, f, g, info) {
+    HS.forEach(h => S.expr(h, '真顔')); S.focus(null);
+    const say = async (x, hold) => { await saySlow(x, g, hold); };
+    S.logRound('お開き');
+    await say(['n', '（最後の飲み物も、なくなった）']);
+    await say([1, 'all', '「……よし、そろそろ出るか」']);
+    await say(['n', '（けんたが手早く会計をまとめた。男が多めに払った）']);
+    await say([1, 'all', '「グループ作るわー。みんな入って」']);
+    const cold = st.air < 30;
+    await say(['n', cold ? '（グループだけできた。個別に交換する空気では、なかった）' : '（流れで、全員と連絡先を交換した）']);
+
+    // 二次会か、帰るか
+    S.logRound('二次会');
+    S.scene('out', '店の外');
+    await say(['n', '（店の外に出た。夜風が少し冷たい）']);
+    await say([1, 'all', '「二次会、カラオケ行く人ー」']);
+    const yunaGo = st.air >= 40;
+    await say(yunaGo ? [102, 1, '「行く行く！」', null, { 102: '笑' }] : [102, 'all', '「うち、明日朝練だから帰る〜」']);
+    await say([101, 'all', '「……わたしは、門限があるので」']);
+    await say([103, 'all', '「……どうしよ」']);
+    const go = await choose('どうする？', [{ label: '二次会に行く', v: 'go' }, { label: '今日は帰る', v: 'home' }]);
+    let walked = null; const lines = [];
+    if (go === 'go') {
+      st.picks.push('二次会に行った');
+      const meiGo = st.h[103] >= 38;
+      await say(['P', 'all', '「行く行く」', '二次会']);
+      if (meiGo) { await say(['n', '（あおいは、駅のほうへ帰っていった）']); S.leave(101); }
+      else { await say(['n', '（めいは、あおいと一緒に駅のほうへ歩いていった）']); S.leave(101); S.leave(103); }
+      if (!yunaGo) { await say(['n', '（ゆなも、手を振って帰っていった）']); S.leave(102); }
+      S.scene('karaoke', 'カラオケ');
+      await say(['n', '（駅前のカラオケに移った）']);
+      if (yunaGo) {
+        if (f[102][4] > st.h[102]) { await say(['n', '（ゆなは、けいたとデュエットしていた）']); lines.push('二次会で、ゆなはけいたと盛り上がっていた'); }
+        else { fx(st, { 102: 4 }); await say([102, 'P', '「一緒に歌お！ これ知ってる？」', null, { 102: '笑' }]); lines.push('二次会で、ゆなと歌った'); }
+      }
+      if (meiGo) { fx(st, { 103: 4 }); await say(['n', '（めいは、ずっと聞く側だった）']); await say([103, 'P', '「……君の、もう一回聞きたい」', null, { 103: 'はにかみ' }]); lines.push('めいも二次会に来て、ずっと聞く側だった'); }
+    } else {
+      st.picks.push('帰った');
+      const goers = [101, 103].concat(yunaGo ? [] : [102]);
+      await say(['P', 'all', '「俺は今日は帰るわ」', '帰る']);
+      await say(['n', yunaGo ? '（けんたたちは、カラオケのほうへ歩いていった）' : '（けんたとけいたは、カラオケのほうへ歩いていった）']);
+      S.leave(1); S.leave(4); if (yunaGo) S.leave(102);
+      S.scene('station', '駅まで');
+      const who = await choose('駅まで送る？', goers.map(h => ({ label: NAME[h], sub: '駅まで送るよ', v: h })).concat([{ label: 'ひとりで帰る', v: null, cls: 'quiet' }]));
+      if (who != null) {
+        await say(['P', who, '「駅まで送るよ」', '声をかけた']);
+        if (st.h[who] >= 40) { walked = who; fx(st, { [who]: 5 }); await say([who, 'P', SEND_ACC[who], null, { [who]: 'はにかみ' }]); await say(['n', `（${NAME[who]}と、駅まで並んで歩いた）`]); lines.push(`${NAME[who]}と、駅まで一緒に帰った`); }
+        else { await say([who, 'P', SEND_NO[who], null, { [who]: '真顔' }]); lines.push(`${NAME[who]}には、やんわり断られた`); }
+      } else lines.push('ひとりで帰った');
+    }
+
+    // 翌朝：お礼LINE（結果発表）
+    S.logRound('翌朝'); S.scene('', '翌朝');
+    S.clear(); S.narr('（翌朝。スマホを見る）');
+    const ph = openPhone('LINE　昨日の飲み会（6）');
+    await S.sleep(500, g);
+    ph.msg(1, '「昨日おつかれー！」'); await S.sleep(700, g);
+    if (!cold) { ph.msg(102, '「楽しかった〜！ また飲も」'); await S.sleep(700, g); }
+    ph.msg(4, '「おつ」'); await S.sleep(500, g);
+    const gr = await choose('グループに、なにか送る？', [{ label: '楽しかった！ ありがとう', v: 'thanks' }, { label: 'スタンプだけ', v: 'stamp' }, { label: '送らない', v: null, cls: 'quiet' }]);
+    if (gr === 'thanks') { ph.msg('P', '「楽しかった！ ありがとう」'); fx(st, { 101: 1, 102: 1, 103: 1 }, false); await S.sleep(800, g); ph.msg(102, '「こちらこそ〜！」'); await S.sleep(600, g); ph.msg(101, '「ありがとうございました」'); st.picks.push('グループにお礼'); }
+    else if (gr === 'stamp') {
+      const k = await choose('どのスタンプ？', STAMPS.map((x, i) => ({ label: x.t, v: i })));
+      ph.stamp('P', STAMPS[k]); st.picks.push('グループにスタンプ（' + STAMPS[k].t + '）');
+      if (!cold) { await S.sleep(800, g); ph.stamp(102, { t: 'うける', f: 'laugh' }); }
+    }
+    await S.sleep(500, g);
+    const to = await choose('だれかに、個別にLINEする？', HS.map(h => ({ label: NAME[h], v: h })).concat([{ label: '送らない', v: null, cls: 'quiet' }]));
+    let tier = null, usedMem = null;
+    if (to != null) {
+      const seenTxt = new Set();
+      const mems = info.memories.filter(mm => mm.h === to && !seenTxt.has(mm.send) && seenTxt.add(mm.send)).slice(0, 2);
+      const msgOpts = mems.map(mm => ({ label: mm.send.replace(/^「|」$/g, ''), sub: '昨日の話に触れる', v: mm, cls: 'line' }))
+        .concat([{ label: '昨日はありがとう！ 楽しかった', sub: 'ふつうのお礼', v: 'plain', cls: 'line' }]);
+      const msg = await choose(`${NAME[to]}に、なんて送る？`, msgOpts);
+      ph.title(`LINE　${NAME[to]}`); ph.clear();
+      usedMem = msg === 'plain' ? null : msg;
+      ph.msg('P', usedMem ? usedMem.send : '「昨日はありがとう！ 楽しかった」');
+      st.picks.push(`${NAME[to]}にLINE（${usedMem ? '昨日の話に触れた' : 'ふつうのお礼'}）`);
+      const score = st.h[to] + (usedMem ? 8 : 0) + (walked === to ? 6 : 0);
+      tier = score >= 56 ? 'A' : score >= 42 ? 'B' : score >= 32 ? 'C' : 'D';
+      await S.sleep(900, g);
+      if (tier === 'D') { ph.sys('既読'); await S.sleep(1200, g); ph.sys('（返事は来なかった）'); }
+      else {
+        ph.sys(tier === 'C' ? '既読 ……（夕方）' : '既読');
+        await S.sleep(tier === 'A' ? 700 : 1300, g);
+        if (usedMem && tier !== 'C') { ph.msg(to, usedMem.echo); await S.sleep(800, g); }
+        ph.msg(to, tier === 'A' ? LINE_A[to] : tier === 'B' ? LINE_B[to] : LINE_C[to]);
+      }
+      lines.push(`${NAME[to]}に「${usedMem ? '昨日の話' : 'お礼'}」を送った → ` + { A: '次の約束', B: 'やりとりが続いた', C: '社交辞令の返事', D: '既読のまま' }[tier]);
+    }
+    // むこうから来る
+    const inbound = HS.filter(h => h !== to && st.h[h] >= 50);
+    for (const h of inbound) { await S.sleep(900, g); ph.title(`LINE　${NAME[h]}`); ph.clear(); ph.msg(h, LINE_IN[h]); lines.push(`${NAME[h]}のほうから、LINEが来た`); }
+    S.put(S.el('div', 'hint', 'タップで結果 ▸'));
+    await S.waitTap(g);
+    ph.close();
+    slowHint = null;
+
+    const titles = { A: '次の約束', B: 'LINEが続いた', C: '社交辞令で終わった', D: '既読のまま' };
+    const title = tier ? titles[tier] : inbound.length ? 'むこうから来た' : '何も起きなかった';
+    const lead = tier === 'A' ? DATE_TXT[to] : walked ? `${NAME[walked]}と、駅まで一緒に帰った夜だった。` : '全員と連絡先は交換してある。';
+    const imp = info.maxM >= 90 ? '「よく喋る人」だと思われたかもしれない。' : info.lowN ? '途中、影が薄くなっていた時間があった。' : '喋る量は、ちょうどよかった。';
+    S.end({ title, lead, hearts: st.h, base: { 101: BASE, 102: BASE, 103: BASE },
+      sections: [
+        { h: '終わり方', p: lines.length ? lines : ['（特になし）'] },
+        { h: 'LINEで触れられた話', p: [info.memories.length ? `${info.memories.length}つ（${[...new Set(info.memories.map(mm => NAME[mm.h]))].join('・')}）。会話で届いた返しが、翌朝の話題になる。` : 'なし。会話で届いた返しがないと、ふつうのお礼しか送れない。'] },
+        { h: 'この夜の手', p: [st.picks.join(' ／ ') || '（何もしなかった）'] },
+        { h: '目立ちと気づき', p: [`目立ちは いちばん高いとき ${info.maxM}。${imp}`, `気づけた札 ${info.seen}枚。気づけなかったもの ${info.missedUnseen}つ（空気読み ${iYomi}）。`, info.storyHeard === 'cut' ? '最後の沈黙で待ったので あおいが話し出したが、途中で止めてしまった。' : info.storyHeard ? '最後の沈黙で待ったので、あおいの話が聞けた。' : '最後の沈黙で話題を出したので、あおいの番は来なかった。'] },
+        { h: 'この方式の台詞', p: [`このデモで書いた台詞 ${info.mode.count}行（地の文を除く）。` + info.mode.costNote] }],
+      again: () => info.mode.start(info.mode.back), back: info.mode.back });
+  }
+  // ── 方式の登録 ────────────────────────────────────────────
+  function make(def, run, data) {
+    const m = Object.assign({ count: countLines(data) }, def);
+    m.start = back => { m.back = back; const g = S.begin(m.title); S.menu([{ label: '最初から', fn: () => m.start(back) }]); S.onTap(null); run(m, g); };
+    return m;
+  }
+  const MODES = {
+    C: make({ title: 'C 論破', costNote: '1夜ごとに台本1本。光る言葉と手札の当たり外れを足していく。周回すると覚えゲーになる。' }, runC, [C_SEGS, C_HITS, C_MISS_SAY, C_MISS_BACK]),
+    D: make({ title: 'D 3択', costNote: '台本＋要所3択。分岐はすぐ本筋に戻すので、増え方はゆるい。' }, runD, D),
+    E: make({ title: 'E 割り込み', costNote: '台本＋口を挟んだ／黙った／遮ったの3通り。タイミングの調整に手間がかかる。' }, runE, E),
+    G: make({ title: 'G ミックス・流れる', costNote: '話題ごとの小さな台本（5〜10行）＋光る言葉ごとに 掘る／乗る の2通り。書く単位が「1行」から「話題」になる。' }, (m, g) => runGH(m, g, true), [GH, GH_HOOK]),
+    H: make({ title: 'H ミックス・止まる', costNote: '中身はGと同じ。違うのは、時間で流れるかタップで進むかだけ。' }, (m, g) => runGH(m, g, false), [GH, GH_HOOK]),
+    I: make({ title: 'I 流れる会話（設定A）', profile: 'A', costNote: '話題ごとの台本（出す順は自由）＋吹き出しごとに自然な返し2〜3通り（手札は合う所にだけ出る）。気づきは1つ2〜3行。' }, runI, [I_FLOW, I_TOPICS, I_STORY, I_CUE, I_HOOKS, LINE_A, LINE_B, LINE_C, LINE_IN, SEND_ACC, SEND_NO]),
+    IB: make({ title: 'I 流れる会話（設定B）', profile: 'B', costNote: '話題ごとの台本（出す順は自由）＋吹き出しごとに自然な返し2〜3通り（手札は合う所にだけ出る）。気づきは1つ2〜3行。' }, runI, [I_FLOW, I_TOPICS, I_STORY, I_CUE, I_HOOKS, LINE_A, LINE_B, LINE_C, LINE_IN, SEND_ACC, SEND_NO]),
+    IC: make({ title: 'I 流れる会話（設定C）', profile: 'C', costNote: '話題ごとの台本（出す順は自由）＋吹き出しごとに自然な返し2〜3通り（手札は合う所にだけ出る）。気づきは1つ2〜3行。' }, runI, [I_FLOW, I_TOPICS, I_STORY, I_CUE, I_HOOKS, LINE_A, LINE_B, LINE_C, LINE_IN, SEND_ACC, SEND_NO]),
+    F: make({ title: 'F 気配り', costNote: '台本＋行動への反応。行動の種類は増やさず、合図（グラス・手・スマホ）を台本に置いていく。' }, runF, [F, F_OK, F_PLAIN, F_CUT]),
+  };
+  return MODES;
+})();
+
+</script>
+<script>
+// 一覧と切り替え
+(() => {
+  'use strict';
+  const list = document.getElementById('mlist');
+  const back = () => { Stage.home(); render(); };
+  const DEFS = [
+    { id: 'I', name: '流れる会話＋気づき', ref: 'C ＋ E ＋ グノーシアの「疑い」と「嘘に気づく」',
+      what: '会話は勝手に流れる。吹き出しには、自然につながる返しだけが出る（聞く／乗る／手札）。会話が途切れたら、話題を出すか待つか。喋りすぎると目立ち、黙りすぎると影が薄い。黙っている間ほど気づける。お開きのあとは二次会か帰るか、翌朝のお礼LINEが結果発表',
+      lines: () => `台本＋吹き出しの分岐（このデモ ${Scripted.I.count}行）`, play: () => Scripted.I.start(back), latest: true,
+      profiles: [['A', '塾バイト・文化系・実家', 'あおいと話が合う'], ['B', '居酒屋バイト・フットサル・一人暮らし', 'ゆなと話が合う'], ['C', 'パン屋の朝番・軽音・学生寮', 'めいと話が合う']] },
+    { id: 'A', name: 'グノーシア（今の版）', ref: 'グノーシア',
+      what: '話題を出す。誰かが話した直後に 乗る・掘る・茶化す。ふだんは隠れていて「割って入る」で出す',
+      lines: '部品を組み立てる。話題・子・深さ・手の掛け算で増える',
+      play: seed => EngineMode.start({ ai: false, seed, back }), seedBtn: true },
+    { id: 'B', name: 'AIが台詞を書く', ref: 'Façade・AI Dungeon',
+      what: 'Aと同じ遊び方・同じ計算。台詞だけ、AIが前後を読んで書く',
+      lines: 'キャラ設定だけ。1ラウンドごとに数秒待つ。遊ぶ人の利用枠を使う',
+      play: seed => EngineMode.start({ ai: true, seed, back }), seedBtn: true },
+    { id: 'C', name: '論破', ref: 'ダンガンロンパ・逆転裁判',
+      what: '会話は勝手に流れる。光った言葉をタップして、手札の話題（塾バイト・実家・部室の主）を重ねる',
+      lines: () => `台本1本（このデモ ${Scripted.C.count}行）`, play: () => Scripted.C.start(back) },
+    { id: 'D', name: '3択', ref: 'ペルソナ・ときメモ',
+      what: '台本を読み進め、要所で自分の返しを3つから選ぶ。合うと ♪',
+      lines: () => `台本＋選択肢（このデモ ${Scripted.D.count}行）`, play: () => Scripted.D.start(back) },
+    { id: 'E', name: '割り込み', ref: 'Oxenfree・Night in the Woods',
+      what: '会話は勝手に進む。吹き出しが出ている間だけ口を挟める。黙るのも、遮るのも手',
+      lines: () => `台本＋分岐（このデモ ${Scripted.E.count}行）`, play: () => Scripted.E.start(back) },
+    { id: 'F', name: '気配り', ref: 'VA-11 Hall-A・Coffee Talk',
+      what: '会話には口を出さない。グラス・皿・話に入れていない子を見て動く（場の手が主役）',
+      lines: () => `台本＋行動への反応（このデモ ${Scripted.F.count}行）`, play: () => Scripted.F.start(back) },
+    { id: 'G', name: 'ミックス（流れる）', ref: 'B・D ＋ C ＋ E ＋ F',
+      what: '話題ごとの小さな台本が、時間で流れる。光った言葉に 掘る／乗る（1つの話題で1回）。はにかみ＝聞いてほしい。場の手は いつでも（取り分ける＝みんな、注文・話を振る＝1人）',
+      lines: () => `話題ごとの台本＋掘る／乗るの分岐（このデモ ${Scripted.G.count}行）`, play: () => Scripted.G.start(back), mix: true },
+    { id: 'H', name: 'ミックス（止まる）', ref: 'B・D ＋ C ＋ F',
+      what: 'Gと同じ中身を、タップで進める。急かされずに、光った言葉を選べる',
+      lines: () => `Gと同じ（このデモ ${Scripted.H.count}行）`, play: () => Scripted.H.start(back), mix: true },
+  ];
+  function render() {
+    list.innerHTML = '';
+    // 静的公開版（claude.ai の外）では、AIが台詞を書く B は動かないので出さない
+    DEFS.filter(d => !(window.__STATIC__ && d.id === 'B')).forEach(d => {
+      if (d.latest) { const hd = document.createElement('p'); hd.className = 'lead'; hd.style.margin = '0 0 8px'; hd.innerHTML = '<b>いちばん新しい案（10/3 更新）</b>自分の設定を3通りから選べる。手札（自分の経験）が変わるので、口を挟める所と話が合う子が変わる。話題を2つ足した（朝型・夜型／カメラロール）'; list.appendChild(hd); }
+      if (d.id === 'A') { const hd = document.createElement('p'); hd.className = 'lead'; hd.style.margin = '18px 0 8px'; hd.innerHTML = '<b>これまでの案</b>'; list.appendChild(hd); }
+      if (d.mix && !list.querySelector('.mixhd')) { const hd = document.createElement('p'); hd.className = 'lead mixhd'; hd.style.margin = '18px 0 8px'; hd.innerHTML = '<b>ここから ミックス案</b>（10/1 の感想から：つながる＝B・D、会話っぽい＝C・E、場の手＝F）'; list.appendChild(hd); }
+      const c = document.createElement('div'); c.className = 'mcard';
+      c.innerHTML = `<div class="hd"><span class="badge">${d.id}</span><span class="nm">${d.name}</span><span class="ref">元ネタ：${d.ref}</span></div>`
+        + `<dl><dt>やること</dt><dd>${d.what}</dd><dt>台詞</dt><dd>${typeof d.lines === 'function' ? d.lines() : d.lines}</dd></dl>`;
+      const go = document.createElement('div'); go.className = 'go';
+      if (d.profiles) {
+        go.classList.add('prof');
+        d.profiles.forEach(([k, nm, who]) => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'pbtn';
+          b.innerHTML = `<b>設定${k}</b><span>${nm}</span><small>${who}</small>`;
+          b.addEventListener('click', () => Scripted[k === 'A' ? 'I' : 'I' + k].start(back));
+          go.appendChild(b);
+        });
+      } else {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = '遊ぶ'; b.addEventListener('click', () => d.play());
+        go.appendChild(b);
+      }
+      if (d.seedBtn) {
+        const s = document.createElement('button'); s.type = 'button'; s.className = 'sub';
+        const seed = EngineMode.lastSeed;
+        s.textContent = 'さっきの夜で'; s.title = 'AかBで遊んだ直前の夜を、もう一度';
+        s.disabled = seed == null;
+        s.addEventListener('click', () => d.play(EngineMode.lastSeed));
+        go.appendChild(s);
+      }
+      c.appendChild(go); list.appendChild(c);
+    });
+  }
+  document.getElementById('btn-back').addEventListener('click', back);
+  render();
+})();
+
+</script>
+</body></html>

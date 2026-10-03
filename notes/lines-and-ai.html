@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>台詞の量と、AIに書かせる案｜CouollD</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 作り方</nav>
+  <article class="note">
+    <header><h1>台詞の量と、AIに書かせる案</h1><div class="meta">作成 2026-10-02</div></header>
+<h2>書く単位で量が変わる</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>書く単位</th>
+<th>このデモの量</th>
+<th>増え方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A グノーシア</td>
+<td>1行の部品</td>
+<td>約290行</td>
+<td>話題 × 子 × 深さ × 手 の掛け算。しかも会話がつながらない</td>
+</tr>
+<tr>
+<td>C〜F</td>
+<td>1夜の台本</td>
+<td>38〜62行</td>
+<td>夜ごとに台本1本</td>
+</tr>
+<tr>
+<td>G/H</td>
+<td>話題ごとの台本</td>
+<td>87行</td>
+<td>話題 × 光る言葉ごとに2通り</td>
+</tr>
+<tr>
+<td>I</td>
+<td>話題ごとの台本（出す順は自由）</td>
+<td>131行（話題4つ＋最後の話）</td>
+<td>話題 × 吹き出しごとに2〜3通り。手札は合う所だけ</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>台本の単位にすると、<strong>中身は最初からつながる</strong>。部品の組み立てでは、つなぐための部品がさらに要る</li>
+<li>1夜ぶんは 100〜150行 くらいの見込み</li>
+</ul>
+<h2>AIに台詞を書かせる案（B）</h2>
+<p>試作：遊べる版の進行はそのまま、台詞だけを claude.ai の sample 機能でその場で書かせた。</p>
+<h3>分かったこと</h3>
+<ul>
+<li><strong>つながって見える</strong>のは良い</li>
+<li><strong>費用</strong>：1夜で十数回呼ぶ。毎回それまでの会話を丸ごと送るので、1夜あたり数万トークン</li>
+<li><strong>待ち時間</strong>：1ラウンドごとに数秒〜</li>
+<li><strong>発売版</strong>：費用がこちら持ちになり、サーバーとAPIキーが要る。設定が崩れる心配もある</li>
+<li><strong>「みんな別々に話す」問題</strong>：AIのせいではなく、進行の作り（1人ずつ「話題を出した人に向けて話す」と決めて、AIは空欄を埋めるだけ）。専用モデルに替えても直らない</li>
+</ul>
+<h3>結論</h3>
+<ul>
+<li>遊んでいる最中にAIに書かせるのは、発売版ではやらない</li>
+<li><strong>作る段階で、話題ごとの台本の下書きをAIに書かせる</strong>。B の「つながる」良さはこちらでも取れる</li>
+<li>下書きは <a href="line-texture.html">台詞の手触り</a> の規律で直す</li>
+</ul>
+  </article>
+  <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
+</div>
+</body>
+</html>

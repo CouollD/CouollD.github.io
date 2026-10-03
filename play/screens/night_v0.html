@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>今夜のスタメン 遊べる版</title>
+<!--
+  screens/night_v0.html — 遊べる版（v0）。灰色の画面のまま、合コン1回が最後まで通る（10/18 の節目）
+  ルール: docs/rules-v0.md ／ 進行: js/v0/night-engine.js ／ 台詞: js/v0/night-lines.js
+  ?seed=123 か #s123 で同じ夜を再現できる。右上の「数値」は調整用（本番では出さない）
+-->
+<style>
+  :root {
+    --bg: #F4F4F4; --ink: #262626; --ink2: #545454; --ink3: #8C8C8C; --line: #BDBDBD;
+    --card: #FFFFFF; --stage: #DCDCDC; --hero: #6E6E6E; --side: #A8A8A8; --friend: #8A8A8A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font-family: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  button { font-family: inherit; color: inherit; }
+  .app { max-width: 462px; height: 100%; margin: 0 auto; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px; }
+
+  /* 上の帯 */
+  .top { display: flex; align-items: center; justify-content: space-between; height: 32px; flex: none; }
+  .dots { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ink2); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #D0D0D0; }
+  .dot.on { background: var(--ink2); }
+  .tools { display: flex; gap: 6px; }
+  .tools { position: relative; }
+  .tools > button { width: 44px; height: 32px; border: 1px solid var(--line); background: var(--card); border-radius: 8px; font-size: 16px; }
+  .menu { position: absolute; right: 0; top: 38px; z-index: 30; display: flex; flex-direction: column; gap: 4px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12); min-width: 170px; }
+  .menu[hidden] { display: none; }
+  .menu button { height: 36px; border: none; background: transparent; border-radius: 6px; font-size: 13px; text-align: left; padding: 0 10px; }
+  .menu button:hover, .menu button:focus-visible { background: var(--bg); }
+  .bar { display: flex; align-items: center; gap: 10px; min-height: 60px; }
+  .bar .hint { flex: 1 1 auto; text-align: left; }
+  .cut { height: 52px; padding: 0 22px; border: 2px solid var(--ink); background: var(--ink); color: #FFFFFF; border-radius: 26px; font-size: 15px; font-weight: 700; cursor: pointer; flex: none; }
+  .panelcmd { display: flex; flex-direction: column; gap: 6px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px; padding: 8px 10px 10px; }
+  .panelcmd .top2 { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink2); }
+  .panelcmd .top2 button { border: none; background: transparent; font-size: 11px; color: var(--ink2); cursor: pointer; }
+  .cmd.topic { font-size: 13px; min-height: 40px; }
+
+  /* 卓 */
+  .stage { position: relative; flex: 1 1 auto; min-height: 300px; background: var(--stage); border-radius: 12px; overflow: hidden; cursor: pointer; }
+  .shade { position: absolute; inset: 0; background: #000; opacity: 0; transition: opacity .6s; pointer-events: none; z-index: 8; }
+  .board { position: absolute; left: 30px; right: 30px; top: 16px; height: 80px; background: #4A4A4A; border: 5px solid #7A7A7A; }
+  .table { position: absolute; left: 0; right: 0; bottom: 150px; height: 26px; background: #C8C8C8; }
+  .fig { position: absolute; top: 86px; bottom: 150px; width: 34%; transition: filter .3s, opacity .3s; }
+  .fig .head { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #FFFFFF; }
+  .fig .body { position: absolute; left: 0; right: 0; top: 58px; bottom: 0; border-radius: 60px 60px 0 0;
+    display: flex; justify-content: center; padding-top: 34px; font-size: 11px; color: #FFFFFF; }
+  .fig.h .head, .fig.h .body { background: var(--hero); }
+  .fig.f .head, .fig.f .body { background: var(--friend); }
+  .fig.dim { filter: blur(2.5px); opacity: .8; }
+  .fig.far { filter: blur(5px); opacity: .6; }
+  .fig.speak { filter: none; opacity: 1; z-index: 3; }
+  .fig.speak .head, .fig.speak .body { background: #4E4E4E; }
+  #fig-101 { left: -2%; } #fig-102 { left: 33%; z-index: 2; } #fig-103 { left: 67%; }
+  #fig-1 { left: -34%; top: 130px; bottom: 120px; width: 44%; z-index: 4; }
+  #fig-4 { left: 90%; top: 130px; bottom: 120px; width: 44%; z-index: 4; }
+  .fig.f.far { filter: blur(3.5px); opacity: .75; }
+  #fig-1.speak { left: -24%; } #fig-4.speak { left: 80%; }
+
+  /* セリフ窓 */
+  .win { position: absolute; left: 0; right: 0; bottom: 0; min-height: 138px; background: var(--card); border: 1.5px solid var(--ink);
+    border-radius: 12px; padding: 24px 14px 14px; z-index: 9; }
+  .win.narr { background: #F7F7F7; border-style: dashed; border-color: var(--ink3); }
+  .plate { position: absolute; left: 12px; top: -14px; display: flex; align-items: center; gap: 6px; }
+  .who { background: var(--ink); color: #FFF; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+  .to { background: var(--card); border: 1.5px solid var(--ink); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+  .act { background: var(--card); border: 1.5px solid var(--ink3); font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+  .tag { position: absolute; right: 12px; top: -11px; background: var(--card); border: 1.5px solid var(--ink3); font-size: 11px; padding: 2px 10px; border-radius: 11px; }
+  .text { font-size: 15px; line-height: 1.65; }
+  .win.narr .text { color: var(--ink2); font-size: 14px; }
+  .next { position: absolute; right: 12px; bottom: 8px; font-size: 11px; color: var(--ink3); }
+
+  /* 手 */
+  .cmds { flex: none; min-height: 112px; display: flex; flex-direction: column; gap: 6px; }
+  .row { display: grid; gap: 6px; }
+  .cmd { min-height: 52px; border: 1.5px solid var(--ink3); background: var(--card); border-radius: 10px; font-size: 16px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; }
+  .cmd small { font-size: 10px; font-weight: 400; color: var(--ink2); }
+  .cmd.quiet { border: 1px solid var(--line); background: transparent; font-size: 14px; font-weight: 400; min-height: 42px; }
+  .cmd.topic { font-size: 14px; min-height: 44px; }
+  .hint { font-size: 11px; color: var(--ink3); text-align: center; }
+
+  /* 結果・ログ・数値 */
+  .sheet { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 20; }
+  .sheet[hidden] { display: none; }
+  .panel { width: 100%; max-width: 430px; max-height: 80%; overflow: auto; background: var(--card); border-radius: 16px 16px 0 0; padding: 18px 16px 24px; }
+  .panel h2 { margin: 0 0 8px; font-size: 20px; }
+  .panel p { margin: 6px 0; line-height: 1.6; }
+  .log p { margin: 0 0 8px; font-size: 13px; line-height: 1.55; }
+  .log .r { color: var(--ink3); font-size: 11px; margin-top: 12px; }
+  .dbg { position: absolute; left: 8px; top: 8px; z-index: 10; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 8px; font-size: 10.5px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  .dbg[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="dots" id="dots"><span>残り</span></div>
+    <div class="tools">
+      <button type="button" id="btn-menu" aria-label="メニュー" aria-expanded="false">…</button>
+      <div class="menu" id="menu" hidden>
+        <button type="button" id="btn-mode">手の出し方：隠す</button>
+        <button type="button" id="btn-log">ログ</button>
+        <button type="button" id="btn-dbg">数値</button>
+        <button type="button" id="btn-new">別の夜</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="board"></div>
+    <div class="table"></div>
+    <div class="fig h dim" id="fig-101"><div class="head">あ</div><div class="body" data-expr>真顔</div></div>
+    <div class="fig h dim" id="fig-102"><div class="head">ゆ</div><div class="body" data-expr>真顔</div></div>
+    <div class="fig h dim" id="fig-103"><div class="head">め</div><div class="body" data-expr>真顔</div></div>
+    <div class="fig f far" id="fig-1"><div class="head">け</div><div class="body"></div></div>
+    <div class="fig f far" id="fig-4"><div class="head">い</div><div class="body"></div></div>
+    <div class="shade" id="shade"></div>
+    <div class="dbg" id="dbg" hidden></div>
+    <div class="win narr" id="win">
+      <div class="plate" id="plate"></div>
+      <div class="tag" id="tag" hidden></div>
+      <div class="text" id="text">（乾杯。向かいに あおい・ゆな・めい。両隣には、連れてきた けんた と けいた）</div>
+      <div class="next" id="next">タップで続き ▸</div>
+    </div>
+  </div>
+
+  <div class="cmds" id="cmds"></div>
+</div>
+
+<div class="sheet" id="sheet-log" hidden><div class="panel log" id="log"></div></div>
+<div class="sheet" id="sheet-end" hidden><div class="panel" id="end"></div></div>
+
+<script src="../data/gamedata.js"></script>
+<script src="../js/core/card-topics.js"></script>
+<script src="../js/v0/night-engine.js"></script>
+<script src="../js/v0/night-lines.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const NAME = NightLines.NAME;
+  const EXPR_TEXT = { '笑': '笑', 'はにかみ': 'はにかみ', '真顔': '真顔', 'つまらない': 'つまらない', '困り顔': '困り顔' };
+  const CMD = {
+    go:    { label: '乗る' },
+    dig:   { label: '掘る' },
+    tease: { label: '茶化す' },
+    wait:  { label: '様子を見る', sub: '黙って聞く', quiet: true },
+  };
+  const RESULT = {
+    home:    { title: '一緒に帰る', lead: '駅まで、二人で歩いた。' },
+    contact: { title: '連絡先を交換', lead: '帰りぎわに、連絡先を交換した。' },
+    none:    { title: '今夜は、なし', lead: 'そのまま、解散になった。' },
+  };
+
+  let E, L, night, seen, queue, logLines, dbgOn = false;
+
+  function seedFromUrl() {
+    const m = location.search.match(/seed=(\d+)/) || location.hash.match(/^#s(\d+)$/);
+    return m ? +m[1] : (Math.floor(Math.random() * 1e9));
+  }
+  function start(seed) {
+    E = NightEngine.create({ HEROINES, CardTopics });
+    L = NightLines.create(CardTopics);
+    night = E.newNight(seed);
+    seen = 0; queue = []; logLines = [];
+    renderDots(0);
+    showNarr('（乾杯。向かいに あおい・ゆな・めい。両隣には、連れてきた けんた と けいた）');
+    $('cmds').innerHTML = '<div class="hint">タップで始める</div>';
+    $('sheet-end').hidden = true;
+    pending = 'first';
+    renderDbg();
+  }
+  let pending = null;
+
+  // エンジンを次の決めることまで進め、出来事を表示の列に積む
+  function pump() {
+    if (night.phase !== 'end') night.advance();
+    for (; seen < night.events.length; seen++) {
+      const e = night.events[seen];
+      if (e.t === 'round') { queue.push({ round: e }); continue; }
+      if (e.t === 'roundEnd' || e.t === 'end') { queue.push({ scene: e }); continue; }
+      const l = L.line(e); if (!l) continue;
+      queue.push({ line: l, e });
+    }
+  }
+  function step() {
+    if (!$('sheet-log').hidden) return;
+    if (pending === 'first') { pending = null; pump(); }
+    while (queue.length) {
+      const q = queue.shift();
+      if (q.round) { renderDots(q.round.n); logLines.push({ r: q.round.n }); continue; }
+      if (q.scene) { applyScene(q.scene); continue; }
+      showLine(q.line, q.e);
+      renderCmds(true);
+      return;
+    }
+    if (night.decision) {
+      if (night.decision.kind === 'end') { showEnd(); return; }
+      renderCmds(false);
+    } else { pump(); step(); }
+  }
+
+  function applyScene(e) {
+    if (e.exprs) Object.entries(e.exprs).forEach(([h, x]) => { const b = document.querySelector('#fig-' + h + ' [data-expr]'); if (b) b.textContent = EXPR_TEXT[x] || x; });
+    const air = e.air == null ? 60 : e.air;
+    $('shade').style.opacity = String(Math.max(0, Math.min(0.45, (60 - air) / 100)));   // 空気が下がると店が暗くなる
+    const t = e.topicNow;
+    const tag = $('tag');
+    if (t) { tag.hidden = false; tag.textContent = '#' + CardTopics.TOPICS[t.id].label + '　' + '●'.repeat(t.depth) + '○'.repeat(t.max - t.depth); }
+    else tag.hidden = true;
+    renderDbg();
+  }
+  function focusFig(speaker, e) {
+    const t = e && e.topicNow;
+    [101, 102, 103, 1, 4].forEach(id => {
+      const f = $('fig-' + id); f.classList.remove('speak', 'dim', 'far');
+      if (id === speaker) f.classList.add('speak');
+      else if (id === 1 || id === 4) f.classList.add('far');
+      else if (t && t.depth >= 2 && t.partner && t.partner !== id) f.classList.add('far');   // 二人の世界：まわりが遠くなる
+      else f.classList.add('dim');
+    });
+  }
+  function showNarr(text) {
+    const w = $('win'); w.classList.add('narr');
+    $('plate').innerHTML = ''; $('text').textContent = text;
+  }
+  function showLine(l, e) {
+    applyScene(e);
+    if (l.narr) { showNarr(l.text); logLines.push({ narr: l.text }); return; }
+    const w = $('win'); w.classList.remove('narr');
+    const to = l.to === 'all' ? 'みんな' : NAME[l.to];
+    $('plate').innerHTML = `<span class="who">${NAME[l.speaker]}</span><span>→</span><span class="to">${to}</span><span class="act">${l.act}</span>`;
+    $('text').textContent = l.text;
+    focusFig(typeof l.speaker === 'number' ? l.speaker : null, e);
+    logLines.push({ who: NAME[l.speaker], to, act: l.act, text: l.text });
+  }
+
+  function renderDots(n) {
+    const d = $('dots'); d.innerHTML = '<span>残り</span>';
+    for (let i = 1; i <= night.cfg.ROUNDS; i++) { const s = document.createElement('span'); s.className = 'dot' + (i > n ? ' on' : ''); d.appendChild(s); }
+  }
+  // 手の出し方: hidden＝ふだんは「割って入る」だけ（グノーシア型・案H2）／always＝選べる手を並べる（案H1）
+  let cmdMode = 'hidden', opened = false;
+  try { cmdMode = localStorage.getItem('v0_cmdMode') || 'hidden'; } catch (e) {}
+  function renderCmds(stepping) {
+    const box = $('cmds'); box.innerHTML = '';
+    $('next').hidden = !stepping;
+    if (stepping) { box.innerHTML = '<div class="hint">タップで続き</div>'; return; }
+    const d = night.decision;
+    if (cmdMode === 'hidden' && !opened && d.kind !== 'rescue') {
+      const bar = document.createElement('div'); bar.className = 'bar';
+      const hint = document.createElement('div'); hint.className = 'hint';
+      hint.textContent = d.kind === 'start'
+        ? (night.topic ? 'タップで様子を見る（続きを聞く） ▸' : 'タップで様子を見る（誰かが話し出す） ▸')
+        : (night.topic && !night.topic.known ? '知らない話。タップで様子を見る ▸' : 'タップで様子を見る ▸');
+      const cut = document.createElement('button'); cut.type = 'button'; cut.className = 'cut';
+      cut.textContent = d.kind === 'start' ? '話題を出す' : '割って入る';
+      cut.addEventListener('click', ev => { ev.stopPropagation(); opened = true; renderCmds(false); });
+      bar.appendChild(hint); bar.appendChild(cut); box.appendChild(bar);
+      return;
+    }
+    const holder = (cmdMode === 'hidden') ? document.createElement('div') : box;
+    if (cmdMode === 'hidden') {
+      holder.className = 'panelcmd';
+      const top = document.createElement('div'); top.className = 'top2';
+      const who = d.kind === 'start' ? 'どの話題を出す？' : (NAME[d.speaker] + ' に');
+      top.innerHTML = `<span>${who}</span>`;
+      if (d.kind !== 'rescue') { const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕ やめる';
+        x.addEventListener('click', ev => { ev.stopPropagation(); opened = false; renderCmds(false); }); top.appendChild(x); }
+      holder.appendChild(top); box.appendChild(holder);
+    }
+    renderOpen(holder, d);
+  }
+  function renderOpen(box, d) {
+    if (d.kind === 'start') {
+      const hint = document.createElement('div'); hint.className = 'hint';
+      hint.textContent = night.topic ? '話題を出すか、様子を見るか' : '話題を出すか、誰かが話し出すのを待つか';
+      if (cmdMode !== 'hidden') box.appendChild(hint);
+      const row = document.createElement('div'); row.className = 'row'; row.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+      d.options.filter(o => o.cmd === 'open').forEach(o => row.appendChild(btn('#' + CardTopics.TOPICS[o.topic].label, null, 'topic', () => choose(o))));
+      box.appendChild(row);
+      if (cmdMode !== 'hidden') box.appendChild(btn('様子を見る', '黙って聞く', 'quiet', () => choose({ cmd: 'wait' })));
+      return;
+    }
+    if (d.kind === 'react' || d.kind === 'rescue') {
+      const opts = d.options.filter(o => o.cmd !== 'wait');
+      const row = document.createElement('div'); row.className = 'row'; row.style.gridTemplateColumns = `repeat(${Math.max(opts.length, 1)}, minmax(0, 1fr))`;
+      opts.forEach(o => {
+        const sub = d.kind === 'rescue' ? '笑ってごまかす' : (o.cmd === 'tease' && !night.topic.known ? '知らない話' : null);
+        row.appendChild(btn(CMD[o.cmd].label, sub, '', () => choose(o)));
+      });
+      box.appendChild(row);
+      if (cmdMode !== 'hidden' || d.kind === 'rescue')
+        box.appendChild(btn(d.kind === 'rescue' ? '流す' : '様子を見る', d.kind === 'rescue' ? null : (night.topic && !night.topic.known ? '聞いていれば話についていける' : '次の人の話を待つ'), 'quiet', () => choose({ cmd: 'wait' })));
+    }
+  }
+  function btn(label, sub, cls, fn) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cmd ' + (cls || '');
+    b.innerHTML = label + (sub ? `<small>${sub}</small>` : '');
+    b.addEventListener('click', ev => { ev.stopPropagation(); fn(); });
+    return b;
+  }
+  function choose(o) {
+    if (night.decision && night.decision.kind === 'start' && o.cmd === 'wait') logLines.push({ narr: '▶ 様子を見る' });
+    else if (o.cmd === 'wait') logLines.push({ narr: '▷ 様子を見る' });
+    opened = false;
+    night.choose(o);
+    pump();
+    step();
+  }
+
+  function showEnd() {
+    const d = night.decision, R = RESULT[d.result], h = HEROINES.find(x => x.id === d.honmei);
+    const said = d.result === 'home' ? h.result_lines.contact : d.result === 'contact' ? h.result_lines.good : h.result_lines.normal;
+    const deep = (d.result === 'home' && night.stats.maxDepth >= 3) ? '<p>（あの話は、たぶん誰にもしていない話だった）</p>' : '';
+    $('end').innerHTML = `<h2>${R.title}</h2><p>${R.lead}</p><p>${NAME[d.honmei]}：${said}</p>${deep}`
+      + `<p style="color:#8C8C8C;font-size:12px">seed ${night.seed}（同じ夜は #s${night.seed}）</p>`
+      + `<div class="row" style="grid-template-columns:1fr 1fr;margin-top:12px"></div>`;
+    const row = $('end').querySelector('.row');
+    row.appendChild(btn('ログを見る', null, 'quiet', () => openLog()));
+    row.appendChild(btn('別の夜', null, '', () => start(seedFromRandom())));
+    $('sheet-end').hidden = false;
+    $('cmds').innerHTML = '';
+  }
+  const seedFromRandom = () => Math.floor(Math.random() * 1e9);
+
+  function openLog() {
+    const box = $('log');
+    box.innerHTML = '<h2>ログ</h2>' + logLines.map(x =>
+      x.r ? `<p class="r">── ラウンド ${x.r}</p>` : x.narr ? `<p style="color:#6B6B6B">${x.narr}</p>` : `<p><b>${x.who}</b> → ${x.to}［${x.act}］${x.text}</p>`).join('');
+    $('sheet-log').hidden = false;
+  }
+  function renderDbg() {
+    const el = $('dbg'); el.hidden = !dbgOn; if (!dbgOn || !night) return;
+    const t = night.topic;
+    const rows = [101, 102, 103].map(h => `${NAME[h]} 好感度${night.hearts[h].toFixed(0)}${t ? ` 許容${night.tolerance(h, t.id).toFixed(1)} 残り${t.left[h]}` : ''}`);
+    el.innerHTML = `空気 ${night.air.toFixed(0)}　seed ${night.seed}<br>${rows.join('<br>')}${t ? `<br>深さ ${t.depth}/${t.max}${t.known ? '' : '（知らない話）'}` : ''}`;
+  }
+
+  $('stage').addEventListener('click', () => {
+    if ($('next').hidden === false || pending === 'first') { step(); return; }
+    const d = night && night.decision;
+    if (cmdMode === 'hidden' && !opened && d && (d.kind === 'start' || d.kind === 'react')) choose({ cmd: 'wait' });
+  });
+  $('cmds').addEventListener('click', () => { if (pending === 'first' || ($('next') && !$('next').hidden)) step(); });
+  const closeMenu = () => { $('menu').hidden = true; $('btn-menu').setAttribute('aria-expanded', 'false'); };
+  $('btn-menu').addEventListener('click', ev => { ev.stopPropagation(); const m = $('menu'); m.hidden = !m.hidden; $('btn-menu').setAttribute('aria-expanded', String(!m.hidden)); });
+  document.addEventListener('click', closeMenu);
+  const modeLabel = () => { $('btn-mode').textContent = '手の出し方：' + (cmdMode === 'hidden' ? '隠す（グノーシア型）' : 'いつも並べる'); };
+  $('btn-mode').addEventListener('click', ev => { ev.stopPropagation(); cmdMode = cmdMode === 'hidden' ? 'always' : 'hidden'; opened = false;
+    try { localStorage.setItem('v0_cmdMode', cmdMode); } catch (e) {}
+    modeLabel(); closeMenu(); if (night && night.decision && $('next').hidden) renderCmds(false); });
+  modeLabel();
+  $('btn-log').addEventListener('click', () => { closeMenu(); openLog(); });
+  $('sheet-log').addEventListener('click', () => { $('sheet-log').hidden = true; });
+  $('btn-dbg').addEventListener('click', () => { closeMenu(); dbgOn = !dbgOn; renderDbg(); });
+  $('btn-new').addEventListener('click', () => { closeMenu(); start(seedFromRandom()); });
+
+  start(seedFromUrl());
+})();
+</script>
+</body>
+</html>

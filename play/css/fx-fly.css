@@ -1,0 +1,62 @@
+/* css/fx-fly.css — 演出。ここだけを触る（並列作業の衝突を避けるため分離してある） */
+
+/* ── 出した札が宛先へ飛ぶ ─────────────────────────
+   札が上へ消えるだけだと、盤面には「一手打った」としか残らない。
+   誰に向けた一手だったかを、札の行き先そのもので見せる。
+   飛ぶのは body 直下に置いた position:fixed のクローン。手札の中で動かすと
+   親の overflow に切られて、卓の向こう側の席まで届かない。
+   移動量は宛先ごとに変わるので JS が --fly-dx / --fly-dy に入れる。 */
+
+.fx-fly{
+  z-index:9000;
+  pointer-events:none;
+  will-change:transform, opacity;
+  /* 書体は .phone の内側で決まっている。body 直下へ出した分身は、
+     指定しないと素の明朝に戻って別の札に見える */
+  font-family:var(--font);
+}
+
+/* 飛ばした本体は、その場で引っ込める。
+   .played の playOut と重なると、同じ札が2枚あるように見える */
+.fan-card.fx-flown{ animation:none; opacity:0; }
+
+/* 宛先のある札: 飛びながら縮み、相手に届く手前で消える */
+@keyframes fxFlyHit{
+  0%  { transform:translate(0,0) scale(1) rotate(0deg); opacity:1; }
+  70% { opacity:1; }
+  100%{ transform:translate(var(--fly-dx,0px), var(--fly-dy,0px)) scale(.55) rotate(-6deg); opacity:0; }
+}
+.fx-fly.fx-fly-hit{ animation:fxFlyHit 380ms cubic-bezier(.2,.75,.3,1) forwards; }
+
+/* 宛先の無い札: 卓の真ん中まで飛び、そこから12px落ちて止まってから消える。
+   届かなかったことを「落ちた」で見せたいので、飛んでいる間は薄くしない */
+@keyframes fxFlyMiss{
+  0%  { transform:translate(0,0) scale(1) rotate(0deg); }
+  100%{ transform:translate(var(--fly-dx,0px), var(--fly-dy,0px)) scale(.55) rotate(-6deg); }
+}
+@keyframes fxFlyDrop{
+  0%  { transform:translate(var(--fly-dx,0px), var(--fly-dy,0px)) scale(.55) rotate(-6deg);
+        opacity:1; animation-timing-function:cubic-bezier(.4,0,.7,1); }
+  34% { transform:translate(var(--fly-dx,0px), calc(var(--fly-dy,0px) + 12px)) scale(.55) rotate(-6deg); opacity:1; }
+  62% { transform:translate(var(--fly-dx,0px), calc(var(--fly-dy,0px) + 12px)) scale(.55) rotate(-6deg); opacity:1; }
+  100%{ transform:translate(var(--fly-dx,0px), calc(var(--fly-dy,0px) + 12px)) scale(.55) rotate(-6deg); opacity:0; }
+}
+.fx-fly.fx-fly-miss{
+  animation:fxFlyMiss 380ms cubic-bezier(.2,.75,.3,1) forwards,
+            fxFlyDrop 420ms linear 380ms forwards;
+}
+
+/* 受け取った側もふくらんで返す。出した側だけが動くと、
+   札は飛んでいったのに相手は何も受け取っていないように見える。
+   中央の席は translateX(-50%) で位置を作っているので、そのぶんを含んだ
+   別のキーフレームを当てる（素で上書きすると席が横へずれる） */
+@keyframes fxRecv{
+  0%,100%{ transform:scale(1); }
+  45%    { transform:scale(1.04); }
+}
+@keyframes fxRecvCenter{
+  0%,100%{ transform:translateX(-50%) scale(1); }
+  45%    { transform:translateX(-50%) scale(1.04); }
+}
+.h-card.fx-recv{ animation:fxRecv 120ms ease-out; }
+.h-card.pos-center.fx-recv{ animation:fxRecvCenter 120ms ease-out; }

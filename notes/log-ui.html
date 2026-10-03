@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>ログUI｜CouollD</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 会話の仕組み</nav>
+  <article class="note">
+    <header><h1>ログUI</h1><div class="meta">作成 2026-10-02</div></header>
+<h2>作った4案（どれも同じ記録から描く）</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>案</th>
+<th>見た目</th>
+<th>良い</th>
+<th>弱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>チャット</td>
+<td>LINE風。自分は右、相手は左＋頭文字の丸</td>
+<td>誰が言ったかが一目で分かる</td>
+<td>長い。何が効いたかは分からない</td>
+</tr>
+<tr>
+<td>台本</td>
+<td>名前の列＋台詞の列。自分の行に色。話題の見出しが上に残る</td>
+<td>一般的なノベルゲームのバックログ。流し読みしやすい</td>
+<td>地味。誰に向けた発言かが弱い</td>
+</tr>
+<tr>
+<td>振り返り</td>
+<td>話題ごとのカードに「あなたの手（聞く1・黙る2…）」「反応（あおい+10…）」と、自分の発言とそれへの返事だけ</td>
+<td>何が効いたかが分かる（グノーシアのログに近い）</td>
+<td>会話の流れは折りたたみの中</td>
+</tr>
+<tr>
+<td><strong>複合</strong>（いまの標準）</td>
+<td>話題ごとのカード（振り返りの要約）を開くと、中はチャット</td>
+<td>両方の良さ</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p>感想（10/2）：チャットが見やすい、振り返りは話題ごとにまとまっているのが良い → 複合が良さそう</p>
+<h2>記録に残しているもの</h2>
+<ul>
+<li>発言（誰が・誰に・何をした・台詞）</li>
+<li>地の文</li>
+<li>話題の区切り（見出し）</li>
+<li>自分の手（聞く・乗る・手札・黙る・気づき・遮った…）</li>
+<li>好感度の変化（本番では数字は出さず、♪などに置き換える想定）</li>
+<li>帰り道の向き</li>
+</ul>
+<h2>調べたこと</h2>
+<ul>
+<li>ノベルゲームのバックログは「ホイールを上／上スワイプで開く」が定番</li>
+<li>Disco Elysium の会話欄は、Twitter のタイムラインを手本にした縦一列。読み込ませるより、流し読みで要点が取れる作り</li>
+</ul>
+<h2>次にやりたいこと</h2>
+<ul>
+<li>複合のカードに「その話題で出てきた相手の事情」（門限11時、ラテアートが歪む…）を残す → お礼LINEで触れる話を選ぶときに使える（<a href="etiquette-ending.html">合コンの終わり方</a>。お礼LINE側は10/2 に実装済み）</li>
+</ul>
+<h2>出典</h2>
+<ul>
+<li><a href="https://note.com/skt_order/n/nb7f2276e3bf8">今どきのノベルゲームに実装するべきシステムとその挙動の話（note）</a></li>
+<li><a href="https://80.lv/articles/disco-elysium-working-on-ui-design">Disco Elysium: Working on UI Design（80.lv）</a></li>
+</ul>
+  </article>
+  <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
+</div>
+</body>
+</html>

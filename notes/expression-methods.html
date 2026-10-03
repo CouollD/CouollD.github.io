@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>表情差分の作り方（調査）｜CouollD</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 立ち絵と画像生成</nav>
+  <article class="note">
+    <header><h1>表情差分の作り方（調査）</h1><div class="meta">作成 2026-10-02</div></header>
+<p>元絵（全身・背景透過）の服・髪・体・線・塗りを崩さず、<strong>表情だけ</strong>を変えた差分を画像生成AIで作るための先行事例。調査はサブエージェント（Sonnet）。生成の検証はまだしていない → <a href="expression-prompt-test.html">表情差分テスト</a></p>
+<h2>手法の比較</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>手法</th>
+<th>元絵を保てる度合い</th>
+<th>手間</th>
+<th>費用</th>
+<th>場所</th>
+<th>向いている使い方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT に全身を渡す</td>
+<td>低〜中</td>
+<td>小</td>
+<td>無料枠／Plus</td>
+<td>クラウド</td>
+<td>案出し</td>
+</tr>
+<tr>
+<td>ChatGPT の範囲指定・マスク</td>
+<td>中</td>
+<td>中</td>
+<td>Plus／API</td>
+<td>クラウド</td>
+<td>顔まわりの修正</td>
+</tr>
+<tr>
+<td>Gemini（2.5 Flash Image）</td>
+<td>中〜高</td>
+<td>小</td>
+<td>無料枠あり</td>
+<td>クラウド</td>
+<td>第一候補</td>
+</tr>
+<tr>
+<td>SDXL系＋顔だけインペイント</td>
+<td>高</td>
+<td>大</td>
+<td>無料＋GPU</td>
+<td>ローカル</td>
+<td>量産・厳密に保つ</td>
+</tr>
+<tr>
+<td>顔だけ生成 → 元絵に重ねる</td>
+<td>高</td>
+<td>中</td>
+<td>併用先しだい</td>
+<td>併用</td>
+<td>仕上げ</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>ChatGPT は表情以外（服・髪）も勝手に変えやすく、Gemini のほうが元に忠実という比較記事がある</li>
+<li>範囲指定（マスク）をしても枠の外が変わるという報告がある</li>
+</ul>
+<h2>崩さないための工夫</h2>
+<ol>
+<li><strong>顔だけ切り出して渡し、結果を元絵へ貼り戻す</strong>（どの手法でも効く）</li>
+<li>変えるのは表情だけ・1回に1つ。変える所と変えない所を書き、変えない所の一覧を毎回くり返す</li>
+<li>崩れたら、崩れた画像を直さず元絵からやり直す（Gemini は新しい会話で）</li>
+<li>目・口の位置は少しずれる → 貼り戻すときに合わせる</li>
+<li>Gemini は透過PNGを出せないという報告 → 単色の背景で作って抜く</li>
+<li>ローカルならノイズ強度は低め（0.3〜0.5。0.8で別人）</li>
+<li>ローカルの Crop&amp;Stitch は枠外を変えず、境界をぼかせる</li>
+<li>ControlNet（lineart／openpose）で線とポーズを固定</li>
+</ol>
+<h2>安いモデルで足りるか</h2>
+<ul>
+<li>まずは <strong>Gemini の無料枠</strong>と <strong>ChatGPT</strong> で、顔の切り出しを渡す型を試すのがよい</li>
+<li>ローカルは SDXL で VRAM 8GB が最低、12GB 推奨。手元の Intel Mac（Iris Plus）では実用的でない</li>
+<li>商用利用：OpenAI の規約は出力を利用者のものとしている。Gemini は API 規約では所有権を主張しないとあるが、無料版アプリでの可否は記事によって食い違う → <strong>公式の規約で確認が要る</strong>。ローカルのモデルはモデルごとのライセンスを確認</li>
+</ul>
+<h2>出典</h2>
+<ul>
+<li>https://community.openai.com/t/gpt-image-1-problems-with-mask-edits/1240639</li>
+<li>https://developers.openai.com/cookbook/examples/multimodal/image-gen-1.5-prompting_guide</li>
+<li>https://developers.googleblog.com/en/how-to-prompt-gemini-2-5-flash-image-generation-for-the-best-results/</li>
+<li>https://note.com/yuki_tech/n/nbb854983c9c8</li>
+<li>https://zenn.dev/dotback/articles/19b36ebb33bd9d</li>
+<li>https://zenn.dev/kmorimo/articles/d4a5c3f70213dc</li>
+<li>https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch</li>
+<li>https://stable-diffusion-art.com/adetailer/</li>
+<li>https://tyrano.jp/usage/tech/chara_layer</li>
+<li>https://comfyui-wiki.com/en/install/install-comfyui/gpu-buying-guide</li>
+<li>https://openai.com/policies/terms-of-use/</li>
+<li>https://ai.google.dev/gemini-api/terms</li>
+</ul>
+  </article>
+  <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
+</div>
+</body>
+</html>

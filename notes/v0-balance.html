@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>v0（グノーシア型）バランス実測｜CouollD</title>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 作り方</nav>
+  <article class="note">
+    <header><h1>v0（グノーシア型）バランス実測</h1><div class="meta">作成 2026-10-02</div></header>
+<p>遊べる版 v0（<a href="conversation-systems.html">会話システムの比較</a> の案A）を <code>tools/sim_round.js</code> で回した結果。ルールは <code>docs/rules-v0.md</code>。</p>
+<h2>9/28〜29（8ラウンド・3000夜）</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>打ち方</th>
+<th>一緒に帰る</th>
+<th>連絡先を交換</th>
+<th>なし</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>乗るだけ</td>
+<td>0%</td>
+<td>94%</td>
+<td>6%</td>
+</tr>
+<tr>
+<td>適当に押す</td>
+<td>0%</td>
+<td>25%</td>
+<td>75%</td>
+</tr>
+<tr>
+<td>何も読まずに掘る</td>
+<td>21%</td>
+<td>2%</td>
+<td>77%</td>
+</tr>
+<tr>
+<td>サインを読んで掘る</td>
+<td>50%</td>
+<td>39%</td>
+<td>11%</td>
+</tr>
+<tr>
+<td>完全に読める（上限）</td>
+<td>70%</td>
+<td>24%</td>
+<td>6%</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>外しても6割は何か持ち帰れる（読んで掘る人が外した夜：帰る7%・連絡先53%・なし40%）→ 救済は足さない</li>
+<li>連番の種で最初の好感度が偏っていたのを、9/29 に直した</li>
+</ul>
+<h2>9/30（話題に持ち主と順番を付けたあと）</h2>
+<ul>
+<li>一緒に帰る：読んで掘る 64% ／ 読まずに掘る 41%（読む価値 23ポイント）</li>
+<li>乗るだけでも連絡先は 92%</li>
+<li>深さ3まで届くのは 約2%</li>
+</ul>
+<h2>メモ</h2>
+<ul>
+<li>浅い勝ち（連絡先）は取りやすく、一緒に帰るには掘るしかない、という形</li>
+<li>方式を I（流れる会話）に乗り換えるなら、この数字は作り直しになる</li>
+</ul>
+  </article>
+  <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
+</div>
+</body>
+</html>
