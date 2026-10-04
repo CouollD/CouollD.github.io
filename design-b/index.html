@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<title>CouollD</title>
+<style>
+/* 外した版：終電の発車標。夜の紺に、発車標の琥珀色。種別の色は合コンの4人のテーマカラーから */
+:root {
+  --night: #0D1C42; --deep: #010736; --panel: #08112C; --amber: #FFB547; --cream: #FCF1D0; --mute: #8C94B8; --line: #22396F;
+  --k1: #F29191; --k2: #8ACFF8; --k3: #FFD444; --k4: #7FD1AE;
+  --f-display: "Dela Gothic One", "Hiragino Sans", sans-serif;
+  --f-dot: "DotGothic16", "IBM Plex Mono", monospace;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--deep); }
+body { margin: 0; min-height: 100vh; background: radial-gradient(120% 80% at 80% -10%, #1b2f66 0%, var(--night) 45%, var(--deep) 100%) fixed; color: var(--cream); font-family: var(--f-body); line-height: 1.8; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 28px 16px 80px; display: grid; gap: 44px; }
+.hero { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: end; min-height: 300px; }
+.hero .who { font-family: var(--f-dot); color: var(--amber); font-size: 15px; letter-spacing: .2em; }
+.hero .name { font-family: var(--f-display); font-size: clamp(44px, 10vw, 96px); line-height: 1; margin: 6px 0 14px; color: var(--cream); }
+.hero p { margin: 0; max-width: 30em; color: var(--mute); }
+.hero .tate { writing-mode: vertical-rl; font-family: var(--f-display); font-size: clamp(34px, 7vw, 64px); line-height: 1.15; color: var(--amber); letter-spacing: .08em; margin: 0; text-shadow: 0 0 18px rgba(255,181,71,.35); }
+.hero .tate small { display: block; font-family: var(--f-dot); font-size: 14px; color: var(--mute); letter-spacing: .3em; margin-top: 12px; text-shadow: none; }
+h2 { font-family: var(--f-dot); font-weight: 400; font-size: 14px; letter-spacing: .3em; color: var(--mute); margin: 0 0 14px; display: flex; gap: 12px; align-items: center; }
+h2::after { content: ""; flex: 1; border-top: 1px dashed var(--line); }
+.tickets { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
+.ticket { position: relative; display: grid; gap: 6px; padding: 18px 20px 16px; background: var(--cream); color: #2a2418; border-radius: 6px;
+  background-image: repeating-linear-gradient(135deg, rgba(42,36,24,.035) 0 6px, transparent 6px 12px);
+  -webkit-mask: radial-gradient(circle 9px at 0 62%, transparent 98%, #000) , radial-gradient(circle 9px at 100% 62%, transparent 98%, #000);
+  -webkit-mask-composite: source-in; mask: radial-gradient(circle 9px at 0 62%, transparent 98%, #000), radial-gradient(circle 9px at 100% 62%, transparent 98%, #000); mask-composite: intersect; transition: transform .2s; }
+.ticket:nth-child(2) { transform: rotate(-1.2deg); } .ticket:nth-child(3) { transform: rotate(1deg); }
+.ticket:hover { transform: translateY(-3px) rotate(0); }
+.tk-kind { font-family: var(--f-dot); font-size: 12px; color: #9a4b14; letter-spacing: .2em; }
+.tk-name { font-family: var(--f-display); font-size: 22px; line-height: 1.3; }
+.tk-desc { font-size: 13.5px; color: #5b5242; line-height: 1.6; padding-bottom: 10px; border-bottom: 1px dashed #b9ad92; }
+.tk-date, .tk-no { font-family: var(--f-dot); font-size: 12px; color: #7a6f58; }
+.tk-no { position: absolute; right: 18px; bottom: 16px; }
+.board { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 0; box-shadow: inset 0 0 40px rgba(0,0,0,.45); overflow: hidden; }
+.board-head { display: grid; grid-template-columns: 70px 74px 1fr; gap: 12px; padding: 4px 18px 10px; font-family: var(--f-dot); font-size: 12px; color: var(--mute); letter-spacing: .2em; border-bottom: 1px solid var(--line); }
+.dep { display: grid; grid-template-columns: 70px 74px 1fr; gap: 2px 12px; padding: 10px 18px; border-bottom: 1px solid rgba(34,57,111,.6); align-items: baseline; }
+.dep:last-child { border-bottom: 0; }
+.dep:hover { background: rgba(255,181,71,.07); }
+.dep .t { font-family: var(--f-dot); color: var(--amber); font-size: 18px; font-variant-numeric: tabular-nums; }
+.dep .k { font-family: var(--f-dot); font-size: 13px; text-align: center; border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; }
+.k1 { color: var(--k1); } .k2 { color: var(--k2); } .k3 { color: var(--k3); } .k4 { color: var(--k4); }
+.dep .dest { font-family: var(--f-dot); font-size: 18px; color: var(--cream); min-width: 0; overflow-wrap: anywhere; }
+.dep .d { grid-column: 3; font-size: 13px; color: var(--mute); line-height: 1.6; }
+.ticker { font-family: var(--f-dot); color: var(--amber); white-space: nowrap; overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 6px 0; font-size: 14px; }
+.ticker span { display: inline-block; padding-left: 100%; animation: run 38s linear infinite; }
+@keyframes run { to { transform: translateX(-100%); } }
+footer { font-size: 12.5px; color: var(--mute); display: grid; gap: 4px; }
+footer p { margin: 0; }
+footer a { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 600px) {
+  .hero { grid-template-columns: 1fr; min-height: 0; }
+  .hero .tate { writing-mode: horizontal-tb; font-size: 40px; }
+  .board-head { display: none; }
+  .dep { grid-template-columns: 56px 1fr; }
+  .dep .k { justify-self: start; }
+  .dep .dest, .dep .d { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .ticker span { animation: none; padding-left: 0; } .ticket { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="who">CouollD ／ 週末のゲーム試作</div>
+      <h1 class="name">CouollD</h1>
+      <p>合コンを1回ずつ遊ぶ会話ゲーム『今夜のスタメン』を、週末に作っています。会話は勝手に流れ、口を挟めるのは吹き出しが出ている数秒だけ。作りながら調べたことは、下の発車標に研究ノートとして並べています。</p>
+    </div>
+    <p class="tate">今夜の<br>スタメン<small>制作中</small></p>
+  </header>
+  <div class="ticker" aria-hidden="true"><span>まもなく 会話の方式くらべ が発車します ／ 研究ノート17本 運行中 ／ 終電のあとは駅まで送る ／ このサイトは検索に載せていません</span></div>
+  <section aria-labelledby="h-t">
+    <h2 id="h-t">試作の切符</h2>
+    <div class="tickets"><a class="ticket" href="../lab/conversation/"><span class="tk-kind">最新</span><span class="tk-name">会話の方式くらべ</span><span class="tk-desc">会話の仕組みを9通り。いまは「I 流れる会話＋気づき」</span><span class="tk-date">10/04 発行</span><span class="tk-no">No.001</span></a><a class="ticket" href="../lab/expression/"><span class="tk-kind">試作</span><span class="tk-name">めいの表情パーツ</span><span class="tk-desc">元絵を層に分けて、目・眉・口を動かす</span><span class="tk-date">10/04 発行</span><span class="tk-no">No.002</span></a><a class="ticket" href="../play/"><span class="tk-kind">旧方式</span><span class="tk-name">遊べる版 v0</span><span class="tk-desc">グノーシア型の会話で、合コンを1回最後まで</span><span class="tk-date">09/30 発行</span><span class="tk-no">No.003</span></a></div>
+  </section>
+  <section aria-labelledby="h-b">
+    <h2 id="h-b">研究ノート 発車標</h2>
+    <div class="board" role="list">
+      <div class="board-head" aria-hidden="true"><span>更新</span><span>種別</span><span>行先</span></div>
+      <a class="dep" href="../notes/expression-prompt-test.html"><span class="t">10/03</span><span class="k k1">立ち絵</span><span class="dest">表情差分テスト</span><span class="d">プロンプト5案×2モデルの比較と最終プロンプト</span></a><a class="dep" href="../notes/expression-rig-survey.html"><span class="t">10/03</span><span class="k k1">立ち絵</span><span class="dest">表情の作り方：パーツ分けとリグの前例・先行研究</span><span class="d">Live2D・VRoid の定石と先行研究。パーツ分けの表情が崩れて見える理由</span></a><a class="dep" href="../notes/expression-experiment.html"><span class="t">10/03</span><span class="k k1">立ち絵</span><span class="dest">立ち絵の表情・手振り差分を、画像生成AIで元絵を崩さずに作る（研究ノート）</span><span class="d">画像生成AIで表情・手振り差分を作り、元絵に貼り戻す実験。三面図・服の違い・パーツ分けまで</span></a><a class="dep" href="../notes/conversation-systems.html"><span class="t">10/03</span><span class="k k2">会話</span><span class="dest">会話システムの比較（2026-09-30〜10-02）</span><span class="d">会話の仕組みを9通り作って遊び比べた記録</span></a><a class="dep" href="../notes/hints.html"><span class="t">10/03</span><span class="k k2">会話</span><span class="dest">ヒントの出し方：前例と案</span><span class="d">グノーシア・逆転裁判などのヒントの出し方と、5つの案</span></a><a class="dep" href="../notes/replies.html"><span class="t">10/02</span><span class="k k2">会話</span><span class="dest">返しの出し方（吹き出し・手札・話題を出すか待つか）</span><span class="d">吹き出し・手札・話題を出すか待つか</span></a><a class="dep" href="../notes/prototype-compare.html"><span class="t">10/02</span><span class="k k4">作り方</span><span class="dest">試作で比べる進め方</span><span class="d">同じ場面を何通りも作って比べる手順</span></a><a class="dep" href="../notes/expression-methods.html"><span class="t">10/02</span><span class="k k1">立ち絵</span><span class="dest">表情差分の作り方（調査）</span><span class="d">元絵を崩さずに表情だけ変える手法の調査</span></a><a class="dep" href="../notes/presence-and-noticing.html"><span class="t">10/02</span><span class="k k2">会話</span><span class="dest">目立ちと気づき</span><span class="d">喋りすぎ／黙りすぎの損と、気配りに気づける条件</span></a><a class="dep" href="../notes/etiquette-food.html"><span class="t">10/02</span><span class="k k3">作法</span><span class="dest">料理と飲み物の気配り</span><span class="d">取り分けは誰がやるか、飲み物の気配り</span></a><a class="dep" href="../notes/etiquette-ending.html"><span class="t">10/02</span><span class="k k3">作法</span><span class="dest">合コンの終わり方</span><span class="d">締め・会計・連絡先・二次会・お礼LINE</span></a><a class="dep" href="../notes/lines-and-ai.html"><span class="t">10/02</span><span class="k k4">作り方</span><span class="dest">台詞の量と、AIに書かせる案</span><span class="d">方式ごとの台詞の量と、AIに台詞を書かせる案</span></a><a class="dep" href="../notes/line-texture.html"><span class="t">10/02</span><span class="k k3">作法</span><span class="dest">台詞の手触り</span><span class="d">AIくさい台詞を消す規律</span></a><a class="dep" href="../notes/reference-games.html"><span class="t">10/02</span><span class="k k2">会話</span><span class="dest">参考ゲーム（何を借りたか）</span><span class="d">何をどのゲームから借りたか</span></a><a class="dep" href="../notes/log-ui.html"><span class="t">10/02</span><span class="k k2">会話</span><span class="dest">ログUI</span><span class="d">会話ログの見せ方4案</span></a><a class="dep" href="../notes/v0-balance.html"><span class="t">10/02</span><span class="k k4">作り方</span><span class="dest">v0（グノーシア型）バランス実測</span><span class="d">旧方式（グノーシア型）のシミュレーション結果</span></a><a class="dep" href="../notes/ai-division.html"><span class="t">10/02</span><span class="k k4">作り方</span><span class="dest">AIとの分業（個人開発のPM事例）</span><span class="d">AIをプログラマにした個人開発の事例</span></a>
+    </div>
+  </section>
+  <footer>
+    <p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p>
+    <p>この画面は外した版です。<a href="../">いつもの版に戻る</a></p>
+  </footer>
+</div>
+</body>
+</html>
