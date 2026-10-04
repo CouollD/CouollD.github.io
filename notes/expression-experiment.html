@@ -460,6 +460,57 @@
 <details><summary>S1・S2：文章だけ（性別だけ変える）</summary><pre>Draw a full-body character sprite for a Japanese dating-sim game: a 20-year-old {female/male} university student, standing and facing forward, casual autumn outfit, a gentle smile. Anime style, clean line art, soft cel shading. Plain white background. One character only, no text.</pre></details>
 <details><summary>S3・S4：見本の絵を渡す</summary><pre>This is a character sprite from my game. Draw a NEW character for the same game: a 20-year-old {male/female} university student, standing and facing forward, casual autumn outfit, a gentle smile. Match the art style of this image exactly: line thickness and line color, eye style and size, face shape, head-to-body proportions, coloring and shading. Plain white background. One character only, no text.</pre></details>
 
+<h2>追記（10/4）：実験7　男子2人を、キャラデザの手順で作り直す</h2>
+<ul>
+<li><strong>やりたいこと</strong>：実験6の続き。絵柄は女子にそろえる（10/4 に決定）。前に作った男子は「服がださい」と言われたので、デザインの手順を踏んで作り直す</li>
+<li><strong>手順（ユーザーのやり方）</strong><ol>
+<li>テーマカラー：有名なパレットのサイトから、評価が高く、メインの色が他の子とかぶらない4色（メイン・サブ・アクセント・締め）</li>
+<li>服：先に系統を決め、似たコーデを探す（他の子と系統をかぶらせない）</li>
+<li>髪と目の色はテーマカラーから。インナーカラーやハイライトに色を出してもよいが、テーマカラーから離れない</li>
+<li>髪型は他の子とかぶらせない</li>
+<li>全身だと顔の特徴が出にくいので、眉と目の形を指定する。性格も書く</li>
+</ol>
+</li>
+<li><strong>条件</strong><ul>
+<li>パレット：Color Hunt の人気順から選んだ。けんた＝オレンジ系（いいね729）、けいた＝深緑系（いいね657）。女子のメイン（ピンク・生成り・水色）とかぶらない</li>
+<li>系統：WEAR の人気コーデで確かめた。けんた＝スポーツミックス、けいた＝シティボーイ。Pinterest はこちらから画像を見られなかったので、説明文だけ参考にした</li>
+<li>生成：Gemini（無料、Flash）。あおいとゆなの全身を絵柄の見本として渡し、各1回</li>
+<li>作品名（アイマスなど）はプロンプトに入れない（既存作品に似すぎるのを防ぐ、g3）。絵柄は言葉と見本の絵で寄せる</li>
+<li>柄・文字・バッグは入れない（実験3で崩れやすかったもの）</li>
+</ul>
+</li>
+<li><strong>結果</strong><ul>
+<li>2人とも、女子と同じ絵柄（茶色の細い線、やわらかい塗り、つやのある目）に寄った</li>
+<li>テーマカラー、髪のインナーカラー、眉と目の形、性格（けんたの笑顔と手振り、けいたの半笑いとカメラ）は、ほぼ指定どおりに出た</li>
+<li>女子より少し背が高く、頭身も少し高い（6.5〜7頭身くらい）
+  <img alt="実験7_男子の作り直し" src="fig/f13.webp" /></li>
+</ul>
+</li>
+<li><strong>分析</strong><ul>
+<li>手順を踏むと、色と服の方向がはっきりして、前より垢抜けた（自己評価。判断はユーザー）</li>
+<li>けんたは、シルエットがまだ素直（まっすぐのデニム、箱型の上着）。今の流行に寄せるなら、もっと太いデニムや大きめの上着にする</li>
+<li>次は：表情差分（実験2の手順）とパーツ分けを、新しい2人でもやる</li>
+</ul>
+</li>
+<li><strong>プロンプト</strong></li>
+</ul>
+<details><summary>けんた（全文）</summary><pre>Images 1 and 2 are character sprites from my dating-sim game. Draw a NEW male character for the same game in exactly the same art style as these two images: Japanese light-novel illustration style like a polished idol-game character card, the same thin soft brown line art, the same eye rendering with layered glossy highlights, the same face shape, the same head-to-body proportions (about 6 heads tall), the same soft cel shading and clean coloring. Full body, standing, facing forward, plain white background. One character only, no text, no animal ears.
+
+Character: a cheerful 20-year-old university student who plays sports, works part-time at an izakaya and always takes charge of the group; a little teasing. Big grin showing a bit of teeth, one hand in his pocket, the other hand giving a casual wave.
+Theme colors: orange #EB7F31 (main), light orange #FCAD38, vermilion #E45742 (accent), deep maroon #972828.
+Hair: dark brown, short with a longer top swept up (up-bang) so part of the forehead shows; a warm orange inner color at the nape and orange highlights where the light hits.
+Eyes: amber-orange irises with bright orange highlights; large, slightly upturned, double eyelids.
+Eyebrows: thick, straight, the outer ends slightly raised (confident).
+Outfit (sporty street mix, trendy for Japanese college students): a retro track jacket in burnt orange #EB7F31 with cream stripes down the sleeves, zipper half open; a plain white crew-neck T-shirt; light-wash wide-leg denim; chunky black sneakers with a maroon accent; a thin silver chain necklace. No prints, no logos, no text, no bags.</pre></details>
+<details><summary>けいた（人物の部分）</summary><pre>（前半の絵柄の指定は、けんたと同じ）
+
+Character: a calm 20-year-old university student in the photography club who works part-time at a cafe; observant and a little sarcastic. A small half-smile with one corner of the mouth raised, holding a film camera at chest height with both hands.
+Theme colors: deep green #2A6B5C (main), cream #E8DCC4, mustard #C49A45 (accent), dark green #123F36.
+Hair: black with a deep green sheen; deep green at the tips and on the inner layer; a light center-parted mushroom cut that half covers the ears.
+Eyes: deep green irises with a thin mustard-gold ring of light; narrow, slightly downcast almond eyes with hooded lids.
+Eyebrows: thin, straight, slightly lowered (calm, a bit ironic).
+Outfit (Japanese city-boy style, relaxed vintage mix, wide silhouette): a plain deep green #2A6B5C knit vest over an oversized plain cream #E8DCC4 shirt with the sleeves rolled up; wide beige chino trousers; brown leather loafers with white socks; a mustard #C49A45 camera strap; a thin silver ring. No prints, no logos, no text, no bags.</pre></details>
+
 <h2>付録</h2>
 <h3>使ったプロンプト（クリックで開く）</h3>
 <p>実験1（めい・困り顔）</p>
