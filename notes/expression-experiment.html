@@ -397,6 +397,69 @@
 </ul>
 </li>
 </ul>
+<h2>追記（10/4）：実験5　キャラごとの仕草</h2>
+<ul>
+<li><strong>やりたいこと</strong>：手振り（実験3）の続き。キャラごとの小さな仕草を、服が崩れにくい2人で作る</li>
+<li><strong>条件</strong><ul>
+<li>Gemini（無料、Flash）。毎回新しい会話。全身を渡す（実験3の C1 と同じ形）</li>
+<li>腕は左右で指定せず、動作で指定（「親指を立てている腕」「片手を耳元へ、もう片方は胸の前のまま」）</li>
+<li>貼り戻しは実験3の <code>gesture_paste.py</code> をそのまま使う（変わった所だけ重ねる）</li>
+</ul>
+</li>
+<li><strong>結果</strong><ul>
+<li>けんた（グラスを掲げて乾杯）、あおい（髪を耳にかける）とも、1回で指示どおりになった</li>
+<li>顔・服・配色は保たれた。変わった範囲は画像の 6.6%／4.4%、変わっていない所のずれは 8.4／7.3（実験3と同じくらい）
+  <img alt="実験5_仕草" src="fig/f11.webp" /></li>
+</ul>
+</li>
+<li><strong>分析</strong><ul>
+<li>無地や単純な服なら、仕草は作れる（実験3の結論どおり）</li>
+<li>課題：貼り戻した所の縁がぼける。あおいは、元の腕があった所に薄い残りが出た（ぼかしたマスクが半透明になる）</li>
+<li>次の手：縁は生成画像の輪郭で切る。元の腕があった所は、生成側が白なら透明にする</li>
+</ul>
+</li>
+<li><strong>プロンプト</strong></li>
+</ul>
+<details><summary>けんた：グラスを掲げて乾杯</summary><pre>Edit this character sprite. Change ONLY the arm that is giving the thumbs-up: that hand now raises a beer mug high in the air for a toast (kampai), the arm lifted above shoulder height. Keep everything else exactly identical: face, expression, hair, outfit details (zipper, stripes, towel), the other arm on the hip, legs, shoes, line art thickness, coloring, canvas size, framing and the plain white background. Do not redraw or restyle the image.</pre></details>
+<details><summary>あおい：髪を耳にかける</summary><pre>Edit this character sprite. Change ONLY one arm: she lifts one hand to the side of her face and tucks a strand of hair behind her ear, a little shyly. The other hand stays in front of her chest exactly as it is. Keep everything else exactly identical: face, expression, blush, hair and braids, outfit details (round collar, buttons, cuffs, skirt pattern), legs, boots, line art thickness, coloring, canvas size, framing and the plain white background. Do not redraw or restyle the image.</pre></details>
+
+<h2>追記（10/4）：実験6　女の子と男の子で絵柄が違う理由</h2>
+<ul>
+<li><strong>問い</strong>：今の立ち絵は、女の子（あおい・ゆな）と男の子（けんた・けいた）で雰囲気が違う。原因は何か。元のプロンプトは残っていない</li>
+<li><strong>今の立ち絵の違い（目で見た比較）</strong><ul>
+<li>女の子：5.5〜6頭身くらい。目が大きくハイライトが多い。細い茶色の線、淡い色、頬の赤みが強い</li>
+<li>男の子：7.5頭身くらい。目が小さく切れ長。鼻とあごの線がはっきりしていて、線が濃い。差し色が強い（蛍光の靴）。けいたは白いふちどりとぼかしがある</li>
+<li>めいは黒い太めの線で、女の子の中でも少し違う</li>
+</ul>
+</li>
+<li><strong>条件</strong>：Gemini（無料、Flash）。毎回新しい会話で各1回<ul>
+<li>S1・S2：同じ文章で、性別だけ変える</li>
+<li>S3：あおいの絵を見本に、男性を描かせる</li>
+<li>S4：けんたの絵を見本に、女性を描かせる</li>
+</ul>
+</li>
+<li><strong>結果</strong><ul>
+<li>S1 と S2 はほぼ同じ絵柄になった（線・塗り・頭身が同じ）。性別の語だけでは、絵柄は大きく変わらなかった</li>
+<li>S3 は、あおいの絵柄の男性になった（大きい目、茶色の細い線、やわらかい塗り）。S4 は、けんたの絵柄の女性になった（7頭身前後、小さめの目、濃い線、布の質感）</li>
+<li>見本の絵柄に強く引っ張られた
+  <img alt="実験6_男女の絵柄" src="fig/f12.webp" /></li>
+</ul>
+</li>
+<li><strong>分析</strong><ul>
+<li>今の差は、性別よりも「別々の文章・見本・会話で作ったこと」が原因の可能性が高い（推測。元のプロンプトが無いので断定はできない）</li>
+<li>試行は各1回なので、偶然の差は除けていない</li>
+</ul>
+</li>
+<li><strong>今後</strong><ul>
+<li>絵柄をそろえるなら、1人を見本にして他を作り直す（S3・S4 の形）。どちらの絵柄に寄せるかを先に決める</li>
+<li>作り直すと、表情差分とパーツ分けもやり直しになる。本編に入れる前に決めたい</li>
+</ul>
+</li>
+<li><strong>プロンプト</strong></li>
+</ul>
+<details><summary>S1・S2：文章だけ（性別だけ変える）</summary><pre>Draw a full-body character sprite for a Japanese dating-sim game: a 20-year-old {female/male} university student, standing and facing forward, casual autumn outfit, a gentle smile. Anime style, clean line art, soft cel shading. Plain white background. One character only, no text.</pre></details>
+<details><summary>S3・S4：見本の絵を渡す</summary><pre>This is a character sprite from my game. Draw a NEW character for the same game: a 20-year-old {male/female} university student, standing and facing forward, casual autumn outfit, a gentle smile. Match the art style of this image exactly: line thickness and line color, eye style and size, face shape, head-to-body proportions, coloring and shading. Plain white background. One character only, no text.</pre></details>
+
 <h2>付録</h2>
 <h3>使ったプロンプト（クリックで開く）</h3>
 <p>実験1（めい・困り顔）</p>
