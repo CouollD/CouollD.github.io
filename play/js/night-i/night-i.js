@@ -141,7 +141,7 @@ const NightI = (() => {
     { line: [1, 103, '「雪！ 冬とか[[どうしてんの]]」'], b: { at: 'end', ms: 5000, opts: [
       { k: 'dig', label: '冬、帰る？', need: 0, say: '「冬、帰ったりすんの？」', mem: { h: 103, send: '「そっち、もう雪降った？」', echo: '「……まだ。でも、空がそういう色」' },
         ok: { fx: { 103: 6 }, lines: [[103, 'P', '「……帰らない。帰ると、戻ってこれない気がする」', null, { 103: 'はにかみ' }]] } },
-      { k: 'go', label: '俺も遠い', say: '「俺も地元遠いから、ちょっとわかる」', fx: { 103: 4, 101: 2 }, lines: [[103, 'P', '「……遠いと、帰るのに理由がいる」'], [101, 'P', '「……わかります。少しだけ」']] }],
+      { k: 'go', prof: ['B', 'C'], label: '俺も遠い', say: '「俺も地元遠いから、ちょっとわかる」', fx: { 103: 4, 101: 2 }, lines: [[103, 'P', '「……遠いと、帰るのに理由がいる」'], [101, 'P', '「……わかります。少しだけ」']] }],
       silence: { ffx: { 103: { 1: 4 } }, lines: [[103, 1, '「……こたつから、出ない」'], [1, 103, '「それ冬眠じゃん」', null, { 103: '笑' }]] } } }] };
   // 10/3 追加の話題（サブエージェント作）
   I_TOPICS.holiday = { label: '休みの日の話', fans: { 101: 2, 102: 1, 103: 2 }, openP: '「休みの日って、みんな何してる？ 俺はだいたい寝てる」', openF: [1, 'all', '「てかさ、みんな休みの日なにしてんの」'], nodes: [
@@ -441,9 +441,12 @@ const NightI = (() => {
   function metaStop(html, g) {
     return new Promise(res => {
       const box = S.el('div', 'metastop', `<b>ヒント</b><p>${html}</p>`);
-      const ok = S.btn('わかった', null, 'pill', () => { box.remove(); S.clear(); res(); });
-      S.put(S.row([ok]));
-      box.addEventListener('click', ev => ev.stopPropagation());
+      let done = false;
+      const close = () => { if (done) return; done = true; box.remove(); S.clear(); res(); };
+      const ok = S.btn('わかった', null, 'pill', close);
+      box.appendChild(ok);                                   // 10/10：「わかった」は箱の中。箱のどこを押しても閉じる
+      box.addEventListener('click', ev => { ev.stopPropagation(); close(); });
+      S.put(S.el('div', 'hint', 'ヒントを閉じると続きます'));
       document.getElementById('stage').appendChild(box);
     });
   }
@@ -470,7 +473,7 @@ const NightI = (() => {
   let iYomi = 50;                           // 空気読み（キャラクリの能力値のつもり。メニューで変えられる）
 
   async function runI(mode, g) {
-    const prof = I_PROFILES[mode.profile || 'A'];
+    const pkey = mode.profile || 'A', prof = I_PROFILES[pkey];
     const st = newState(), hand = new Set(prof.cards), live = {}, opened = new Set();
     const f = { 101: { 1: 30, 4: 30 }, 102: { 1: 30, 4: 30 }, 103: { 1: 30, 4: 30 } };   // 友達それぞれへの好感（帰り道で使う）
     const tipped = new Set();
@@ -600,7 +603,7 @@ const NightI = (() => {
       if (typeof sp === 'number') lastSp = sp;
       const L0 = [node.line[0], node.line[1], plain(node.line[2]), node.line[3], node.line[4]];
       b.opts.forEach(o => { if (o.k === 'dig' && o.need > 0 && isHer) S.expr(sp, st.h[sp] >= o.need ? 'はにかみ' : '真顔'); });
-      const opts = b.opts.filter(o => o.k !== 'card' || hand.has(o.card)).map(o => Object.assign({ sub: o.k === 'card' ? I_CARDS[o.card] : KIND[o.k] }, o));
+      const opts = b.opts.filter(o => (o.k !== 'card' || hand.has(o.card)) && (!o.prof || o.prof.includes(pkey))).map(o => Object.assign({ sub: o.k === 'card' ? I_CARDS[o.card] : KIND[o.k] }, o));
       if (!opts.length) { await line([node.line[0], node.line[1], plain(node.line[2]), node.line[3], node.line[4]]); return; }   // 手札が無い設定では、ふつうの行
       // ヒントは吹き出しが出たときに出す。チュートリアル：最初の吹き出しは、何を言えばいいかの例つきで、長めに待つ
       const first = iTips && !tipped.has('bubble'), extra = first ? 4000 : 0;
@@ -741,6 +744,7 @@ const NightI = (() => {
   const stampSvg = f => `<svg viewBox="0 0 60 60" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="var(--card)"/>${FACE[f] || FACE.smile}</svg>`;
   // スマホの画面（LINE）。舞台の上にかぶせる
   function openPhone(title) {
+    document.querySelectorAll('#stage .tip').forEach(t => t.remove());   // 10/10：ヒントとLINEの画面が重ならないように
     const ph = S.el('div', 'phone');
     ph.innerHTML = `<div class="ph-top">${title}</div><div class="ph-body"></div>`;
     document.getElementById('stage').appendChild(ph);
