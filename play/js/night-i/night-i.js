@@ -32,7 +32,7 @@ const NightI = (() => {
       skip() { if (finished) return; S.cancel(t); i = full.length - 1; tick(); },
     };
   }
-  let slowHint = null;   // 流れている間の下の一行（I は手札を出す）
+  let slowHint = null;   // 流れている間の下の一行（I は話のネタを出す）
   let curTy = null, holdBreak = false;   // いま流れている行と、その後の間（気づきの札で遮る・間を切るため。10/10）
   async function saySlow(x, g, hold) {
     if (x[0] === 'n') { S.narr(x[1]); await S.sleep(1500, g); return 'done'; }
@@ -64,6 +64,7 @@ const NightI = (() => {
   // ════════════════════════════════════════════════════════
   NAME.S = '店員';
   const I_CARDS = { juku: '#塾バイト', jikka: '#実家', bushitsu: '#部室の主' };
+  const NETA = k => 'ネタ：' + I_CARDS[k].replace(/^#/, '');   // 10/10：画面では「手札」ではなく「話のネタ」と呼ぶ
   const I_CUE = {
     glass103: { at: 103, label: 'グラス空', need: 40, m: 4, fx: { 103: 6 }, lines: [['n', '（めいのグラスに気づいて、メニューを渡した）'], [103, 'P', '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], miss: [[4, 103, '「めいちゃん、グラス空いてる。次なに飲む」'], [103, 4, '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], missFfx: { 103: { 4: 6 } }, missBy: 4 },
     tong: { noBridge: true, at: 101, label: 'トング', need: 35, m: 6, fx: { 101: 8, 102: 2, air: 4 }, lines: [['P', 'all', '「あ、各自で取ろ。好きなだけ」', '声をかけた'], [101, 'P', '「……あ、はい。じゃあ、自分の分だけ」', null, { 101: 'はにかみ' }]],
@@ -423,7 +424,7 @@ const NightI = (() => {
     bubble: { f: [1, a => `「ほら、吹き出し出たろ。思いついたこと言えばいいんだよ。そうだな、『${a || '聞いてみる'}』とかどうだ？」`], m: '吹き出しが出ている間だけ、口を挟める。黙っていても話は進む。下のバーを長押しすると、早く進む' },
     speak: { f: [1, '「いいじゃん。喋ると、覚えてもらいやすくなるからな。ただ目立ちすぎると『おしゃべりなやつ』になるから気をつけろ。逆に黙りすぎもな」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損', lit: true },
     sign: { f: [1, '「顔見とけ。聞いてほしそうなときだけ聞けばいい」'], m: '表情を見る。はにかみ＝聞いてほしそう。真顔のときに聞くと、浅い返事で終わる' },
-    card: { f: [1, '「お、今じゃね？ お前のネタ」'], m: '「#」がついた返しは手札（自分の経験）。1回ずつしか使えない。どこで使うか選ぶ' },
+    card: { f: [1, '「お、今じゃね？ お前のネタ」'], m: '「ネタ：」がついた返しは、話のネタ（自分の経験）。1つにつき1回しか使えない。どこで使うか選ぶ' },
     gaugeHi: { k: 'gauge', f: [1, '「ちょっと飛ばしすぎ。いったん様子見な」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損', lit: true },
     gaugeLo: { k: 'gauge', f: [1, '「黙りすぎだろ。なんか言っとけ」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損', lit: true },
     cue: { how: '小声・片目をつぶって', f: [1, a => a === 'glass102' ? '「店員さん探してる子がいたら、代わりに呼ぶ。これ、ポイント高いぞ」' : /^glass|chaser/.test(a || '') ? '「グラス空いてたら勧める。これが気遣いってやつよ」' : '「皿とか注文とか、気づいたら動けばいい。これが気遣いってやつよ」'], m: '何かに気づくと札が出る。出ている間にタップ。黙っている間ほど気づきやすい' },
@@ -434,23 +435,57 @@ const NightI = (() => {
   // 10/10：ヒントが会話の欄に紛れて気づかれなかった → 色（黄）・けんたの顔・会話の窓のすぐ上・関係する所を光らせる
   const HL = { bubble: '#cmds', speak: '#dots', sign: '#cmds', card: '#cmds', gauge: '#dots', cue: a => `#stage .cue[data-cue="${a}"]`, staff: a => `#stage .cue[data-cue="${a}"]`, lull: '#cmds', nijikai: '#cmds' };
   let tipEnd = null;
+  // 10/10（2回目）：RPG のように、見てほしい所だけ明るく残して、ほかを暗くする。説明はそのすぐ横に出す
+  const SPOT = { bubble: ['#win', '#cmds'], card: ['#win', '#cmds'], sign: ['#win', '#cmds'], speak: ['#dots'], gauge: ['#dots'], lull: ['#cmds'], nijikai: ['#cmds'] };
+  function spotlight(sels) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const sv = document.createElementNS(NS, 'svg'); sv.setAttribute('class', 'spot'); sv.setAttribute('aria-hidden', 'true');
+    const id = 'spotmask' + Date.now();
+    sv.innerHTML = `<defs><mask id="${id}"><rect x="0" y="0" width="100%" height="100%" fill="#fff"/><g class="holes"></g></mask></defs><rect class="dim" x="0" y="0" width="100%" height="100%" mask="url(#${id})"/>`;
+    document.body.appendChild(sv);
+    const holes = sv.querySelector('.holes');
+    let alive = true;
+    const draw = () => {
+      if (!alive || !sv.isConnected) return;   // 最初から・設定へ戻るで消されたら止める
+      holes.innerHTML = '';
+      sels.forEach(q => document.querySelectorAll(q).forEach(el => {
+        const r = el.getBoundingClientRect(); if (!r.width) return;
+        const h = document.createElementNS(NS, 'rect');
+        [['x', r.left - 6], ['y', r.top - 6], ['width', r.width + 12], ['height', r.height + 12], ['rx', 14], ['fill', '#000']].forEach(([k, v]) => h.setAttribute(k, v));
+        holes.appendChild(h);
+      }));
+      requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { alive = false; sv.remove(); };
+  }
+  const ANCHOR = { lull: '#win', nijikai: '#win' };   // 説明を置く場所（暗くしない所とは別）
+  function placeNear(t, el) {
+    const app = document.getElementById('play').getBoundingClientRect();
+    t.style.left = (app.left + 8) + 'px'; t.style.width = (app.width - 16) + 'px';
+    if (!el) { t.style.top = '30%'; return; }
+    const r = el.getBoundingClientRect();
+    if (r.top > innerHeight / 2) { t.style.bottom = (innerHeight - r.top + 34) + 'px'; t.style.top = 'auto'; }   // 名札の上に出す
+    else { t.style.top = (r.bottom + 14) + 'px'; t.style.bottom = 'auto'; }
+  }
   function showTip(T, g, arg, key) {
     if (tipEnd) tipEnd();
     const t = S.el('div', 'tip whisper');
     const sel = typeof HL[key] === 'function' ? HL[key](arg) : HL[key];
     const target = sel ? document.querySelector(sel) : null;
     if (target) target.classList.add('hl');
+    const spots = SPOT[key] || (sel ? [sel] : []);
+    const unspot = spots.length ? spotlight(spots) : null;
     let gone = false;
-    const end = () => { if (gone) return; gone = true; t.remove(); if (target) target.classList.remove('hl'); if (tipEnd === end) tipEnd = null; };
+    const end = () => { if (gone) return; gone = true; t.remove(); if (unspot) unspot(); if (target) target.classList.remove('hl'); if (tipEnd === end) tipEnd = null; };
     tipEnd = end;
     const meta = () => { t.className = 'tip meta'; t.innerHTML = `<span class="tlab">ヒント</span><span class="tbody">${S.esc(T.m)}</span><span class="tclose">タップで閉じる</span>`; S.later(end, 7000, g); };
     const text = typeof T.f[1] === 'function' ? T.f[1](arg) : T.f[1];
     t.innerHTML = `<span class="tav">け</span><span class="tbody"><span class="tlab">${NAME[T.f[0]]}（${T.how || '小声'}）</span>${S.esc(text)}</span>`;
     let step = 0;
     t.addEventListener('click', ev => { ev.stopPropagation(); if (step === 0) { step = 1; meta(); } else end(); });
-    const win = document.getElementById('win');
-    t.style.bottom = ((win ? win.offsetHeight : 138) + 26) + 'px';   // 名札（だれ→だれ）の上に出す
-    document.getElementById('stage').appendChild(t);
+    document.body.appendChild(t);
+    placeNear(t, document.querySelector(ANCHOR[key] || spots[0] || sel || '#win'));
     if (T.lit) { const d = document.getElementById('dots'); d.classList.remove('lit'); void d.offsetWidth; d.classList.add('lit'); S.later(() => d.classList.remove('lit'), 2600, g); }
     S.later(() => { if (step === 0) { step = 1; meta(); } }, 3600 + Math.max(0, text.length - 30) * 50, g);
   }
@@ -458,8 +493,10 @@ const NightI = (() => {
   function metaStop(html, g) {
     return new Promise(res => {
       const box = S.el('div', 'metastop', `<b>ヒント</b><p>${html}</p>`);
+      const veil = S.el('div', 'veil');   // 10/10：後ろの地の文が透けて見えすぎた → 暗くする
+      document.getElementById('stage').appendChild(veil);
       let done = false;
-      const close = () => { if (done) return; done = true; box.remove(); S.clear(); res(); };
+      const close = () => { if (done) return; done = true; box.remove(); veil.remove(); S.clear(); res(); };
       const ok = S.btn('わかった', null, 'pill', close);
       box.appendChild(ok);                                   // 10/10：「わかった」は箱の中。箱のどこを押しても閉じる
       box.addEventListener('click', ev => { ev.stopPropagation(); close(); });
@@ -487,7 +524,7 @@ const NightI = (() => {
     ph.close();
     introReply = r;
     // 10/10：説明の箱は LINE を閉じてから出す（重なると、どちらを閉じればいいか迷う）
-    await metaStop(`話のネタ（手札）は、日常の生活で手に入る。バイト・サークル・住まいの経験が、合コンで「#」のついた返しになる。<br>今回の手札：${prof.cards.map(k => I_CARDS[k]).join('　')}`, g);
+    await metaStop(`話のネタは、日常の生活で手に入る。バイト・サークル・住まいの経験が、合コンで「ネタ」のついた返しになる。<br>今回の話のネタ：${prof.cards.map(k => I_CARDS[k].replace(/^#/, '')).join('・')}`, g);
   }
   let iYomi = 50;                           // 空気読み（キャラクリの能力値のつもり。メニューで変えられる）
 
@@ -506,7 +543,7 @@ const NightI = (() => {
     const drawM = () => { maxM = Math.max(maxM, m); if (m >= 55) tip('gaugeHi'); else if (m <= 8) tip('gaugeLo'); document.getElementById('dots').innerHTML = `<span>目立ち</span><span class="mbar"><i style="width:${m}%"></i></span>`; };
     drawM();
     const notice = () => iYomi + (50 - m) * 0.5;
-    const handText = () => '手札：' + ([...hand].map(k => I_CARDS[k]).join('　') || 'なし');
+    const handText = () => { const nm = k => I_CARDS[k].replace(/^#/, ''); const used = prof.cards.filter(k => !hand.has(k)); return '話のネタ：' + ([...hand].map(nm).join('・') || 'なし') + (used.length ? `（使った：${used.map(nm).join('・')}）` : ''); };
     slowHint = () => `（会話は勝手に進む）　${handText()}`;
     const idle = () => S.hint(slowHint());
     const ffx = d => Object.entries(d || {}).forEach(([h, o]) => Object.entries(o).forEach(([k, v]) => { f[h][k] += v; }));
@@ -636,7 +673,7 @@ const NightI = (() => {
       if (typeof sp === 'number') lastSp = sp;
       const L0 = [node.line[0], node.line[1], plain(node.line[2]), node.line[3], node.line[4]];
       b.opts.forEach(o => { if (o.k === 'dig' && o.need > 0 && isHer) S.expr(sp, st.h[sp] >= o.need ? 'はにかみ' : '真顔'); });
-      const opts = b.opts.filter(o => (o.k !== 'card' || hand.has(o.card)) && (!o.prof || o.prof.includes(pkey))).map(o => Object.assign({ sub: o.k === 'card' ? I_CARDS[o.card] : KIND[o.k] }, o));
+      const opts = b.opts.filter(o => (o.k !== 'card' || hand.has(o.card)) && (!o.prof || o.prof.includes(pkey))).map(o => Object.assign({ sub: o.k === 'card' ? NETA(o.card) : KIND[o.k] }, o));
       if (!opts.length) { await line([node.line[0], node.line[1], plain(node.line[2]), node.line[3], node.line[4]]); return; }   // 手札が無い設定では、ふつうの行
       // ヒントは吹き出しが出たときに出す。チュートリアル：最初の吹き出しは、何を言えばいいかの例つきで、長めに待つ
       const first = iTips && !tipped.has('bubble'), extra = first ? 4000 : 0;
@@ -670,7 +707,7 @@ const NightI = (() => {
       if (v.mem && (v.k !== 'dig' || res === v.ok)) memories.push(v.mem);
       const high = m >= 70;
       m = Math.min(100, m + 15 + (cut && isHer ? 8 : 0)); drawM(); tip('speak');
-      pick(v.label + (v.k === 'card' ? `（${I_CARDS[v.card]}）` : '') + (cut ? '（遮った）' : ''), v.k);
+      pick(v.label + (v.k === 'card' ? `（${NETA(v.card)}）` : '') + (cut ? '（遮った）' : ''), v.k);
       const to = v.k === 'furu' ? 102 : sp;
       await saySlow(['P', to, v.say, cut ? '割り込んだ' : KIND[v.k] || '自分の話'], g, 600);
       let eff = res.fx;
@@ -768,6 +805,21 @@ const NightI = (() => {
   const LINE_IN = { 101: '「昨日はありがとうございました。……また、お話ししたいです」', 102: '「昨日ありがと〜！ また飲も！」', 103: '「……昨日、ありがと。またね」' };
   const DATE_TXT = { 101: 'あおいと、本屋に行く約束をした。', 102: 'ゆなの店に行く約束をした。', 103: 'めいと、星を見に行く約束をした。' };
   const SEND_ACC = { 101: '「……じゃあ、駅まで」', 102: '「え、いいの？ じゃあ駅まで」', 103: '「……うん。駅まで」' };
+  const CONTACT_LINE = 38;   // 個別の連絡先の線（仮。10/10）
+  const WALK = {   // ふたりの帰り道（10/10）。d＝好感度。6 で「いい空気」
+    101: { start: '「……今日、来てよかったです。たぶん」', opts: [
+      { label: '俺も', say: '「俺も。……また話したい」', d: 6, re: [101, 'P', '「……はい。わたしも」', null, { 101: 'はにかみ' }] },
+      { label: 'たぶんって何', say: '「たぶん、って何」', d: 3, re: [101, 'P', '「……たぶん、です。まだ、わからないので」', null, { 101: '笑' }] },
+      { label: '黙って歩く', say: null, d: 2, re: ['n', '（あおいは、少しだけ歩く速さを合わせた）'] }] },
+    102: { start: '「てかさ、二次会行かなくてよかったの？」', opts: [
+      { label: 'こっちがよかった', say: '「こっちのほうが、よかった」', d: 4, re: [102, 'P', '「……え、なにそれ。ずる」', null, { 102: '笑' }] },
+      { label: 'そっちこそ', say: '「そっちこそ。朝練は」', d: 6, re: [102, 'P', '「だから帰ってんじゃん！ ……半分は」', null, { 102: '笑' }] },
+      { label: '黙って歩く', say: null, d: -1, re: [102, 'P', '「え、急に静か。……まあいいけど」'] }] },
+    103: { start: '「……夜の道、音が少ない」', opts: [
+      { label: '静かなのはいい', say: '「静かなの、嫌いじゃない」', d: 3, re: [103, 'P', '「……うん。知ってる」'] },
+      { label: 'さっきよりは', say: '「さっきよりは静か」', d: 1, re: [103, 'P', '「……さっきは、けんたがいた」', null, { 103: '笑' }] },
+      { label: '黙って歩く', say: null, d: 6, re: ['n', '（めいは、何も言わずに隣を歩いた。それで、よかったらしい）'] }] },
+  };
   const SEND_NO = { 101: '「……あ、大丈夫です。駅、すぐなので」', 102: '「えー、大丈夫だよ！ またね」', 103: '「……ひとりで、帰れる」' };
 
   // スタンプ（丸い顔＋ひとこと）。f＝表情
@@ -781,7 +833,7 @@ const NightI = (() => {
   const stampSvg = f => `<svg viewBox="0 0 60 60" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="var(--card)"/>${FACE[f] || FACE.smile}</svg>`;
   // スマホの画面（LINE）。舞台の上にかぶせる
   function openPhone(title) {
-    if (tipEnd) tipEnd(); document.querySelectorAll('#stage .tip').forEach(t => t.remove());   // 10/10：ヒントとLINEの画面が重ならないように（光らせた所も消す）
+    if (tipEnd) tipEnd(); document.querySelectorAll('.tip').forEach(t => t.remove());   // 10/10：ヒントとLINEの画面が重ならないように（光らせた所も消す）
     const ph = S.el('div', 'phone');
     ph.innerHTML = `<div class="ph-top">${title}</div><div class="ph-body"></div>`;
     document.getElementById('stage').appendChild(ph);
@@ -826,8 +878,13 @@ const NightI = (() => {
     await say([4, 1, '「端数、また俺に回してない？」']);
     await say([1, 4, '「細けえな。百円だろ」']);
     await say([1, 'all', '「グループ作るわー。みんな入って」']);
-    const cold = st.air < 30;
-    await say(['n', cold ? '（グループだけできた。個別に交換する空気では、なかった）' : '（流れで、全員と連絡先を交換した）']);
+    // 10/10：勝ちの1段目。グループは必ずできる。個別の連絡先は、好感度が線を越えた子だけ（線は仮）
+    const cold = st.air < 45;
+    const got = HS.filter(h => st.h[h] >= CONTACT_LINE);
+    await say(['n', '（グループはできた）']);
+    if (!got.length) await say(['n', '（個別に交換する流れには、ならなかった）']);
+    else { await say(['n', `（${got.map(h => NAME[h]).join('と')}とは、個別にも交換した）`]); got.forEach(h => S.expr(h, 'はにかみ')); }
+    st.picks.push(`個別の連絡先：${got.length ? got.map(h => NAME[h]).join('・') : 'なし'}`);
     await say([4, 'all', '「出る前に一枚撮ろ。寄って」']);
     await say(['n', '（店員さんが、シャッターを切ってくれた）']);
     await say([4, 1, '「……けんた、目つぶってる」']);
@@ -837,13 +894,27 @@ const NightI = (() => {
     S.scene('out', '店の外');
     await say(['n', '（店の外に出た。夜風が少し冷たい）']);
     await say([1, 'all', '「二次会、カラオケ行く人ー」']);
-    const yunaGo = st.air >= 40;
+    const yunaGo = st.air >= 50 && st.h[102] >= 30;   // 10/10：前は必ず行っていた（空気が40を切らないため）
     await say(yunaGo ? [102, 1, '「行く行く！」', null, { 102: '笑' }] : [102, 'all', '「うち、明日朝練だから帰る〜」']);
     await say([101, 'all', '「……わたしは、門限があるので」']);
     await say([103, 'all', '「……どうしよ」']);
     if (info.tip) info.tip('nijikai');
     const go = await choose('どうする？', [{ label: '二次会に行く', v: 'go' }, { label: '今日は帰る', v: 'home' }]);
-    let walked = null; const lines = [];
+    let walked = null, close2 = false; const lines = [];
+    // 10/10：ふたりの帰り道（勝ちの3段目）。子ごとに刺さる返しが違う
+    async function walkScene(who) {
+      const W = WALK[who];
+      S.logRound('ふたりの帰り道');
+      await say(['n', '（駅までの道。さっきより、声が近い）']);
+      await say([who, 'P', W.start]);
+      const i = await choose('なんて返す？', W.opts.map((x, k) => ({ label: x.label, v: k })));
+      const x = W.opts[i];
+      if (x.say) await say(['P', who, x.say]); else st.picks.push('黙って並んで歩いた');
+      fx(st, { [who]: x.d });
+      await say(x.re);
+      await say(['n', `（${NAME[who]}と、駅まで並んで歩いた）`]);
+      return x.d >= 6;
+    }
     if (go === 'go') {
       st.picks.push('二次会に行った');
       const meiGo = st.h[103] >= 38;
@@ -869,8 +940,8 @@ const NightI = (() => {
       const who = await choose('駅まで送る？', goers.map(h => ({ label: NAME[h], sub: '駅まで送るよ', v: h })).concat([{ label: 'ひとりで帰る', v: null, cls: 'quiet' }]));
       if (who != null) {
         await say(['P', who, '「駅まで送るよ」', '声をかけた']);
-        if (st.h[who] >= 40) { walked = who; fx(st, { [who]: 5 }); await say([who, 'P', SEND_ACC[who], null, { [who]: 'はにかみ' }]); await say(['n', `（${NAME[who]}と、駅まで並んで歩いた）`]); lines.push(`${NAME[who]}と、駅まで一緒に帰った`); }
-        else { await say([who, 'P', SEND_NO[who], null, { [who]: '真顔' }]); lines.push(`${NAME[who]}には、やんわり断られた`); }
+        if (st.h[who] >= 40) { walked = who; fx(st, { [who]: 5 }); await say([who, 'P', SEND_ACC[who], null, { [who]: 'はにかみ' }]); close2 = await walkScene(who); lines.push(`${NAME[who]}と、駅まで一緒に帰った` + (close2 ? '（いい空気だった）' : '')); }
+        else { fx(st, { [who]: -3 }, false); await say([who, 'P', SEND_NO[who], null, { [who]: '真顔' }]); lines.push(`${NAME[who]}には、やんわり断られた`); }
       } else lines.push('ひとりで帰った');
     }
 
@@ -891,7 +962,9 @@ const NightI = (() => {
       if (!cold) { await S.sleep(800, g); ph.stamp(102, { t: 'うける', f: 'laugh' }); }
     }
     await S.sleep(500, g);
-    const to = await choose('だれかに、個別にLINEする？', HS.map(h => ({ label: NAME[h], v: h })).concat([{ label: '送らない', v: null, cls: 'quiet' }]));
+    const reach = HS.filter(h => got.includes(h) || h === walked);
+    if (!reach.length) { ph.sys('（個別に送れる相手は、いなかった）'); await S.sleep(900, g); }
+    const to = reach.length ? await choose('だれかに、個別にLINEする？', reach.map(h => ({ label: NAME[h], v: h })).concat([{ label: '送らない', v: null, cls: 'quiet' }])) : null;
     let tier = null, usedMem = null;
     if (to != null) {
       const seenTxt = new Set();
@@ -903,7 +976,7 @@ const NightI = (() => {
       usedMem = msg === 'plain' ? null : msg;
       ph.msg('P', usedMem ? usedMem.send : '「昨日はありがとう！ 楽しかった」');
       st.picks.push(`${NAME[to]}にLINE（${usedMem ? '昨日の話に触れた' : 'ふつうのお礼'}）`);
-      const score = st.h[to] + (usedMem ? 8 : 0) + (walked === to ? 6 : 0);
+      const score = st.h[to] + (usedMem ? 8 : 0) + (walked === to ? (close2 ? 8 : 2) : 0);   // 帰り道は、いい空気になったときだけ大きく効く
       tier = score >= 56 ? 'A' : score >= 42 ? 'B' : score >= 32 ? 'C' : 'D';
       await S.sleep(900, g);
       if (tier === 'D') { ph.sys('既読'); await S.sleep(1200, g); ph.sys('（返事は来なかった）'); }
@@ -916,7 +989,7 @@ const NightI = (() => {
       lines.push(`${NAME[to]}に「${usedMem ? '昨日の話' : 'お礼'}」を送った → ` + { A: '次の約束', B: 'やりとりが続いた', C: '社交辞令の返事', D: '既読のまま' }[tier]);
     }
     // むこうから来る
-    const inbound = HS.filter(h => h !== to && st.h[h] >= 50);
+    const inbound = HS.filter(h => h !== to && (got.includes(h) || h === walked) && st.h[h] >= 50);
     for (const h of inbound) { await S.sleep(900, g); ph.title(`LINE　${NAME[h]}`); ph.clear(); ph.msg(h, LINE_IN[h]); lines.push(`${NAME[h]}のほうから、LINEが来た`); }
     S.put(S.el('div', 'hint', 'タップで結果 ▸'));
     await S.waitTap(g);
@@ -924,11 +997,18 @@ const NightI = (() => {
     slowHint = null;
 
     const titles = { A: '次の約束', B: 'LINEが続いた', C: '社交辞令で終わった', D: '既読のまま' };
-    const title = tier ? titles[tier] : inbound.length ? 'むこうから来た' : '何も起きなかった';
-    const lead = tier === 'A' ? DATE_TXT[to] : walked ? `${NAME[walked]}と、駅まで一緒に帰った夜だった。` : '全員と連絡先は交換してある。';
+    const title = tier === 'A' ? titles.A : walked ? 'ふたりで帰った' : tier ? titles[tier] : inbound.length ? 'むこうから来た' : got.length ? `連絡先 ${got.length}人` : '何も起きなかった';
+    const ladder = [
+      `① 個別の連絡先：${got.length ? got.map(h => NAME[h]).join('・') + `（${got.length}人）` : 'なし'}`,
+      `② 返事：${[tier === 'A' || tier === 'B' ? NAME[to] + 'から返事が来た' : tier === 'C' ? NAME[to] + 'は社交辞令の返事だけ' : tier === 'D' ? NAME[to] + 'は既読のまま' : '', inbound.length ? inbound.map(h => NAME[h]).join('・') + 'のほうから来た' : ''].filter(Boolean).join('／') || (reach.length ? '送らなかった' : '個別に送れる相手がいなかった')}`,
+      `③ ふたりの時間：${walked ? NAME[walked] + 'と駅まで歩いた' + (close2 ? '（いい空気だった）' : '') : 'なし'}`,
+      `④ 次の約束：${tier === 'A' ? NAME[to] + 'と' : 'まだ'}`,
+    ];
+    const lead = tier === 'A' ? DATE_TXT[to] : walked ? `${NAME[walked]}と、駅まで一緒に帰った夜だった。` : got.length ? `${got.map(h => NAME[h]).join('・')}とは、個別にも連絡先を交換した。` : 'グループには入った。個別の連絡先は、だれとも交換していない。';
     const imp = info.maxM >= 90 ? '「よく喋る人」だと思われたかもしれない。' : info.lowN ? '途中、影が薄くなっていた時間があった。' : '喋る量は、ちょうどよかった。';
     S.end({ title, lead, hearts: st.h, base: { 101: BASE, 102: BASE, 103: BASE },
       sections: [
+        { h: '今夜の勝ち（4段）', p: ladder },
         { h: '終わり方', p: lines.length ? lines : ['（特になし）'] },
         { h: 'LINEで触れられた話', p: [info.memories.length ? `${info.memories.length}つ（${[...new Set(info.memories.map(mm => NAME[mm.h]))].join('・')}）。会話で届いた返しが、翌朝の話題になる。` : 'なし。会話で届いた返しがないと、ふつうのお礼しか送れない。'] },
         { h: 'この夜の手', p: [st.picks.join(' ／ ') || '（何もしなかった）'] },

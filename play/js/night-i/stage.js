@@ -24,7 +24,7 @@ const Stage = (() => {
   }
   const live = g => g === gen;
   // 10/10：最初から・設定へ戻ったときに、LINE・ヒントの箱・気づきの札が残っていた
-  function clearOverlays() { document.querySelectorAll('#stage .phone, #stage .tip, #stage .metastop, #stage .cue').forEach(x => x.remove()); document.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); }
+  function clearOverlays() { document.querySelectorAll('#stage .phone, .tip, #stage .metastop, #stage .veil, #stage .cue, .spot').forEach(x => x.remove()); document.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); }
   function home() { gen++; tapFn = null; alwaysTap = null; timers.forEach(t => clearTimeout(t)); timers.clear(); clearOverlays();
     $('play').hidden = true; $('home').hidden = false; $('sheet-end').hidden = true; $('sheet-log').hidden = true; }
   function later(fn, ms, g) { const t = setTimeout(() => { timers.delete(t); if (live(g)) fn(); }, ms); timers.add(t); return t; }
@@ -141,7 +141,7 @@ const Stage = (() => {
   let logStyle = 'mix';
   try { logStyle = localStorage.getItem('cmp_logStyle2') || 'mix'; } catch (e) {}
   const INI = { 101: 'あ', 102: 'ゆ', 103: 'め', 1: 'け', 4: 'い', S: '店', P: '自' };
-  const KINDJ = { dig: '聞く', go: '乗る', tease: 'ツッコむ', card: '手札', furu: '話しかける', topic: '話題を出す', silence: '黙る', cue: '気づき', listen: '聞き届けた', cut: '遮った' };
+  const KINDJ = { dig: '聞く', go: '乗る', tease: 'ツッコむ', card: '話のネタ', furu: '話しかける', topic: '話題を出す', silence: '黙る', cue: '気づき', listen: '聞き届けた', cut: '遮った' };
   function sections() {
     const out = []; let cur = { h: null, items: [] };
     log.forEach(x => { if (x.r) { if (cur.items.length || cur.h) out.push(cur); cur = { h: x.r, items: [] }; } else cur.items.push(x); });
@@ -249,7 +249,14 @@ const Stage = (() => {
     }
     (o.sections || []).forEach(s => { h += `<h3>${s.h}</h3>` + s.p.map(p => `<p class="small">${p}</p>`).join(''); });
     h += '<div class="row" style="grid-template-columns:1fr 1fr 1fr;margin-top:14px"></div>';
+    // 10/10：応援の置き場（課金ポイント1つ目）。URL が決まるまでは出さない（screens/night_i.html の SUPPORT）
+    const SUP = window.SUPPORT || {};
     $('end').innerHTML = h;
+    if (SUP.url && /^https:\/\//.test(SUP.url)) {   // https のリンクだけ。文字は textContent で入れる
+      const box = document.createElement('p'); box.className = 'small support'; box.textContent = SUP.text || '気に入ったら、応援してもらえるとうれしいです。';
+      const a = document.createElement('a'); a.href = SUP.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = SUP.label || '作者を応援する';
+      box.appendChild(document.createElement('br')); box.appendChild(a); $('end').insertBefore(box, $('end').querySelector('.row'));
+    }
     const r = $('end').querySelector('.row');
     r.appendChild(btn('ログ', null, 'quiet', openLog));
     r.appendChild(btn(o.backLabel || '設定へ', null, 'quiet', () => { $('sheet-end').hidden = true; if (o.back) o.back(); }));
