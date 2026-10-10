@@ -1,0 +1,129 @@
+/* theme_B.css — 案B「木の卓・提灯・あたたかい」
+   居酒屋の中。濃い木の色／提灯の橙の灯り／和紙の地に墨の文字。アクセントは抹茶の緑（ヒント・手札）と提灯の橙（言葉）、朱（気づきの札）。
+   クリーム＋テラコッタの「カフェ色」は避け、地は濃い木・和紙は少し青みのある生成り（#E9E1CC）にした。
+   フォント：Kaisei Opti（会話の本文・名札・選択肢）／ Zen Kaku Gothic New（小さなUI）
+   読み込み：<link href="https://fonts.googleapis.com/css2?family=Kaisei+Opti:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+   ※ :root:root:root は元の灰色トークンに勝つための指定（本番では元のトークンを消せば :root だけでよい） */
+
+/* ───── トークン ───── */
+:root:root:root {
+  color-scheme: light;
+  --bg: #2A1B12;        /* 濃い木（アプリの地） */
+  --ink: #1F1A15;       /* 墨（和紙の上の本文） */
+  --ink2: #4C4036;
+  --ink3: #6A5B4C;
+  --line: #B8A27F;
+  --card: #E9E1CC;      /* 和紙 */
+  --stage: #3A2418;
+  --hero: #8E3B4F; --friend: #6F8757; --speak: #E8A33D;      /* 人型は立ち絵に置き換えたので未使用（互換のため） */
+  --board: #2B1A10; --board2: #8A5A32;
+  --table: #5B3A22;     /* 卓の木 */
+  --soft: #DBD2B8;      /* 地の文の窓（少し沈んだ和紙） */
+  --kw: #E8A33D;  --kwInk: #1F1509;      /* 言葉：提灯の橙の蛍光ペン */
+  --hint: #B3CB70; --hintInk: #1A2407;   /* ヒント：抹茶 */
+  --wood: #3A2418; --wood2: #6B4528; --paper-ink: #1F1A15; --lamp: 255, 170, 60;
+  --light-on-wood: #F3E3C3;   /* 木の地の上の文字 */
+  --dim-filter: brightness(.6) sepia(.22) saturate(.9);  --far-filter: brightness(.56) sepia(.3) saturate(.8) blur(1px);  --far-op: .95;
+  --speak-filter: drop-shadow(0 0 20px rgba(255, 170, 70, .5)) brightness(1.04) sepia(.08);
+  --watch-filter: brightness(.95) sepia(.1);
+  --font: "Kaisei Opti", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+/* 話者ごとの名札：地(--sp)・文字(--spTx)・差し色(--spAcc)。ゆなだけ元の青灰 #6C7FA3 は白文字が 3.9:1 なので暗い #4F6288 に */
+#win[data-sp="101"], .lc-row[data-sp="101"] { --sp: #8E3B4F; --spTx: #FFFFFF; --spAcc: #D98A9D; }   /* あおい ワイン */
+#win[data-sp="102"], .lc-row[data-sp="102"] { --sp: #4F6288; --spTx: #FFFFFF; --spAcc: #A9BDE0; }   /* ゆな 青灰（濃） */
+#win[data-sp="103"], .lc-row[data-sp="103"] { --sp: #7A5C7E; --spTx: #FFFFFF; --spAcc: #BFC8D3; }   /* めい モーヴ＋青灰 */
+#win[data-sp="1"],   .lc-row[data-sp="1"]   { --sp: #3C434C; --spTx: #FFFFFF; --spAcc: #E0602E; }   /* けんた 炭＋オレンジ */
+#win[data-sp="4"],   .lc-row[data-sp="4"]   { --sp: #5F362B; --spTx: #FFFFFF; --spAcc: #8FA874; }   /* けいた 煉瓦＋オリーブ */
+#win[data-sp="P"],   .lc-row[data-sp="P"]   { --sp: #2A241F; --spTx: #FFFFFF; --spAcc: #B3CB70; }   /* あなた 墨＋抹茶 */
+
+/* ───── 全体・上の帯（木の梁） ───── */
+body { font-family: var(--font-ui);
+  background: radial-gradient(110% 50% at 50% -8%, rgba(255,160,60,.28), transparent 62%),
+    repeating-linear-gradient(90deg, #2A1B12 0 37px, #301F14 37px 38px, #2C1D13 38px 79px, #251710 79px 80px); }
+.top .back, .tools > button { background: #E9E1CC; color: var(--ink); border: 2px solid #1A0F08; border-radius: 6px; box-shadow: 0 2px 0 #1A0F08; font-family: var(--font-ui); font-weight: 700; }
+.top .ttl { color: var(--light-on-wood); font-family: var(--font); letter-spacing: .1em; font-size: 14px; text-shadow: 0 1px 0 #1A0F08; }
+.dots { color: var(--light-on-wood); font-weight: 700; letter-spacing: .06em; }
+.mbar { height: 11px; width: 78px; border: 2px solid #1A0F08; border-radius: 3px; background: linear-gradient(to right, rgba(0,0,0,.35) 0 15%, #4A2F1D 15% 70%, rgba(0,0,0,.35) 70% 100%); }
+.mbar > i { background: linear-gradient(180deg, #CADF86, #8FA94B); }
+.dot { background: #6B4528; } .dot.on { background: #E8A33D; box-shadow: 0 0 8px rgba(255,170,60,.9); }
+.menu { background: #E9E1CC; border: 2px solid #1A0F08; border-radius: 6px; }
+.menu button:hover, .menu button:focus-visible { background: #DBD2B8; }
+
+/* ───── 舞台：場所ごとの背景 ───── */
+.stage { background: #3A2418 url(bg/B_izakaya.svg) 50% 0 / cover no-repeat; border: 3px solid #1A0F08; border-radius: 10px; box-shadow: 0 0 0 2px #6B4528, 0 0 46px rgba(255,160,60,.22), 0 16px 36px rgba(0,0,0,.55); }
+.stage[data-scene="izakaya"] { background: #3A2418 url(bg/B_izakaya.svg) 50% 0 / cover no-repeat; }
+.stage[data-scene="street"]  { background: #3A2A30 url(bg/B_street.svg) 50% 0 / cover no-repeat; }
+.stage[data-scene="out"]     { background: #1B2230 url(bg/B_out.svg) 50% 0 / cover no-repeat; }
+.stage[data-scene="station"] { background: linear-gradient(180deg, #151B28, #2B3346 70%, #3A3F4A); }
+.stage[data-scene="karaoke"] { background: radial-gradient(circle at 20% 20%, rgba(232,163,61,.5), transparent 42%), radial-gradient(circle at 80% 26%, rgba(179,203,112,.35), transparent 44%), #2A1B22; }
+.stage[data-place]:not([data-place=""])::after { left: 12px; top: 12px; background: #3A2418; color: var(--light-on-wood); border: 2px solid #D9A55A; border-radius: 3px; font-family: var(--font); font-weight: 700; font-size: 13px; letter-spacing: .14em; padding: 3px 12px; box-shadow: 2px 2px 0 rgba(0,0,0,.5); }
+.board { display: none; }
+.table { background: repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 2px, transparent 2px 9px), linear-gradient(180deg, #A06A38 0 3px, #6B4528 3px 14px, #4A2E1A 14px); box-shadow: 0 -8px 24px rgba(255,160,60,.28); border-top: 1px solid #C98A4A; }
+.stage[data-scene="street"] .table, .stage[data-scene="out"] .table, .stage[data-scene="station"] .table { display: none; }
+
+/* ───── 会話の窓（和紙に墨）と名札 ───── */
+.win { left: 7px; right: 7px; bottom: 7px; padding: 28px 20px 22px; border: 2px solid #1A0F08; border-radius: 6px;
+  background: radial-gradient(130% 100% at 14% 0%, rgba(255,190,100,.30), transparent 62%), linear-gradient(180deg, #ECE4CF, #E1D7BD);
+  box-shadow: 0 0 0 4px #6B4528, 0 0 0 5px #1A0F08, 0 14px 30px rgba(0,0,0,.55); }
+.win::before { content: ""; position: absolute; inset: 5px; border: 1px solid rgba(31,26,21,.3); border-radius: 3px; pointer-events: none; }
+.win.narr { background: linear-gradient(180deg, #DDD4BA, #D3C9AC); border-style: dashed; border-color: #1A0F08; }
+.text { font-family: var(--font); font-weight: 500; font-size: 16px; line-height: 1.85; color: var(--ink); letter-spacing: .02em; position: relative; }
+.win.narr .text { color: var(--ink2); font-size: 15px; }
+.plate { left: 16px; top: -17px; z-index: 2; }
+.who { font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: .12em; background: var(--sp, #2A241F); color: var(--spTx, #fff); border: 2px solid #1A0F08; border-radius: 3px;
+  padding: 3px 14px 3px 16px; box-shadow: inset 5px 0 0 var(--spAcc, #B3CB70), 2px 3px 0 rgba(0,0,0,.45); }
+.plate > span:not([class]) { color: #F3E3C3; font-weight: 700; }
+.to { background: #E9E1CC; color: var(--ink); border: 1.5px solid #1A0F08; border-radius: 3px; font-family: var(--font-ui); }
+.act { background: #DBD2B8; color: var(--ink); border: 1.5px solid #1A0F08; border-radius: 3px; font-family: var(--font-ui); }
+.tag { background: #E9E1CC; color: var(--ink); border: 1.5px solid #1A0F08; border-radius: 3px; }
+.next { color: var(--ink2); font-family: var(--font-ui); right: 18px; bottom: 7px; z-index: 1; }
+.tbar { background: #8FA94B; height: 4px; left: 18px; bottom: 7px; border: 1px solid #1A0F08; border-radius: 0; }
+.kw { background: var(--kw); color: var(--kwInk); border-radius: 2px; padding: 0 5px; box-shadow: 0 2px 0 #8A5A1E; }
+.kw.used { box-shadow: none; }
+.note { background: #E9E1CC; color: #7A1F12; border: 2px solid #B0301C; border-radius: 3px; box-shadow: 2px 2px 0 rgba(0,0,0,.45); }
+
+/* ───── 選択肢（木の盆に和紙の札） ───── */
+.panelcmd { background: linear-gradient(180deg, #4C311E, #3A2418); border: 2px solid #1A0F08; border-radius: 8px; box-shadow: inset 0 2px 0 rgba(255,200,130,.2), 0 8px 18px rgba(0,0,0,.45); }
+.panelcmd .top2, .panelcmd .top2 button { color: #EBD9B6; font-family: var(--font-ui); font-weight: 500; }
+.cmd { background: #E9E1CC; color: var(--ink); border: 2px solid #1A0F08; border-radius: 6px; box-shadow: 0 3px 0 #1A0F08; font-family: var(--font); font-weight: 700; letter-spacing: .03em; }
+.cmd small { color: var(--ink2); font-family: var(--font-ui); font-weight: 500; }
+.cmd.pill { border-radius: 26px; border-color: #1A0F08; }
+.cmd:active { transform: translateY(2px); box-shadow: 0 1px 0 #1A0F08; }
+.cmd.pill:hover { background: #F3ECD8; }
+.cmd.pill.is-card { background: #B3CB70; color: #1A2407; }
+.cmd.pill.is-card small { color: #2B3A0C; font-weight: 700; }
+.cmd.quiet { background: transparent; color: #EBD9B6; border-color: #8A5A32; box-shadow: none; }
+.cut { background: #B0301C; color: #fff; border: 2px solid #1A0F08; box-shadow: 0 3px 0 #1A0F08; }
+.clock { background: #1A0F08; } .clock > i { background: #8FA94B; }
+.clock.hold { background: #2E1C10; border: 2px solid #1A0F08; border-radius: 13px; }
+.clock.hold > i { background: #8FA94B; opacity: .7; }
+.clock.hold > span { color: #EBD9B6; font-family: var(--font-ui); font-weight: 700; }
+.clock.hold.on { box-shadow: 0 0 0 2px #B3CB70; }
+.hint { color: #D9C6A2; font-family: var(--font-ui); }
+
+/* ───── ヒント（抹茶の短冊）と気づきの札（朱） ───── */
+.tip { border-radius: 6px; font-family: var(--font); }
+.tip.whisper { background: linear-gradient(180deg, #BDD47B, #A9C264); color: var(--hintInk); border: 2px solid #26310D; box-shadow: 5px 5px 0 rgba(0,0,0,.5), 0 0 26px rgba(179,203,112,.4); font-weight: 500; }
+.tip .tlab { opacity: 1; color: #2B3A0C; font-weight: 700; font-family: var(--font-ui); letter-spacing: .08em; }
+.tip .tav { box-shadow: 0 0 0 2px #26310D; }
+.tip.meta { background: #E9E1CC; color: var(--ink); border: 2px solid #1A0F08; box-shadow: 5px 5px 0 rgba(0,0,0,.5); }
+.tip.meta .tlab { background: #B3CB70; color: #1A2407; border-radius: 3px; }
+.tip.meta .tclose { color: var(--ink2); opacity: 1; }
+.hl { outline: 3px solid #B3CB70; outline-offset: 3px; border-radius: 10px; box-shadow: 0 0 22px rgba(179,203,112,.55); }
+.cue { background: #E9E1CC; color: #7A1F12; border: 2px solid #B0301C; border-radius: 4px; font-family: var(--font); font-size: 13px; font-weight: 700; letter-spacing: .08em; padding: 5px 13px; box-shadow: 3px 3px 0 rgba(0,0,0,.5), 0 0 16px rgba(255,170,60,.45); }
+.cue.done { background: #B0301C; color: #fff; }
+.dots.lit .mbar { box-shadow: 0 0 0 3px rgba(179,203,112,.8), 0 0 14px rgba(179,203,112,.7); }
+
+/* ───── LINE の画面（卓の上に置いたスマホ・LINEの緑は抹茶に） ───── */
+.phone { inset: 50px 30px 36px; border-radius: 26px; background: #E4E2D2; border: 7px solid #15110E; box-shadow: 0 0 0 2px #6B4528, 0 18px 40px rgba(0,0,0,.6); }
+.ph-top { text-align: center; background: #4E6B2A; color: #FFFFFF; border-bottom: 0; padding: 14px 12px 11px; font-family: var(--font-ui); font-size: 13px; letter-spacing: .1em; }
+.ph-body { background: #D9D8C6; padding: 10px 12px; }
+.lc-av { width: 30px; height: 30px; box-shadow: 0 0 0 2px var(--spAcc, #1A0F08), 0 0 0 3px #1A0F08; }
+.lc-name { color: #4C4036; font-family: var(--font-ui); font-weight: 700; } .lc-name i { color: #6A5B4C; }
+.lc-b { background: #F7F5EA; color: var(--ink); font-family: var(--font-ui); font-weight: 500; font-size: 14px; border: 1px solid rgba(31,26,21,.25); border-radius: 4px 14px 14px 14px; }
+.lc-row.me .lc-b { background: #B3CB70; color: #1A2407; border-color: #26310D; border-radius: 14px 4px 14px 14px; font-weight: 700; }
+.lc-n, .lc-fx { color: #5A4C3E; } .lc-h span { background: rgba(31,26,21,.12); color: #3D3228; }
+.lc-st { color: var(--ink); }
+.sheet { background: rgba(20,10,4,.6); }
+.panel { background: #E9E1CC; color: var(--ink); border-top: 3px solid #1A0F08; font-family: var(--font-ui); }

@@ -1,0 +1,119 @@
+/* theme_C.css — 案C「スマホ・放課後・軽い」
+   白〜ごく薄いグレーの、いまのメッセージアプリ風。パステルの名札／丸い吹き出し／ミントとティールのアクセント（言葉・選択肢・ヒント）。
+   フォント：M PLUS Rounded 1c（全部）
+   読み込み：<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+   ※ :root:root:root は元の灰色トークンに勝つための指定（本番では元のトークンを消せば :root だけでよい） */
+
+/* ───── トークン ───── */
+:root:root:root {
+  color-scheme: light;
+  --bg: #EEF3F8;        /* アプリの地 */
+  --ink: #1F2B35;       /* 本文（白に対して 14:1 以上） */
+  --ink2: #4A5966;
+  --ink3: #5F6E7B;      /* 薄い文字でも 4.5:1 以上 */
+  --line: #D3DDE6;
+  --card: #FFFFFF;
+  --stage: #E6F0F6;
+  --hero: #8E3B4F; --friend: #6F8757; --speak: #2DBBA3;      /* 人型は立ち絵に置き換えたので未使用（互換のため） */
+  --board: #FFFFFF; --board2: #CFE3EA; --table: #F1F5FA;
+  --soft: #F1F5F9;
+  --kw: #08796E;  --kwInk: #FFFFFF;      /* 言葉：ティール */
+  --hint: #BDF2E1; --hintInk: #07352D;   /* ヒント：ミント */
+  --shadow: 70, 110, 150;
+  --dim-filter: saturate(.42) brightness(1.1) contrast(.9);  --far-filter: saturate(.5) brightness(1.1) contrast(.88);  --far-op: .92;
+  --speak-filter: drop-shadow(0 8px 14px rgba(70, 100, 140, .38));
+  --watch-filter: saturate(.95);
+  --font: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+/* 話者ごとの名札：地(--sp パステル)・文字(--spTx)・点の色(--spDot キャラ画から取った色) */
+#win[data-sp="101"], .lc-row[data-sp="101"] { --sp: #F8D9E1; --spTx: #6E2A3B; --spDot: #8E3B4F; }   /* あおい */
+#win[data-sp="102"], .lc-row[data-sp="102"] { --sp: #D8E3F6; --spTx: #34486E; --spDot: #6C7FA3; }   /* ゆな */
+#win[data-sp="103"], .lc-row[data-sp="103"] { --sp: #E8DAEC; --spTx: #58405E; --spDot: #7A5C7E; }   /* めい */
+#win[data-sp="1"],   .lc-row[data-sp="1"]   { --sp: #FFE0CC; --spTx: #8A3A12; --spDot: #E0602E; }   /* けんた */
+#win[data-sp="4"],   .lc-row[data-sp="4"]   { --sp: #DFEBCD; --spTx: #44562E; --spDot: #6F8757; }   /* けいた */
+#win[data-sp="P"],   .lc-row[data-sp="P"]   { --sp: #C8F1E6; --spTx: #0A5448; --spDot: #1FB89B; }   /* あなた ミント */
+
+/* ───── 全体・上の帯 ───── */
+body { font-family: var(--font);
+  background: radial-gradient(70% 38% at 100% 0%, rgba(189,242,225,.7), transparent 70%), radial-gradient(60% 40% at 0% 100%, rgba(255,222,232,.7), transparent 70%), linear-gradient(180deg, #F5F9FC, #EAF1F7); }
+.top .back, .tools > button { background: #fff; color: var(--ink); border: 1px solid #D3DDE6; border-radius: 999px; box-shadow: 0 1px 3px rgba(var(--shadow), .14); font-family: var(--font); font-weight: 700; }
+.top .ttl { color: var(--ink); font-weight: 800; font-size: 14px; }
+.dots { color: var(--ink2); font-weight: 700; }
+.mbar { height: 10px; width: 78px; border: 0; border-radius: 6px; background: linear-gradient(to right, #D9E3EC 0 15%, #EAF0F6 15% 70%, #D9E3EC 70% 100%); box-shadow: inset 0 0 0 1px #D3DDE6; }
+.mbar > i { background: linear-gradient(90deg, #5ADBC3, #14A892); border-radius: 6px; }
+.dot { background: #D3DDE6; } .dot.on { background: #2DBBA3; }
+.menu { background: #fff; border: 1px solid #D3DDE6; border-radius: 16px; box-shadow: 0 10px 28px rgba(var(--shadow), .22); }
+.menu button:hover, .menu button:focus-visible { background: #EAF6F3; }
+
+/* ───── 舞台：場所ごとの背景 ───── */
+.stage { background: #E9F3F6 url(bg/C_izakaya.svg) 50% 0 / cover no-repeat; border: 2px solid #fff; border-radius: 26px; box-shadow: 0 12px 32px rgba(var(--shadow), .24); }
+.stage[data-scene="izakaya"] { background: #E9F3F6 url(bg/C_izakaya.svg) 50% 0 / cover no-repeat; }
+.stage[data-scene="street"]  { background: #CDEAF6 url(bg/C_street.svg) 50% 0 / cover no-repeat; }
+.stage[data-scene="out"]     { background: #D2D4F8 url(bg/C_out.svg) 50% 0 / cover no-repeat; }
+.stage[data-scene="station"] { background: linear-gradient(180deg, #C3CCFA, #F0D0EA 70%, #FFE3C9); }
+.stage[data-scene="karaoke"] { background: radial-gradient(circle at 18% 22%, rgba(255,150,200,.55), transparent 42%), radial-gradient(circle at 82% 28%, rgba(120,190,255,.5), transparent 44%), #EFE4FA; }
+.stage[data-place]:not([data-place=""])::after { left: 12px; top: 12px; background: rgba(255,255,255,.92); color: var(--ink); border: 0; border-radius: 999px; font-size: 12px; font-weight: 700; padding: 4px 13px 4px 12px; box-shadow: 0 2px 8px rgba(var(--shadow), .2); }
+.board { display: none; }
+.table { background: linear-gradient(180deg, #fff 0 3px, #EFF4FA 3px, #DCE6F0 100%); box-shadow: 0 -6px 18px rgba(var(--shadow), .16); border-radius: 18px 18px 0 0; }
+.stage[data-scene="street"] .table, .stage[data-scene="out"] .table, .stage[data-scene="station"] .table { display: none; }
+
+/* ───── 会話の窓（白い吹き出し）と名札 ───── */
+.win { left: 8px; right: 8px; bottom: 8px; padding: 28px 18px 20px; background: #fff; border: 0; border-radius: 26px 26px 24px 24px; box-shadow: 0 10px 28px rgba(var(--shadow), .26), 0 0 0 1px rgba(var(--shadow), .06); }
+.win.narr { background: rgba(255,255,255,.78); border: 1.5px dashed #B9CAD8; box-shadow: 0 8px 22px rgba(var(--shadow), .14); backdrop-filter: blur(8px); }
+.text { font-weight: 500; font-size: 15.5px; line-height: 1.8; color: var(--ink); }
+.win.narr .text { color: var(--ink2); font-size: 14.5px; }
+.plate { left: 16px; top: -15px; }
+.who { background: var(--sp, #E4ECF2); color: var(--spTx, #1F2B35); border: 2px solid #fff; font-size: 13px; font-weight: 800; padding: 3px 13px 3px 10px; border-radius: 999px; box-shadow: 0 2px 8px rgba(var(--shadow), .25); display: inline-flex; align-items: center; gap: 6px; }
+.who::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--spDot, #8FA0AE); }
+.to { background: #fff; color: var(--ink2); border: 0; box-shadow: 0 1px 4px rgba(var(--shadow), .2); border-radius: 999px; font-weight: 700; }
+.act { background: #fff; color: var(--ink2); border: 0; box-shadow: 0 1px 4px rgba(var(--shadow), .2); border-radius: 999px; }
+.tag { background: #fff; color: var(--ink2); border: 0; box-shadow: 0 1px 4px rgba(var(--shadow), .2); }
+.next { color: var(--ink2); right: 18px; }
+.tbar { background: linear-gradient(90deg, #5ADBC3, #14A892); left: 18px; height: 4px; }
+.kw { background: var(--kw); color: var(--kwInk); border-radius: 999px; padding: 1px 9px; font-weight: 800; box-shadow: 0 2px 6px rgba(8,121,110,.35); }
+.kw.used { box-shadow: none; }
+.note { background: #fff; color: #08796E; border: 0; box-shadow: 0 3px 10px rgba(var(--shadow), .3); }
+
+/* ───── 選択肢（ミントの丸いボタン） ───── */
+.panelcmd { background: rgba(255,255,255,.78); border: 1px solid #fff; border-radius: 24px; backdrop-filter: blur(10px); box-shadow: 0 6px 20px rgba(var(--shadow), .16); }
+.panelcmd .top2 { color: var(--ink2); font-weight: 700; }
+.cmd { background: #fff; color: var(--ink); border: 1.5px solid #CFE0EA; border-radius: 20px; font-weight: 700; box-shadow: 0 2px 0 #D3DDE6; }
+.cmd small { color: var(--ink2); font-weight: 500; }
+.cmd.pill { border-radius: 999px; }
+.cmd.pill:hover, .cmd.pill:active { background: #E6F8F3; border-color: #2DBBA3; }
+.cmd.pill.is-card { background: #E3F8F1; border-color: #2DBBA3; }
+.cmd.pill.is-card small { color: #07685C; font-weight: 800; }
+.cmd.quiet { background: transparent; border-color: #CFE0EA; box-shadow: none; }
+.cut { background: #08796E; color: #fff; border-color: #08796E; box-shadow: 0 4px 12px rgba(8,121,110,.4); }
+.clock { background: #D9E3EC; } .clock > i { background: #14A892; }
+.clock.hold { background: #E3EBF2; }
+.clock.hold > i { background: linear-gradient(90deg, #5ADBC3, #14A892); opacity: .55; }
+.clock.hold > span { color: var(--ink); font-weight: 700; }
+.clock.hold.on { box-shadow: 0 0 0 2px #2DBBA3; }
+.hint { color: var(--ink3); }
+
+/* ───── ヒント（ミントの吹き出し）と気づきの札 ───── */
+.tip { border-radius: 20px; }
+.tip.whisper { background: #BDF2E1; color: var(--hintInk); border: 2px solid #2DBBA3; border-radius: 20px 20px 20px 6px; box-shadow: 0 10px 26px rgba(20,140,120,.32); font-weight: 500; }
+.tip .tlab { opacity: 1; color: #07685C; font-weight: 800; }
+.tip .tav { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2DBBA3; background-color: #fff; }
+.tip.meta { background: #fff; color: var(--ink); border: 2px solid #2DBBA3; box-shadow: 0 10px 26px rgba(var(--shadow), .26); }
+.tip.meta .tlab { background: #BDF2E1; color: #07352D; border-radius: 999px; padding: 0 9px; }
+.tip.meta .tclose { color: var(--ink2); opacity: 1; }
+.hl { outline: 3px solid #2DBBA3; outline-offset: 3px; border-radius: 26px; box-shadow: 0 0 0 6px rgba(45,187,163,.2); }
+.cue { background: #fff; color: #07685C; border: 2px solid #2DBBA3; border-radius: 999px; font-size: 12.5px; font-weight: 800; padding: 5px 14px; box-shadow: 0 4px 14px rgba(var(--shadow), .28); }
+.cue.done { background: #14A892; color: #fff; border-color: #14A892; }
+.dots.lit .mbar { box-shadow: 0 0 0 3px rgba(45,187,163,.55), 0 0 12px rgba(45,187,163,.5); }
+
+/* ───── LINE の画面（いまのメッセージアプリ風） ───── */
+.phone { inset: 50px 30px 36px; border-radius: 30px; background: #fff; border: 6px solid #fff; box-shadow: 0 0 0 1px rgba(var(--shadow), .18), 0 18px 40px rgba(var(--shadow), .34); }
+.ph-top { text-align: center; background: #fff; color: var(--ink); border-bottom: 1px solid #E3EAF0; padding: 14px 12px 11px; font-size: 13px; font-weight: 800; }
+.ph-body { background: #E9F1F7; padding: 10px 12px; }
+.lc-av { width: 30px; height: 30px; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--spDot, #CFE0EA); }
+.lc-name { color: var(--ink2); font-weight: 700; } .lc-name i { color: var(--ink3); }
+.lc-b { background: #fff; color: var(--ink); font-weight: 500; font-size: 14px; border-radius: 6px 18px 18px 18px; box-shadow: 0 1px 3px rgba(var(--shadow), .14); }
+.lc-row.me .lc-b { background: #8FEBD2; color: #06342B; font-weight: 700; border-radius: 18px 6px 18px 18px; }
+.lc-n, .lc-fx { color: var(--ink3); } .lc-h span { background: rgba(var(--shadow), .12); color: var(--ink2); }
+.lc-st { color: var(--ink); }
+.sheet { background: rgba(30,50,70,.35); }
+.panel { background: #fff; color: var(--ink); }

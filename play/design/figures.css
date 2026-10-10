@@ -1,0 +1,50 @@
+/* design/figures.css — 3案で共通：灰色の人型を立ち絵に置き換える土台（色や雰囲気は theme_*.css 側）
+   前提：design/inject.js が各 .fig に <img class="sprite"> を入れる
+   ・女の子3人：卓の向こうに立つ（腰から上が見える）。会話の窓が下半身にかぶさる
+   ・友達2人：左右の端に小さく（はみ出し）。話すと少し内側に出てくる */
+.stage { overflow: clip; }                                   /* はみ出した友達でステージが横にずれない（Playwrightのクリックで起きた） */
+.fig .head, .fig .body { display: none !important; }        /* 丸い頭の文字・「真顔」などの表情ラベルは出さない */
+.fig, .fig.dim, .fig.far, .fig.speak, .fig.watch, .fig.f.far { filter: none; opacity: 1; background: none; transition: opacity .6s; }   /* ぼかし・薄さは .sprite 側に移す */
+.fig.gone { opacity: 0 !important; }
+
+.stage .fig.h { top: 12%; height: 94%; width: 36%; bottom: auto; }
+#fig-101 { left: 6%;  z-index: 2; }                          /* 中心 24% */
+#fig-102 { left: 32%; z-index: 2; }                          /* 中心 50% */
+#fig-103 { left: 58%; z-index: 2; }                          /* 中心 76% */
+.stage .fig.h.speak { z-index: 3; }
+/* 友達：base の id ルールに勝つため id で指定。ふだんは女の子の後ろの端に小さく（はみ出し）、話すと前に出て内側へ */
+#fig-1, #fig-4 { top: 24%; bottom: auto; height: 70%; width: 34%; z-index: 1; transition: left .35s ease, top .35s ease, height .35s ease, opacity .6s; }
+#fig-1 { left: -13%; }  #fig-1.speak { left: -3%; top: 34%; height: 78%; z-index: 4; }
+#fig-4 { left: 79%; }   #fig-4.speak { left: 69%; top: 34%; height: 78%; z-index: 4; }
+
+.fig .sprite { position: absolute; left: 50%; top: 0; height: 100%; width: auto; max-width: none; transform: translateX(-50%); transform-origin: 50% 12%;
+  pointer-events: none; user-select: none; -webkit-user-drag: none; transition: transform .35s ease, filter .35s, opacity .35s; }
+.fig.speak .sprite { transform: translateX(-50%) translateY(-5px) scale(1.035); }
+.fig.f .sprite { transform-origin: 50% 8%; }
+
+/* 話していない子：色は theme 側の --dim-filter / --far-filter で決める */
+.fig.dim .sprite  { filter: var(--dim-filter, none);  opacity: var(--dim-op, 1); }
+.fig.far .sprite  { filter: var(--far-filter, none);  opacity: var(--far-op, 1); }
+.fig.speak .sprite { filter: var(--speak-filter, none); opacity: 1; }
+.fig.watch .sprite { filter: var(--watch-filter, none); opacity: 1; }
+
+/* 会話の窓の後ろ・卓。卓は舞台の下端まで伸ばして足元を隠す（卓のない場面は下の clip-path で、窓の上端あたりで切る） */
+.stage .table { z-index: 6; bottom: 0; height: 172px; }
+.stage .fig { clip-path: inset(-20% -100% 150px -100%); }   /* 立ち絵は窓の上端より下は見せない */
+.stage .fig.h { clip-path: inset(-20% -100% calc(6.4% + 150px) -100%); }
+#fig-1, #fig-4 { clip-path: inset(0 -100% 30% -100%); }
+#fig-1.speak, #fig-4.speak { clip-path: inset(0 -100% 50% -100%); }
+.stage .board { z-index: 0; }
+
+/* LINE・ログの丸アイコンを顔写真に（頭文字は消す） */
+.lc-av { background-color: var(--card); background-size: cover; background-position: 50% 0; background-repeat: no-repeat; font-size: 0 !important; color: transparent !important; }
+.lc-row[data-sp="101"] .lc-av { background-image: url(img/av101.png); }
+.lc-row[data-sp="102"] .lc-av { background-image: url(img/av102.png); }
+.lc-row[data-sp="103"] .lc-av { background-image: url(img/av103.png); }
+.lc-row[data-sp="1"]   .lc-av { background-image: url(img/av1.png); }
+.lc-row[data-sp="4"]   .lc-av { background-image: url(img/av4.png); }
+.tip .tav { background: var(--hintInk) url(img/av1.png) center top / cover no-repeat; font-size: 0 !important; color: transparent; }   /* ヒントの箱のけんた */
+
+/* LINE の画面が出ている間は、後ろの窓・卓を隠して、場所の背景を見せる */
+.stage:has(.phone) .win, .stage:has(.phone) .table, .stage:has(.phone) .board { visibility: hidden; }
+.stage[data-scene="street"] .fig { opacity: 0; transition: none; }   /* 導入（LINE）は人を出さない（元のルールを守る） */
