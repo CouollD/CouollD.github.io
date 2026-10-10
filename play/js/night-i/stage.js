@@ -24,7 +24,7 @@ const Stage = (() => {
   }
   const live = g => g === gen;
   // 10/10：最初から・設定へ戻ったときに、LINE・ヒントの箱・気づきの札が残っていた
-  function clearOverlays() { document.querySelectorAll('#stage .phone, #stage .tip, #stage .metastop, #stage .cue').forEach(x => x.remove()); }
+  function clearOverlays() { document.querySelectorAll('#stage .phone, #stage .tip, #stage .metastop, #stage .cue').forEach(x => x.remove()); document.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); }
   function home() { gen++; tapFn = null; alwaysTap = null; timers.forEach(t => clearTimeout(t)); timers.clear(); clearOverlays();
     $('play').hidden = true; $('home').hidden = false; $('sheet-end').hidden = true; $('sheet-log').hidden = true; }
   function later(fn, ms, g) { const t = setTimeout(() => { timers.delete(t); if (live(g)) fn(); }, ms); timers.add(t); return t; }

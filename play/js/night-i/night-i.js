@@ -33,14 +33,18 @@ const NightI = (() => {
     };
   }
   let slowHint = null;   // 流れている間の下の一行（I は手札を出す）
+  let curTy = null, holdBreak = false;   // いま流れている行と、その後の間（気づきの札で遮る・間を切るため。10/10）
   async function saySlow(x, g, hold) {
-    if (x[0] === 'n') { S.narr(x[1]); await S.sleep(1500, g); return; }
+    if (x[0] === 'n') { S.narr(x[1]); await S.sleep(1500, g); return 'done'; }
     const ty = typeLine(x, g, 60);
+    curTy = ty;
     S.hint(slowHint ? slowHint() : '（会話は勝手に進む）');
     const skip = () => ty.skip();
     S.onTap(skip);
-    await ty.done; S.onTap(null);
-    await S.sleep(hold == null ? 1000 : hold, g);
+    const r = await ty.done; S.onTap(null);
+    if (curTy === ty) curTy = null;
+    if (r !== 'cut') { holdBreak = false; const ms = hold == null ? 1000 : hold; const until = performance.now() + ms; while (!holdBreak && performance.now() < until) await S.sleep(Math.min(50, until - performance.now()), g); holdBreak = false; }
+    return r;
   }
 
 // ════════════════════════════════════════════════════════
@@ -427,17 +431,28 @@ const NightI = (() => {
     lull: { f: [1, '「切れたな。なんか振る？ 待っててもいいけど」'], m: '会話が途切れた。自分で話題を出すか、待つか。待つと、だれかが話し出す（バーの長押しで早く待てる）' },
     nijikai: { f: [1, '「二次会は、行っても帰ってもいいぞ。帰り道でいい感じになることもあるし。気になる子がいたら、駅まで送るとかな。……断られても凹むなよ」'], m: '二次会に行けば、来た子とまた話せる。帰れば、駅まで送れる。どちらも、それまでの好感度しだい' },
   };
-  function showTip(T, g, arg) {
-    const old = document.querySelector('.tip'); if (old) old.remove();
+  // 10/10：ヒントが会話の欄に紛れて気づかれなかった → 色（黄）・けんたの顔・会話の窓のすぐ上・関係する所を光らせる
+  const HL = { bubble: '#cmds', speak: '#dots', sign: '#cmds', card: '#cmds', gauge: '#dots', cue: a => `#stage .cue[data-cue="${a}"]`, staff: a => `#stage .cue[data-cue="${a}"]`, lull: '#cmds', nijikai: '#cmds' };
+  let tipEnd = null;
+  function showTip(T, g, arg, key) {
+    if (tipEnd) tipEnd();
     const t = S.el('div', 'tip whisper');
-    const meta = () => { t.className = 'tip'; t.innerHTML = `<b>ヒント</b>${S.esc(T.m)}`; S.later(() => t.remove(), 5500, g); };
+    const sel = typeof HL[key] === 'function' ? HL[key](arg) : HL[key];
+    const target = sel ? document.querySelector(sel) : null;
+    if (target) target.classList.add('hl');
+    let gone = false;
+    const end = () => { if (gone) return; gone = true; t.remove(); if (target) target.classList.remove('hl'); if (tipEnd === end) tipEnd = null; };
+    tipEnd = end;
+    const meta = () => { t.className = 'tip meta'; t.innerHTML = `<span class="tlab">ヒント</span><span class="tbody">${S.esc(T.m)}</span><span class="tclose">タップで閉じる</span>`; S.later(end, 7000, g); };
     const text = typeof T.f[1] === 'function' ? T.f[1](arg) : T.f[1];
-    t.innerHTML = `<b>${NAME[T.f[0]]}（${T.how || '小声'}）</b>${S.esc(text)}`;
+    t.innerHTML = `<span class="tav">け</span><span class="tbody"><span class="tlab">${NAME[T.f[0]]}（${T.how || '小声'}）</span>${S.esc(text)}</span>`;
     let step = 0;
-    t.addEventListener('click', ev => { ev.stopPropagation(); if (step === 0) { step = 1; meta(); } else t.remove(); });
+    t.addEventListener('click', ev => { ev.stopPropagation(); if (step === 0) { step = 1; meta(); } else end(); });
+    const win = document.getElementById('win');
+    t.style.bottom = ((win ? win.offsetHeight : 138) + 26) + 'px';   // 名札（だれ→だれ）の上に出す
     document.getElementById('stage').appendChild(t);
     if (T.lit) { const d = document.getElementById('dots'); d.classList.remove('lit'); void d.offsetWidth; d.classList.add('lit'); S.later(() => d.classList.remove('lit'), 2600, g); }
-    S.later(() => { if (step === 0) { step = 1; meta(); } }, 2800 + Math.max(0, text.length - 30) * 45, g);
+    S.later(() => { if (step === 0) { step = 1; meta(); } }, 3600 + Math.max(0, text.length - 30) * 50, g);
   }
   // メタの説明で、いったん止める（グノーシアの「説明が出て止まる」に寄せた。試し）
   function metaStop(html, g) {
@@ -453,6 +468,7 @@ const NightI = (() => {
     });
   }
   // 導入：けんた（大学の親友ポジ）からのLINE。飲み会に誘われて、「コツは教えるから」と言われる
+  let introReply = null;
   async function introLine(prof, g) {
     S.scene('street', '一週間前'); S.clear();   // 10/10：導入では店と人を出さない（会場が先に見えて変だった）
     S.narr('（大学の帰り。スマホが鳴った）'); await S.sleep(900, g);
@@ -469,6 +485,7 @@ const NightI = (() => {
     ph.msg(1, '「あと、お前のバイトとかサークルの話。意外とネタになるぞ」'); await S.sleep(1000, g);
     ph.msg(1, '「じゃ、金曜19時な。駅前」'); await S.sleep(1400, g);
     ph.close();
+    introReply = r;
     // 10/10：説明の箱は LINE を閉じてから出す（重なると、どちらを閉じればいいか迷う）
     await metaStop(`話のネタ（手札）は、日常の生活で手に入る。バイト・サークル・住まいの経験が、合コンで「#」のついた返しになる。<br>今回の手札：${prof.cards.map(k => I_CARDS[k]).join('　')}`, g);
   }
@@ -479,7 +496,7 @@ const NightI = (() => {
     const st = newState(), hand = new Set(prof.cards), live = {}, opened = new Set();
     const f = { 101: { 1: 30, 4: 30 }, 102: { 1: 30, 4: 30 }, 103: { 1: 30, 4: 30 } };   // 友達それぞれへの好感（帰り道で使う）
     const tipped = new Set();
-    const tip = (k, arg) => { const T = TIPS[k], key = T.k || k; if (!iTips || tipped.has(key)) return false; tipped.add(key); showTip(T, g, arg); return true; };
+    const tip = (k, arg) => { const T = TIPS[k], key = T.k || k; if (!iTips || tipped.has(key)) return false; tipped.add(key); showTip(T, g, arg, T.k || k); return true; };
     let m = 25, maxM = 25, lowN = 0, lowFired = false, chatty = false, tooChatty = false, quiet = false, quietBroken = false, seen = 0, missedUnseen = 0, storyHeard = false, keitaN = 0;
     const pending = [];
     S.soft(true); S.focus(null); S.scene(iTips ? 'street' : 'izakaya', iTips ? '' : '居酒屋');
@@ -503,12 +520,14 @@ const NightI = (() => {
     function showCue(id, life) {
       const c = I_CUE[id];
       if (notice() < c.need) { live[id] = { el: null, life, taken: false, unseen: true }; return; }   // 気づけなかった（札は出ない）
-      seen++; if (!tip('cue', id) && id === 'glass102') tip('staff');
+      seen++;
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'cue' + (c.at === 'table' ? ' table' : ''); b.textContent = c.label; b.style.left = I_POS[c.at];
-      b.addEventListener('click', ev => { ev.stopPropagation(); const L = live[id]; if (L && !L.taken) { L.taken = true; L.inQuiet = quiet; b.classList.add('done'); b.textContent = '✓'; pending.push(id); } });
+      b.addEventListener('click', ev => { ev.stopPropagation(); const L = live[id]; if (L && !L.taken) { L.taken = true; L.inQuiet = quiet; b.classList.add('done'); b.textContent = '✓'; pending.push(id); if (interruptible) { if (curTy && !curTy.finished) curTy.cut(); else holdBreak = true; } } });   // 10/10：押したらすぐ。話している途中なら遮る
+      b.dataset.cue = id;
       document.getElementById('stage').appendChild(b);
       live[id] = { el: b, life, taken: false };
+      if (!tip('cue', id) && id === 'glass102') tip('staff', id);   // 札ができてから（札を光らせるため）
     }
     async function tickCues() {
       for (const id of Object.keys(live)) {
@@ -526,7 +545,8 @@ const NightI = (() => {
         }
       }
     }
-    async function flush() {
+    async function flush(cutSp) {
+      const any = pending.length > 0;
       while (pending.length) {
         const id = pending.shift(), c = I_CUE[id], L = live[id];
         if (L) { L.el && L.el.remove(); delete live[id]; }
@@ -543,8 +563,10 @@ const NightI = (() => {
         fx(st, c.fx); pick(`${c.label}に気づいた`, 'cue'); if (c.mem) memories.push(c.mem);
         for (const x of c.lines) await saySlow(x, g, 800);
         // 気配りで会話が一度切れたら、だれかが話を戻す（10/2 の感想：元の会話にそのまま戻るのが不自然）
-        if (!c.noBridge && !inLull && lastSp != null) { const b = BRIDGE[lastSp]; await saySlow([lastSp, 'all', b[bridgeN++ % b.length]], g, 700); }
+        if (cutSp == null && !c.noBridge && !inLull && lastSp != null) { const b = BRIDGE[lastSp]; await saySlow([lastSp, 'all', b[bridgeN++ % b.length]], g, 700); }
       }
+      // 遮ったときは、遮られた人が「で、なんだっけ」と言って、元の話に戻る（10/10）
+      if (cutSp != null && any) { const b = BRIDGE[cutSp] || BRIDGE[1]; await saySlow([cutSp, 'all', b[bridgeN++ % b.length]], g, 600); }
     }
     async function afterSpeak() {
       if (m >= 90 && !tooChatty) { tooChatty = true; fx(st, { 101: -4, 102: -4, 103: -4, air: -6 }); await saySlow([1, 'P', '「お前、今日しゃべりすぎな」'], g); }
@@ -596,9 +618,16 @@ const NightI = (() => {
         requestAnimationFrame(step);
       });
     }
+    let interruptible = false;
     async function line(x) {
       if (x[0] === 'n') { idle(); S.narr(x[1]); await S.sleep(1500, g); }
-      else { idle(); await saySlow(x, g); if (typeof x[0] === 'number') lastSp = x[0]; }
+      else {
+        idle();
+        interruptible = typeof x[0] === 'number' && !quiet;
+        const r = await saySlow(x, g); interruptible = false;
+        if (typeof x[0] === 'number') lastSp = x[0];
+        if (r === 'cut' && pending.length) { await flush(x[0]); idle(); await saySlow(x, g); }   // 気づき → 「なんだっけ」 → 元の一言から
+      }
       await flush(); await tickCues(); await silentTick();
     }
     // 吹き出しつきの1行
@@ -718,10 +747,13 @@ const NightI = (() => {
       }
     }
 
+    introReply = null;
     if (iTips) await introLine(prof, g);
     S.scene('izakaya', '居酒屋');
     S.narr(prof.intro); await S.sleep(1800, g);
     S.narr('（金曜、19時。駅前の居酒屋）'); await S.waitTap(g, 'タップで始める');
+    // 10/10：会場に着いたら、けんたが迎える（LINE からのつなぎ）
+    await saySlow([1, 'P', { go: '「お、来たな。こっちこっち」', maybe: '「来たじゃん。とりあえず一次会な」', shy: '「お、来た来た。顔かたいって」' }[introReply] || '「お、来たな。こっち空いてる」'], g, 700);
     await play2(I_FLOW);
     Object.keys(live).forEach(id => { if (!live[id].taken) live[id].life = 1; }); await tickCues();
     Object.keys(live).forEach(id => { if (live[id].el) live[id].el.remove(); delete live[id]; });
@@ -749,7 +781,7 @@ const NightI = (() => {
   const stampSvg = f => `<svg viewBox="0 0 60 60" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="var(--card)"/>${FACE[f] || FACE.smile}</svg>`;
   // スマホの画面（LINE）。舞台の上にかぶせる
   function openPhone(title) {
-    document.querySelectorAll('#stage .tip').forEach(t => t.remove());   // 10/10：ヒントとLINEの画面が重ならないように
+    if (tipEnd) tipEnd(); document.querySelectorAll('#stage .tip').forEach(t => t.remove());   // 10/10：ヒントとLINEの画面が重ならないように（光らせた所も消す）
     const ph = S.el('div', 'phone');
     ph.innerHTML = `<div class="ph-top">${title}</div><div class="ph-body"></div>`;
     document.getElementById('stage').appendChild(ph);
