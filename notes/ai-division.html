@@ -7,16 +7,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
-<title>AIとの分業（個人開発のPM事例）｜CouollD</title>
+<title>AIとの分業（研究ノート）｜CouollD</title>
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
 <div class="wrap">
   <nav class="crumb"><a href="../">CouollD</a> ／ <a href="./">研究ノート</a> ／ 作り方</nav>
   <article class="note">
-    <header><h1>AIとの分業（個人開発のPM事例）</h1><div class="meta">作成 2026-10-02</div></header>
-<p>「うまく分業できていない感じがする」（10/2）を受けて調べた。調査はサブエージェント（Sonnet）に任せ、実際に開いたページだけを出典にした。</p>
-<h2>事例</h2>
+    <header><h1>AIとの分業（研究ノート）</h1><div class="meta">作成 2026-10-02　更新 2026-10-10</div></header>
+<p>関連：<a href="prototype-compare.html">試作で比べる進め方</a></p>
+<h2>1. やりたいこと</h2>
+<ul>
+<li>個人開発（合コンゲーム『今夜のスタメン』）で、人とAIの役割分担をうまく回したい<ul>
+<li>きっかけは「うまく分業できていない感じがする」（10/2）</li>
+</ul>
+</li>
+<li>10/10 に、知りたいことが増えた<ul>
+<li>本業（システム開発）の実験としても使いたい</li>
+<li>今どんなレビューとテストをしているのか。あるべき姿と、その事例。Claudeの意見</li>
+<li>指示があいまいなので、安いモデル（Cursor の Composer など）を使えていないのではないか</li>
+<li>トークン（利用量）を節約したいが、どこから手をつければいいか</li>
+</ul>
+</li>
+</ul>
+<h2>2. 先行事例（要旨）</h2>
+<p>調査はサブエージェント（Sonnet）。URLは開いて確かめたものだけ。</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -63,7 +78,29 @@
 </tr>
 </tbody>
 </table></div>
-<h2>共通して効いていること</h2>
+<h2>3. 調べたことと条件</h2>
+<h3>共通の条件</h3>
+<ul>
+<li>役割<ul>
+<li>設計・実装・確認：Claude（このプロジェクトの会話）</li>
+<li>調べ物：サブエージェント（Sonnet）</li>
+<li>画像：Gemini／ChatGPT（ブラウザ）</li>
+<li>判断と試遊：ユーザー</li>
+</ul>
+</li>
+<li>確認の場：スタメン確認ボード。項目ごとに「何を見るか」と、Claudeの返事が付く</li>
+</ul>
+<h3>調査1（10/2）：個人開発の分業事例</h3>
+<ul>
+<li>上の表の7件。サブエージェントが、実際に開いたページだけを出典にした</li>
+</ul>
+<h3>調査2（10/10）：レビューとテスト、安いモデル、トークン節約</h3>
+<ul>
+<li>サブエージェント（Sonnet）で、公式ガイド（Claude Code・Cursor・OpenAI Codex・GitHub Copilot）と記事・論文を調べた</li>
+<li>あわせて、Claudeが今やっている確認の中身を書き出した（下の「今のやり方」）</li>
+</ul>
+<h2>4. 結果</h2>
+<h3>調査1：共通して効いていること</h3>
 <ul>
 <li>人は「面白さ・優先順位・やらないこと」を決める。実装はAI</li>
 <li>決めたことは会話ではなく文書に残し、仕様とコードを一緒に直す</li>
@@ -71,15 +108,151 @@
 <li>「完了」は機械で確かめる（テスト・画面の確認）</li>
 <li>並列は人がレビューできる数まで</li>
 </ul>
-<h2>このプロジェクトで変えること（提案）</h2>
+<h3>今のやり方（10/10 時点）</h3>
 <ul>
-<li><strong>会話を分ける</strong>：設計（この会話）／実装／素材（立ち絵）／調査／環境。冒頭に「目的」と「終わりの条件」を1行</li>
-<li><strong>1回の依頼の大きさ</strong>：1依頼＝遊んで確かめられる変化1つ。「やらないこと」も書く</li>
-<li><strong>完了の定義</strong>：どの操作でどうなれば完了かを書き、AIに自動テストや画面の撮影で確かめさせる</li>
-<li><strong>レビュー</strong>：自分は遊んで感想を1行。コードは別の会話のAIに見せる。並列は1〜2本</li>
-<li><strong>記録</strong>：決めたことは会話の外（DECISIONS.md や研究ノート）へ。日曜夜に「今週の3件・やらないこと・変えた理由」を書く</li>
+<li><strong>レビュー</strong>：同じ会話のClaudeが、自分で見直しているだけ。別の会話・別のAIによるレビューはしていない</li>
+<li><strong>構文の確認</strong>：書いたJavaScriptが読み込めるかを、毎回確かめる</li>
+<li><strong>画面の自動テスト</strong>（<code>tools/test_night_i.js</code>）<ul>
+<li>Playwright（ヘッドレスのChromium）で、スマホ幅（390×780）のまま最後まで自動で遊ぶ</li>
+<li>待ち時間は6倍速にしている</li>
+<li>遊び方は5通り（ふつう／喋り続ける／黙り続ける／あおい狙い／話を遮る）。これを設定A・B・Cで回す</li>
+<li>画面に出ている吹き出し・札・話題・選択肢を読み、遊び方の決まりに従って押す</li>
+<li>要所でスクショを撮り、会話のログを保存する。ページでエラーが出たら失敗にする</li>
+<li>スクショはClaudeが画像として見る。画面が横にはみ出していないか（ページの幅）も数字で見る</li>
 </ul>
-<h2>出典</h2>
+</li>
+<li>テストはファイルとして残してあり、直すたびに回している</li>
+<li><strong>していないこと</strong><ul>
+<li>受け入れ条件（どうなれば完了か）を、作る前に書くこと</li>
+<li>計算（好感度など）の単体テスト</li>
+<li>意地悪テスト（でたらめな連打・長押し・途中で戻る・でたらめな選び方）</li>
+<li>長時間プレイ（メモリが増え続けないか）と、遅い端末の再現</li>
+<li>別の会話でのレビュー</li>
+</ul>
+</li>
+</ul>
+<h3>調査2：あるべき姿（公式ガイドと事例）</h3>
+<ul>
+<li><strong>確かめる手段を渡す</strong>のが最重要（Claude Code の公式）。テストやスクショの比較を渡し、入出力の例で受け入れ条件を書かせる[1]</li>
+<li><strong>レビューは別の文脈で</strong>。サブエージェントか別の会話に見せ、指摘は「正しさと要件」に絞る。絞らないと作り込みすぎになる[1]</li>
+<li><strong>テストを先に</strong>。テストを書かせて失敗を確かめ、「テストを変えずに」通させる（Cursor）[2]</li>
+<li><strong>依頼の書き方</strong>：目的・文脈・制約・完了条件を書く（OpenAI Codex）[3]。課題文に受け入れ条件と対象ファイルを書く（GitHub Copilot）[4]</li>
+<li><strong>実際に動かして見る</strong>：テストが通っても起動で落ちることがある。Playwrightで動かしてスクショを見る。見つけた不具合は、失敗するテストにしてから直す[5]</li>
+<li><strong>意地悪テスト</strong><ul>
+<li>gremlins.js：でたらめなクリック・入力・スクロールを送る。乱数の種で再現でき、フレーム落ちとエラーも拾う[6]</li>
+<li>fast-check：性質（「どの選び方でも詰まらない」など）を決めて、たくさんの入力で確かめる。失敗した入力を小さく縮めてくれる[7]</li>
+</ul>
+</li>
+<li><strong>負荷テストの代わり</strong>（サーバーが無い静的サイトなので、負荷そのものは要らない）<ul>
+<li>ソーク試験：同じ操作を200回くり返し、画面の部品の数やイベントの数が増え続けないかを見る[8]</li>
+<li>遅い端末：ChromiumでCPUを遅くして遊ぶ[9]。スマホの画面は Playwright の端末エミュレーションで[10]</li>
+</ul>
+</li>
+<li><strong>安いモデル</strong><ul>
+<li>Cursor の Composer 2.5（5/18）は、100万トークンあたり入力0.5ドル・出力2.5ドル。Cursor のアプリの中で使うモデル[11]</li>
+<li>Claude側の目安は、ふだんの作業は Sonnet、設計や難問は Opus。サブエージェントには Haiku も指定できる[12]</li>
+<li>「あいまいな問題や難問は大きいモデル、決まった作業は小さいモデル」という推奨がある[13]</li>
+<li>研究では、モデルは「仕様が足りないか」の判断が苦手で、質問させると最大74%よくなった[14]</li>
+</ul>
+</li>
+<li><strong>トークンの費用</strong>：文脈の量に比例する。キャッシュから読むぶんは入力の0.1倍、出力は入力の約5倍。途中でモデルを変えるとキャッシュが捨てられる[13][15]。常駐の指示ファイルを足すと、成功率は上がらずに費用が20%以上増えたという研究もある[16]</li>
+</ul>
+<h2>5. 分析</h2>
+<h3>うまくいっていること</h3>
+<ul>
+<li>調べ物をサブエージェント（Sonnet）に任せる分け方は回っている。10/10 の3件の調査もこれ</li>
+<li>画面の自動テストが「最後まで通るか」を毎回機械で確かめていて、事例の「完了は機械で確かめる」に合っている</li>
+<li>確認ボードの「何を見るか」は、受け入れ条件の手前まで来ている</li>
+</ul>
+<h3>足りないこと（本業の工程に当てはめると）</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>工程</th>
+<th>今</th>
+<th>足りないこと</th>
+<th>次の一手</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>要件・受け入れ条件</td>
+<td>ボードの「何を見るか」</td>
+<td>作る前に合否の条件がない</td>
+<td>依頼1つに「どうなれば完了か」を1行書く（Claudeが書いて、あなたがOKする形でもよい）</td>
+</tr>
+<tr>
+<td>製造</td>
+<td>Claudeが実装</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>単体テスト</td>
+<td>なし</td>
+<td>好感度の計算などを数字で確かめていない</td>
+<td>計算の部分だけ、小さな試験を足す</td>
+</tr>
+<tr>
+<td>画面テスト（結合）</td>
+<td>自動プレイ5通り×3設定、スクショ</td>
+<td>見ているのが作った本人（同じAI）</td>
+<td>大きい変更のときだけ、別の会話に「正しさと要件」だけ見せる</td>
+</tr>
+<tr>
+<td>意地悪テスト</td>
+<td>なし</td>
+<td>連打・長押し・途中で戻る・でたらめな選び方</td>
+<td>でたらめな遊び方を50通り回し、「詰まらない・エラーが出ない」を確かめる</td>
+</tr>
+<tr>
+<td>負荷テスト</td>
+<td>なし</td>
+<td>負荷は不要。代わりに長時間と遅い端末</td>
+<td>12/6の試遊会の前に1回だけ：200回くり返して部品の数を見る、CPUを4倍遅くして遊ぶ</td>
+</tr>
+<tr>
+<td>レビュー</td>
+<td>自己レビュー</td>
+<td>第三者の目</td>
+<td>上の「別の会話」と同じ</td>
+</tr>
+</tbody>
+</table></div>
+<h3>安いモデルについて（質問への答え）</h3>
+<ul>
+<li><strong>半分あたり</strong>。原因は「指示のあいまいさ」そのものより、「合否を判定できるもの（受け入れ条件とテスト）がないこと」<ul>
+<li>あいまいな依頼は、高いモデルでも手戻りになって費用が増える</li>
+<li>合否がテストで決まる作業なら、安いモデルでも任せやすい</li>
+</ul>
+</li>
+<li>任せやすい作業：範囲が狭い、仕様がはっきりしている、テストで正否が出る<ul>
+<li>このプロジェクトなら：調べ物、決まった形への書き換え（例：読みものの構成をそろえる）、テストを足す、移植</li>
+</ul>
+</li>
+<li>任せにくい作業：台詞の質、見た目、設計の判断。テストで測れないもの</li>
+<li>Composer を使うなら Cursor に移る必要がある。今の環境（Claude）での「安いモデル」は、Sonnet や Haiku のサブエージェント</li>
+</ul>
+<h3>トークン節約：どこから手をつけるか（効く順）</h3>
+<ol>
+<li><strong>会話を分ける（1テーマ1会話）</strong>。この会話は何日も続いていて、毎回とても長い文脈を読み直している。いちばん効く
+   - 例：絵（立ち絵・表情）／会話の仕組み／ポートフォリオ／ボードと計画
+   - 引き継ぎは、研究ノートと確認ボードがあるので困らない</li>
+<li><strong>受け入れ条件とテストで手戻りを減らす</strong>。手戻りは一番高い</li>
+<li><strong>調べ物と決まった作業はサブエージェント（Sonnet）へ</strong>。メインの会話には結論だけ返させる</li>
+<li><strong>画面の確認は、スクショを小さくまとめて見る</strong>。画像は文脈を大きく使う</li>
+<li><strong>常駐の指示（CLAUDE.md など）は短く</strong>。手順はスキルへ移す</li>
+<li><strong>モデルの使い分けは最後</strong>。途中で変えるとキャッシュが捨てられるので、会話の頭で決める</li>
+</ol>
+<h3>Claudeの意見</h3>
+<ul>
+<li>本業の実験として一番効くのは、<strong>「受け入れ条件を1行書く → テストで確かめる → 別の会話でレビュー」の型を1回やってみること</strong>。工程表を全部まねるより、この3つで足りる</li>
+<li>意地悪テストは、このゲームでは費用に見合う。会話が自動で流れ、時間制限と長押しがあるので、「押す時機がずれたら詰まる」種類の不具合が出やすい</li>
+<li>負荷テストは、今は要らない。公開前に長時間と遅い端末を1回見れば十分</li>
+<li>正直に言うと、今いちばんトークンを使っているのは、この会話が長すぎること。次の週末から、テーマごとに会話を分けるのを勧める</li>
+</ul>
+<h2>付録</h2>
+<h3>出典（10/2：分業の事例）</h3>
 <ul>
 <li>https://gonzoml.substack.com/p/how-we-built-a-full-browser-game</li>
 <li>https://qiita.com/roripika/items/1952fb2bf112fb562042</li>
@@ -91,6 +264,25 @@
 <li>https://blog.asial.co.jp/6859/</li>
 <li>https://gmo-miyazaki-creators.com/coding/agent/</li>
 </ul>
+<h3>出典（10/10：レビュー・テスト・モデル・費用）</h3>
+<ol>
+<li>https://code.claude.com/docs/en/best-practices</li>
+<li>https://cursor.com/learn/creating-features.md</li>
+<li>https://developers.openai.com/codex/learn/best-practices.md</li>
+<li>https://docs.github.com/copilot/tutorials/coding-agent/best-practices</li>
+<li>https://simonwillison.net/guides/agentic-engineering-patterns/agentic-manual-testing</li>
+<li>https://github.com/marmelab/gremlins.js</li>
+<li>https://cdn.jsdelivr.net/npm/fast-check@4.10.2/README.md</li>
+<li>https://denodell.com/blog/your-spa-is-leaking-memory-soak-test-it</li>
+<li>https://focusreactive.com/testing-web-application-performance-with-playwright/</li>
+<li>https://playwright.dev/docs/emulation</li>
+<li>https://forum.cursor.com/t/composer-2-5-is-now-live/160934</li>
+<li>https://code.claude.com/docs/en/model-config</li>
+<li>https://claude.com/blog/maximizing-the-value-of-your-claude-code-sessions</li>
+<li>https://arxiv.org/abs/2502.13069v3</li>
+<li>https://code.claude.com/docs/en/costs</li>
+<li>https://arxiv.org/abs/2602.11988v1</li>
+</ol>
   </article>
   <footer><p>立ち絵と表情差分は画像生成AI（ChatGPT／Gemini など）で作っています。表情パーツの層分けには See-through（Apache-2.0）を使いました。</p><p>試作と研究ノートは作りかけです。このサイトは検索エンジンに載せない設定にしています。</p></footer>
 </div>
