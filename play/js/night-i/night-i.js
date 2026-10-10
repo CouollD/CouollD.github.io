@@ -55,12 +55,13 @@ const NightI = (() => {
   //   10/3（2回目）：冷蔵庫の台詞、あおいの話の前ぶれ、二次会で場所が変わる・帰る子は場を離れる、ヒントは友達→メタの順、「黙って聞く」ボタン
   //   10/4（夜）：「黙って聞く」「待つ」ボタンをやめ、時間のバーの長押しで早く進む。ヒントありのチュートリアル（けんたのLINE→最初の話題）
   //   10/8：本編へ移した（screens/night_i.html）。比べるための部品（台詞の行数の表示、一覧へ戻る）を外した
+  //   10/10（2回目）：最初からで LINE が残るのを直した。導入は店の背景を出さない。LINE が閉じてから説明の箱。けいたに毎回通る役（ツッコミ・取り逃した気づきを拾う・写真）
   //   10/3：自分の設定を3通り（A 塾・文化系・実家／B 居酒屋・フットサル・一人暮らし／C パン屋の朝番・軽音・寮）。話題を2つ足した
   // ════════════════════════════════════════════════════════
   NAME.S = '店員';
   const I_CARDS = { juku: '#塾バイト', jikka: '#実家', bushitsu: '#部室の主' };
   const I_CUE = {
-    glass103: { at: 103, label: 'グラス空', need: 40, m: 4, fx: { 103: 6 }, lines: [['n', '（めいのグラスに気づいて、メニューを渡した）'], [103, 'P', '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], miss: [['n', '（めいは、空のグラスをしばらく持っていた）']] },
+    glass103: { at: 103, label: 'グラス空', need: 40, m: 4, fx: { 103: 6 }, lines: [['n', '（めいのグラスに気づいて、メニューを渡した）'], [103, 'P', '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], miss: [[4, 103, '「めいちゃん、グラス空いてる。次なに飲む」'], [103, 4, '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], missFfx: { 103: { 4: 6 } }, missBy: 4 },
     tong: { noBridge: true, at: 101, label: 'トング', need: 35, m: 6, fx: { 101: 8, 102: 2, air: 4 }, lines: [['P', 'all', '「あ、各自で取ろ。好きなだけ」', '声をかけた'], [101, 'P', '「……あ、はい。じゃあ、自分の分だけ」', null, { 101: 'はにかみ' }]],
       miss: [['n', '（あおいが、みんなの分を取り分けはじめた）'],
         { line: [101, 'P', '「……どうぞ」'], b: { at: 'end', ms: 4500, opts: [
@@ -68,7 +69,7 @@ const NightI = (() => {
           { k: 'go', label: '任せちゃってごめん', say: '「ごめん、任せちゃった。ありがと」', fx: { 101: 5 }, lines: [[101, 'P', '「……いえ。慣れてるので」', null, { 101: 'はにかみ' }]] }],
           silence: { fx: { 101: -1 }, lines: [[102, 101, '「あおいちゃん、ありがと〜」']] } } }] },
     glass102: { at: 102, label: '店員を探してる', need: 45, m: 4, fx: { 102: 6 }, lines: [['n', '（ゆなの代わりに、店員を呼んだ）'], [102, 'P', '「え、ありがと！ レモンサワー」', null, { 102: '笑' }]],
-      miss: [[102, 'all', '「すみませーん！ ……あれ、聞こえてない」'], ['n', '（ゆなは、しばらく店員を呼べずにいた）']] },
+      miss: [[102, 'all', '「すみませーん！ ……あれ、聞こえてない」'], [4, 'all', '「すみません、こっちお願いします」', '手を上げた'], [102, 4, '「え、通った。ありがと」', null, { 102: '笑' }]], missFfx: { 102: { 4: 6 } }, missBy: 4 },
     chaser103: { mem: { h: 103, send: '「昨日、ちゃんと帰れた？」', echo: '「……帰れた。水、ありがと」' }, at: 103, label: 'ほろ酔い', need: 60, m: 2, fx: { 103: 10 }, lines: [['n', '（何も言わずに、めいの分の水を頼んだ）'], [103, 'P', '「……あ。……ありがと」', null, { 103: 'はにかみ' }]], miss: [['n', '（めいは、少し眠そうにしていた）']] },
     order: { noBridge: true, at: 'table', label: 'ラストオーダー', need: 0, m: 6, fx: { 101: 2, 102: 2, 103: 2, air: 6 }, quietSay: '「あ、みんな最後なに飲む？」', lines: [['P', 'all', '「すみません、お願いします。みんな最後なに飲む？」', 'まとめた'], [102, 'P', '「うちレモンサワー！」', null, { 102: '笑' }], [101, 'P', '「……ウーロン茶で」']], miss: [[1, 'all', '「あ、ラストオーダー！ 全員ウーロン茶で！」'], ['n', '（けんたが、雑にまとめた）']], missFfx: { 102: { 1: 3 } } },
   };
@@ -208,6 +209,7 @@ const NightI = (() => {
     { heading: 'バイトの話' },
     ['n', '（乾杯。けんたが仕切りはじめた）'],
     [1, 'all', '「じゃ、とりあえず一人ずつ。バイトとか」'],
+    { free: [[4, 1, '「面接かよ」'], [1, 4, '「うっせ。じゃ、ゆなちゃんから」']] },   // 目立ちを減らさない行（10/10）
     { line: [102, 'all', '「うちカフェ。[[まかない]]目当てで入ったんだけどね」'], b: { at: 'end', ms: 5000, opts: [
       { k: 'dig', label: 'まかない何？', need: 0, say: '「まかない何出んの。毎日？」', mem: { h: 102, send: '「今日のまかない、パスタだった？」', echo: '「パスタだった。もう笑うしかない」' }, ok: { fx: { 102: 6 }, lines: [[102, 'P', '「毎日！ でもほぼパスタ」', null, { 102: '笑' }], [102, 'P', '「店長、パスタしか作れないの」']] } },
       { k: 'card', card: 'juku', label: '塾は何も出ない', say: '「いいな。塾なんも出ないよ」', mem: { h: 102, send: '「うまい棒、また生徒にもらったわ」', echo: '「先生の給料それなの」' }, fx: { 102: 4, 101: 3 }, lines: [[102, 'P', '「えー、お菓子とかないの」'], ['P', 102, '「生徒がくれる。うまい棒」'], [102, 'P', '「先生じゃん」', null, { 102: '笑', 101: 'はにかみ' }]] }],
@@ -450,9 +452,9 @@ const NightI = (() => {
       document.getElementById('stage').appendChild(box);
     });
   }
-  // 導入：けんた（大学の親友ポジ）からのLINE。飲み会に誘われて、「教えてやるよ」と言われる
+  // 導入：けんた（大学の親友ポジ）からのLINE。飲み会に誘われて、「コツは教えるから」と言われる
   async function introLine(prof, g) {
-    S.scene('', '一週間前'); S.clear();
+    S.scene('street', '一週間前'); S.clear();   // 10/10：導入では店と人を出さない（会場が先に見えて変だった）
     S.narr('（大学の帰り。スマホが鳴った）'); await S.sleep(900, g);
     const ph = openPhone('LINE　けんた');
     await S.sleep(500, g);
@@ -461,14 +463,14 @@ const NightI = (() => {
     const r = await choose('なんて返す？', [{ label: '行く行く', v: 'go' }, { label: '興味はあるけど……', v: 'maybe' }, { label: '行ったことないから、自信ない', v: 'shy' }]);
     S.clear();
     ph.msg('P', { go: '「行く行く」', maybe: '「興味はあるけど……」', shy: '「行ったことないから、自信ないわ」' }[r]); await S.sleep(1000, g);
-    ph.msg(1, { go: '「話早くて助かる」', maybe: '「けど、なに。来いって」', shy: '「大丈夫だって。最初はみんなそう」' }[r]); await S.sleep(900, g);
-    ph.msg(1, '「教えてやるよ。まあ来いって」'); await S.sleep(900, g);
+    ph.msg(1, { go: '「話早くて助かる」', maybe: '「あるなら来いよ。合わなきゃ一次会で帰ればいいし」', shy: '「大丈夫だって。最初はみんなそう」' }[r]); await S.sleep(900, g);
+    ph.msg(1, '「コツは教えるから」'); await S.sleep(900, g);
     ph.msg(1, '「難しく考えんな。思いついたこと喋ればいいから」'); await S.sleep(1000, g);
     ph.msg(1, '「あと、お前のバイトとかサークルの話。意外とネタになるぞ」'); await S.sleep(1000, g);
-    ph.msg(1, '「学生の本分ってやつ？ そういうの、楽しんどけって」'); await S.sleep(1000, g);
-    await metaStop(`話のネタ（手札）は、日常の生活で手に入る。バイト・サークル・住まいの経験が、合コンで「#」のついた返しになる。<br>今回の手札：${prof.cards.map(k => I_CARDS[k]).join('　')}`, g);
-    ph.msg(1, '「じゃ、金曜19時な。駅前」'); await S.sleep(1100, g);
+    ph.msg(1, '「じゃ、金曜19時な。駅前」'); await S.sleep(1400, g);
     ph.close();
+    // 10/10：説明の箱は LINE を閉じてから出す（重なると、どちらを閉じればいいか迷う）
+    await metaStop(`話のネタ（手札）は、日常の生活で手に入る。バイト・サークル・住まいの経験が、合コンで「#」のついた返しになる。<br>今回の手札：${prof.cards.map(k => I_CARDS[k]).join('　')}`, g);
   }
   let iYomi = 50;                           // 空気読み（キャラクリの能力値のつもり。メニューで変えられる）
 
@@ -478,10 +480,10 @@ const NightI = (() => {
     const f = { 101: { 1: 30, 4: 30 }, 102: { 1: 30, 4: 30 }, 103: { 1: 30, 4: 30 } };   // 友達それぞれへの好感（帰り道で使う）
     const tipped = new Set();
     const tip = (k, arg) => { const T = TIPS[k], key = T.k || k; if (!iTips || tipped.has(key)) return false; tipped.add(key); showTip(T, g, arg); return true; };
-    let m = 25, maxM = 25, lowN = 0, lowFired = false, chatty = false, tooChatty = false, quiet = false, quietBroken = false, seen = 0, missedUnseen = 0, storyHeard = false;
+    let m = 25, maxM = 25, lowN = 0, lowFired = false, chatty = false, tooChatty = false, quiet = false, quietBroken = false, seen = 0, missedUnseen = 0, storyHeard = false, keitaN = 0;
     const pending = [];
-    S.soft(true); S.focus(null); S.scene('izakaya', '居酒屋');
-    S.menu([{ label: () => `ヒント：${iTips ? 'オン' : 'オフ'}`, fn: () => { iTips = !iTips; } },
+    S.soft(true); S.focus(null); S.scene(iTips ? 'street' : 'izakaya', iTips ? '' : '居酒屋');
+    S.menu([{ label: () => `ヒント（チュートリアル）：${iTips ? 'オン' : 'オフ'}`, fn: () => { iTips = !iTips; } },
             { label: () => `空気読み：${iYomi}（変えて最初から）`, fn: () => { iYomi = iYomi === 50 ? 70 : iYomi === 70 ? 30 : 50; mode.start(mode.back); } },
             { label: '最初から', fn: () => mode.start(mode.back) }]);
     const drawM = () => { maxM = Math.max(maxM, m); if (m >= 55) tip('gaugeHi'); else if (m <= 8) tip('gaugeLo'); document.getElementById('dots').innerHTML = `<span>目立ち</span><span class="mbar"><i style="width:${m}%"></i></span>`; };
@@ -517,8 +519,10 @@ const NightI = (() => {
           if (L.unseen) missedUnseen++;
           if (c.missFx) fx(st, c.missFx, false);
           if (c.missFfx) ffx(c.missFfx);
+          if (c.missBy === 4) keitaN++;   // 取り逃した気づきを、けいたが拾った
           if (id === 'chaser103') S.expr(103, '真顔');
           if (c.miss) for (const x of c.miss) { if (Array.isArray(x)) await saySlow(x, g, 700); else await bubbleNode(x); }
+          if (c.missBy && !inLull && lastSp != null && lastSp !== c.missBy) { const b = lastSp === 1 ? ['「……で？ 続けて」'] : BRIDGE[lastSp]; await saySlow([lastSp, 'all', b[bridgeN++ % b.length]], g, 700); }   // けいたが割り込んだあと、話を戻す
         }
       }
     }
@@ -688,6 +692,7 @@ const NightI = (() => {
       for (const node of nodes) {
         if (Array.isArray(node)) { await line(node); continue; }
         if (node.heading) { S.logRound(node.heading); continue; }
+        if (node.free) { for (const x of node.free) { idle(); await saySlow(x, g); if (typeof x[0] === 'number') lastSp = x[0]; } continue; }   // 友達どうしの掛け合い：目立ちは動かさない
         if (node.block) { lowFired = false; continue; }
         if (node.ffx) { ffx(node.ffx); continue; }
         if (node.expr && !node.cue) { Object.entries(node.expr).forEach(([h, x]) => S.expr(+h, x)); continue; }
@@ -721,7 +726,7 @@ const NightI = (() => {
     Object.keys(live).forEach(id => { if (!live[id].taken) live[id].life = 1; }); await tickCues();
     Object.keys(live).forEach(id => { if (live[id].el) live[id].el.remove(); delete live[id]; });
     slowHint = null;
-    await closing(st, f, g, { maxM, lowN, seen, missedUnseen, storyHeard, mode, memories, tip });
+    await closing(st, f, g, { maxM, lowN, seen, missedUnseen, storyHeard, mode, memories, tip, keitaN });
   }
 
   // ── 終わり方（10/2 調べた流れ）：締め → 会計 → 全員と交換 → 二次会か帰るか（駅まで送る）→ 翌朝のお礼LINE＝結果発表 ──
@@ -786,9 +791,14 @@ const NightI = (() => {
     await say(['n', '（最後の飲み物も、なくなった）']);
     await say([1, 'all', '「……よし、そろそろ出るか」']);
     await say(['n', '（けんたが手早く会計をまとめた。男が多めに払った）']);
+    await say([4, 1, '「端数、また俺に回してない？」']);
+    await say([1, 4, '「細けえな。百円だろ」']);
     await say([1, 'all', '「グループ作るわー。みんな入って」']);
     const cold = st.air < 30;
     await say(['n', cold ? '（グループだけできた。個別に交換する空気では、なかった）' : '（流れで、全員と連絡先を交換した）']);
+    await say([4, 'all', '「出る前に一枚撮ろ。寄って」']);
+    await say(['n', '（店員さんが、シャッターを切ってくれた）']);
+    await say([4, 1, '「……けんた、目つぶってる」']);
 
     // 二次会か、帰るか
     S.logRound('二次会');
@@ -815,7 +825,8 @@ const NightI = (() => {
         if (f[102][4] > st.h[102]) { await say(['n', '（ゆなは、けいたとデュエットしていた）']); lines.push('二次会で、ゆなはけいたと盛り上がっていた'); }
         else { fx(st, { 102: 4 }); await say([102, 'P', '「一緒に歌お！ これ知ってる？」', null, { 102: '笑' }]); lines.push('二次会で、ゆなと歌った'); }
       }
-      if (meiGo) { fx(st, { 103: 4 }); await say(['n', '（めいは、ずっと聞く側だった）']); await say([103, 'P', '「……君の、もう一回聞きたい」', null, { 103: 'はにかみ' }]); lines.push('めいも二次会に来て、ずっと聞く側だった'); }
+      if (meiGo && f[103][4] > st.h[103]) { await say(['n', '（めいは、けいたの隣で、ずっと聞く側だった）']); lines.push('二次会で、めいはけいたの隣にいた'); }
+      else if (meiGo) { fx(st, { 103: 4 }); await say(['n', '（めいは、ずっと聞く側だった）']); await say([103, 'P', '「……君の、もう一回聞きたい」', null, { 103: 'はにかみ' }]); lines.push('めいも二次会に来て、ずっと聞く側だった'); }
     } else {
       st.picks.push('帰った');
       const goers = [101, 103].concat(yunaGo ? [] : [102]);
@@ -838,7 +849,8 @@ const NightI = (() => {
     await S.sleep(500, g);
     ph.msg(1, '「昨日おつかれー！」'); await S.sleep(700, g);
     if (!cold) { ph.msg(102, '「楽しかった〜！ また飲も」'); await S.sleep(700, g); }
-    ph.msg(4, '「おつ」'); await S.sleep(500, g);
+    ph.msg(4, '「写真あげとく」'); ph.sys('（写真：6人。けんただけ目をつぶっている）'); await S.sleep(600, g);
+    ph.msg(1, '「消せ」'); await S.sleep(500, g);
     const gr = await choose('グループに、なにか送る？', [{ label: '楽しかった！ ありがとう', v: 'thanks' }, { label: 'スタンプだけ', v: 'stamp' }, { label: '送らない', v: null, cls: 'quiet' }]);
     if (gr === 'thanks') { ph.msg('P', '「楽しかった！ ありがとう」'); fx(st, { 101: 1, 102: 1, 103: 1 }, false); await S.sleep(800, g); ph.msg(102, '「こちらこそ〜！」'); await S.sleep(600, g); ph.msg(101, '「ありがとうございました」'); st.picks.push('グループにお礼'); }
     else if (gr === 'stamp') {
@@ -888,7 +900,7 @@ const NightI = (() => {
         { h: '終わり方', p: lines.length ? lines : ['（特になし）'] },
         { h: 'LINEで触れられた話', p: [info.memories.length ? `${info.memories.length}つ（${[...new Set(info.memories.map(mm => NAME[mm.h]))].join('・')}）。会話で届いた返しが、翌朝の話題になる。` : 'なし。会話で届いた返しがないと、ふつうのお礼しか送れない。'] },
         { h: 'この夜の手', p: [st.picks.join(' ／ ') || '（何もしなかった）'] },
-        { h: '目立ちと気づき', p: [`目立ちは いちばん高いとき ${info.maxM}。${imp}`, `気づけた札 ${info.seen}枚。気づけなかったもの ${info.missedUnseen}つ（空気読み ${iYomi}）。`, info.storyHeard === 'cut' ? '最後の沈黙で待ったので あおいが話し出したが、途中で止めてしまった。' : info.storyHeard ? '最後の沈黙で待ったので、あおいの話が聞けた。' : '最後の沈黙で話題を出したので、あおいの番は来なかった。'] },],
+        { h: '目立ちと気づき', p: [`目立ちは いちばん高いとき ${info.maxM}。${imp}`, `気づけた札 ${info.seen}枚。気づけなかったもの ${info.missedUnseen}つ（空気読み ${iYomi}）。`, info.keitaN ? `取り逃した気配りのうち ${info.keitaN}つは、けいたが拾っていた。` : 'けいたに先を越された気配りは、なかった。', info.storyHeard === 'cut' ? '最後の沈黙で待ったので あおいが話し出したが、途中で止めてしまった。' : info.storyHeard ? '最後の沈黙で待ったので、あおいの話が聞けた。' : '最後の沈黙で話題を出したので、あおいの番は来なかった。'] },],
       again: () => info.mode.start(info.mode.back), back: info.mode.back });
   }
 

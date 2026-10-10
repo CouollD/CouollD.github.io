@@ -8,7 +8,7 @@
 <!--
   screens/night_i.html — 遊べる版（案I：流れる会話＋気づき）。灰色の画面のまま、合コン1回が最後まで通る（10/18 の節目）
   決定：GDD_v6 §18 ／ 進行と台詞：js/night-i/night-i.js ／ 画面の部品：js/night-i/stage.js
-  ?p=A|B|C で自分の設定を選んで、すぐ始まる（&tips=0 でヒントなし、&yomi=30|50|70）
+  ?p=A|B|C で自分の設定を選んで、すぐ始まる（&tips=0 でチュートリアルなし、&yomi=30|50|70）
   前の版（グノーシア型）は screens/night_v0.html に残してある
 -->
 <style>
@@ -176,6 +176,8 @@
   /* 場所：背景と左上の札（店の外・カラオケは夜の色にする） */
   .stage { transition: background .8s; }
   .stage[data-scene="out"], .stage[data-scene="station"] { background: linear-gradient(180deg, #1F2740 0%, #36405E 70%, #4A4F63 100%); }
+  .stage[data-scene="street"] { background: linear-gradient(180deg, #E9B98A 0%, #B98A8F 55%, #6E6A86 100%); }
+  .stage[data-scene="street"] .fig, .stage[data-scene="street"] .table, .stage[data-scene="street"] .board { opacity: 0; transition: none; }
   .stage[data-scene="karaoke"] { background: radial-gradient(circle at 18% 22%, rgba(255, 110, 190, .35), transparent 38%), radial-gradient(circle at 82% 28%, rgba(110, 170, 255, .35), transparent 40%), #2F2540; }
   .stage[data-place]:not([data-place=""])::after { content: attr(data-place); position: absolute; left: 10px; top: 10px; z-index: 5; font-size: 12px; padding: 2px 10px; border-radius: 10px; background: var(--card); color: var(--ink); border: 1.5px solid var(--ink3); pointer-events: none; }
   .lc-st { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink); font-size: 12px; font-weight: 700; padding: 2px 4px; }
@@ -262,7 +264,7 @@
   <h2>今日の自分</h2>
   <div class="mcard"><div class="go prof" id="profiles"></div></div>
   <div class="opts">
-    <label><input type="checkbox" id="opt-tips" checked> ヒント（けんたが教えてくれる）</label>
+    <label>チュートリアル <select id="opt-tips"><option value="1" selected>あり（けんたのLINE＋ヒント）</option><option value="0">なし（居酒屋から）</option></select></label>
     <label>空気読み <select id="opt-yomi"><option value="30">30</option><option value="50" selected>50</option><option value="70">70</option></select></label>
   </div>
   <p class="foot">会話は勝手に流れます。口を挟めるのは、下に吹き出しが出ている間だけ。黙っていても話は進みます。<br>自分の設定（バイト・サークル・住まい）で、使える手札と、話が合う子が変わります。</p>
@@ -310,7 +312,7 @@
   'use strict';
   const WHO = { A: 'あおいと話が合う', B: 'ゆなと話が合う', C: 'めいと話が合う' };
   const box = document.getElementById('profiles');
-  const go = p => NightI.start({ profile: p, tips: document.getElementById('opt-tips').checked, yomi: document.getElementById('opt-yomi').value });
+  const go = p => NightI.start({ profile: p, tips: document.getElementById('opt-tips').value === '1', yomi: document.getElementById('opt-yomi').value });
   Object.entries(NightI.PROFILES).forEach(([k, pr]) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'pbtn';
     b.innerHTML = `<b>設定${k}</b><span>${pr.name}</span><small>手札：${pr.cards.map(c => NightI.CARDS[c]).join('　')}　／　${WHO[k] || ''}</small>`;
@@ -319,7 +321,7 @@
   });
   document.getElementById('btn-back').addEventListener('click', () => Stage.home());
   const q = new URLSearchParams(location.search);
-  if (q.get('tips') === '0') document.getElementById('opt-tips').checked = false;
+  if (q.get('tips') === '0') document.getElementById('opt-tips').value = '0';
   if (['30', '50', '70'].includes(q.get('yomi'))) document.getElementById('opt-yomi').value = q.get('yomi');
   if (NightI.PROFILES[q.get('p')]) go(q.get('p'));
 })();
