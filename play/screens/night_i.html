@@ -290,7 +290,7 @@
   <div class="mcard"><div class="go prof" id="profiles"></div></div>
   <div class="opts">
     <label>チュートリアル <select id="opt-tips"><option value="1" selected>あり（けんたのLINE＋ヒント）</option><option value="0">なし（居酒屋から）</option></select></label>
-    <label>見た目 <select id="opt-theme"><option value="">灰色（今まで）</option><option value="A">案A 金曜の夜・ネオン</option><option value="B">案B 木の卓・提灯</option><option value="C">案C スマホ・放課後</option></select></label>
+    <label>見た目 <select id="opt-theme"><option value="">灰色（今まで）</option><option value="A">案A 金曜の夜・ネオン（基本）</option><option value="B">案B 木の卓・提灯</option><option value="C">案C スマホ・放課後</option></select></label>
     <label>空気読み <select id="opt-yomi"><option value="30">30</option><option value="50" selected>50</option><option value="70">70</option></select></label>
   </div>
   <p class="foot">会話は勝手に流れます。口を挟めるのは、下に吹き出しが出ている間だけ。黙っていても話は進みます。<br>自分の設定（バイト・サークル・住まい）で、使える話のネタと、話が合う子が変わります。</p>
@@ -342,8 +342,8 @@
   (() => {
     const link = document.getElementById('css-theme'), sel = document.getElementById('opt-theme');
     const apply = v => { if (/^[ABC]$/.test(v)) { link.href = `../design/theme_${v}.css`; link.disabled = false; } else { link.removeAttribute('href'); link.disabled = true; } document.documentElement.dataset.look = v || 'gray'; };
-    const q = new URLSearchParams(location.search).get('theme') || '';
-    if (/^[ABC]$/.test(q)) sel.value = q;
+    const q = new URLSearchParams(location.search).get('theme');   // 10/11：見た目は案A を基本に（ユーザーの決定）。?theme= で灰色
+    sel.value = q === null ? 'A' : (/^[ABC]$/.test(q) ? q : '');
     apply(sel.value); sel.addEventListener('change', () => apply(sel.value));
   })();
 </script>

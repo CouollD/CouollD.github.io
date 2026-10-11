@@ -43,7 +43,7 @@ const NightI = (() => {
     S.onTap(skip);
     const r = await ty.done; S.onTap(null);
     if (curTy === ty) curTy = null;
-    if (r !== 'cut') { holdBreak = false; const ms = hold == null ? 1000 : hold; const until = performance.now() + ms; while (!holdBreak && performance.now() < until) await S.sleep(Math.min(50, until - performance.now()), g); holdBreak = false; }
+    if (r !== 'cut') { holdBreak = false; const ms = hold == null ? 1000 : hold; const until = S.now() + ms; while (!holdBreak && S.now() < until) await S.sleep(Math.min(50, until - S.now()), g); holdBreak = false; }
     return r;
   }
 
@@ -477,17 +477,28 @@ const NightI = (() => {
     const spots = SPOT[key] || (sel ? [sel] : []);
     const unspot = spots.length ? spotlight(spots) : null;
     let gone = false;
-    const end = () => { if (gone) return; gone = true; t.remove(); if (unspot) unspot(); if (target) target.classList.remove('hl'); if (tipEnd === end) tipEnd = null; };
+    // 10/11：箱の外を押したとき。ボタン（返し・気づきの札・メニュー）や時間のバーなら、先に箱を閉じて会話を戻してから押した動きへ。
+    //   舞台を押しただけなら、行を飛ばさずに箱を押したのと同じ（説明 → 閉じる）。箱が「最初から」等で消されていたら外す
+    const onDoc = ev => {
+      if (!t.isConnected) { unhook(); return; }
+      if (t.contains(ev.target)) return;
+      if (ev.target.closest('button, .cue, .clock, .back, .tools, input, select, a')) { end(); return; }
+      if (ev.type === 'click') { ev.stopPropagation(); ev.preventDefault(); t.click(); }
+    };
+    const unhook = () => { document.removeEventListener('click', onDoc, true); document.removeEventListener('pointerdown', onDoc, true); };
+    document.addEventListener('click', onDoc, true); document.addEventListener('pointerdown', onDoc, true);
+    const end = () => { if (gone) return; gone = true; unhook(); t.remove(); if (unspot) unspot(); if (target) target.classList.remove('hl'); if (tipEnd === end) tipEnd = null; S.resume(); };
+    S.pause();   // 10/11：ヒントの箱が出ている間は会話を止める（ユーザーの依頼）。箱が消えたら続き
     tipEnd = end;
-    const meta = () => { t.className = 'tip meta'; t.innerHTML = `<span class="tlab">ヒント</span><span class="tbody">${S.esc(T.m)}</span><span class="tclose">タップで閉じる</span>`; S.later(end, 7000, g); };
+    const meta = () => { t.className = 'tip meta'; t.innerHTML = `<span class="tlab">ヒント</span><span class="tbody">${S.esc(T.m)}</span><span class="tclose">タップで閉じる</span>`; S.later(end, 7000, g, true); };
     const text = typeof T.f[1] === 'function' ? T.f[1](arg) : T.f[1];
     t.innerHTML = `<span class="tav">け</span><span class="tbody"><span class="tlab">${NAME[T.f[0]]}（${T.how || '小声'}）</span>${S.esc(text)}</span>`;
     let step = 0;
     t.addEventListener('click', ev => { ev.stopPropagation(); if (step === 0) { step = 1; meta(); } else end(); });
     document.body.appendChild(t);
     placeNear(t, document.querySelector(ANCHOR[key] || spots[0] || sel || '#win'));
-    if (T.lit) { const d = document.getElementById('dots'); d.classList.remove('lit'); void d.offsetWidth; d.classList.add('lit'); S.later(() => d.classList.remove('lit'), 2600, g); }
-    S.later(() => { if (step === 0) { step = 1; meta(); } }, 3600 + Math.max(0, text.length - 30) * 50, g);
+    if (T.lit) { const d = document.getElementById('dots'); d.classList.remove('lit'); void d.offsetWidth; d.classList.add('lit'); S.later(() => d.classList.remove('lit'), 2600, g, true); }
+    S.later(() => { if (step === 0) { step = 1; meta(); } }, 3600 + Math.max(0, text.length - 30) * 50, g, true);
   }
   // メタの説明で、いったん止める（グノーシアの「説明が出て止まる」に寄せた。試し）
   function metaStop(html, g) {
@@ -523,8 +534,7 @@ const NightI = (() => {
     ph.msg(1, '「じゃ、金曜19時な。駅前」'); await S.sleep(1400, g);
     ph.close();
     introReply = r;
-    // 10/10：説明の箱は LINE を閉じてから出す（重なると、どちらを閉じればいいか迷う）
-    await metaStop(`話のネタは、日常の生活で手に入る。バイト・サークル・住まいの経験が、合コンで「ネタ」のついた返しになる。<br>今回の話のネタ：${prof.cards.map(k => I_CARDS[k].replace(/^#/, '')).join('・')}`, g);
+    // 10/11：LINE のあとの「今回の話のネタ」の説明の箱はやめた（無機質。話のネタは画面の下と返しのボタンに出ている。ユーザーの指摘）
   }
   let iYomi = 50;                           // 空気読み（キャラクリの能力値のつもり。メニューで変えられる）
 
@@ -625,7 +635,7 @@ const NightI = (() => {
     // 10/4：「黙って聞く」ボタンはやめた（ボタンが増えて邪魔）。下の時間のバーを長押しすると、早く進む（黙って聞く・待つ）
     function bubble(opts, ms, title) {
       return new Promise(res => {
-        let done = false, hold = false, left = ms, last = performance.now();   // performance.now で数える（試験では速める）
+        let done = false, hold = false, left = ms, last = S.now();   // S.now で数える（ヒント中は止まる。試験では速める）
         const fin = v => { if (done) return; done = true; res(v); };
         const p = S.el('div', 'panelcmd');
         p.appendChild(S.el('div', 'top2', `<span>${title || '口を挟む？（黙っていれば話は進む）'}</span>`));
@@ -646,7 +656,7 @@ const NightI = (() => {
         const bar = clock.firstChild;
         const step = () => {
           if (done) return;
-          const now = performance.now();
+          const now = S.now();
           if (!S.live(g) || !p.isConnected) { done = true; return; }
           left -= (now - last) * (hold ? 6 : 1); last = now;
           bar.style.width = Math.max(0, left / ms * 100) + '%';

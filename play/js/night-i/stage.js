@@ -11,7 +11,7 @@ const Stage = (() => {
   // 方式を始めるたびに世代を進める。古い世代の待ちは、以後ずっと解決しない（止まる）
   function begin(title) {
     gen++; tapFn = null; alwaysTap = null; log = []; softFocus = false;
-    timers.forEach(t => clearTimeout(t)); timers.clear();
+    timers.forEach(t => clearTimeout(t)); timers.clear(); resetPause();
     $('home').hidden = true; $('play').hidden = false;
     $('sheet-end').hidden = true; $('sheet-log').hidden = true; $('dbg').hidden = true;
     $('ttl').textContent = title; $('dots').innerHTML = '';
@@ -25,10 +25,22 @@ const Stage = (() => {
   const live = g => g === gen;
   // 10/10：最初から・設定へ戻ったときに、LINE・ヒントの箱・気づきの札が残っていた
   function clearOverlays() { document.querySelectorAll('#stage .phone, .tip, #stage .metastop, #stage .veil, #stage .cue, .spot').forEach(x => x.remove()); document.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); }
-  function home() { gen++; tapFn = null; alwaysTap = null; timers.forEach(t => clearTimeout(t)); timers.clear(); clearOverlays();
+  function home() { gen++; tapFn = null; alwaysTap = null; timers.forEach(t => clearTimeout(t)); timers.clear(); resetPause(); clearOverlays();
     $('play').hidden = true; $('home').hidden = false; $('sheet-end').hidden = true; $('sheet-log').hidden = true; }
-  function later(fn, ms, g) { const t = setTimeout(() => { timers.delete(t); if (live(g)) fn(); }, ms); timers.add(t); return t; }
-  function cancel(t) { clearTimeout(t); timers.delete(t); }
+  // 10/11：ヒントの箱が出ている間は時間を止める（pause/resume）。止まっている間は later の待ちが進まない。
+  //   now() は止まっていた時間を除いた時計。performance.now の代わりに使う（吹き出しの残り時間・行のあとの間）
+  //   raw=true の待ちは止まらない（ヒントの箱そのものの表示時間など）
+  const pending = new Set(); let pauseN = 0, pausedAt = 0, pausedTotal = 0;
+  function now() { return performance.now() - pausedTotal - (pauseN ? performance.now() - pausedAt : 0); }
+  function arm(rec) { rec.h = setTimeout(() => { pending.delete(rec); timers.delete(rec.h); if (live(rec.g)) rec.fn(); }, Math.max(0, rec.due - now())); timers.add(rec.h); }
+  function later(fn, ms, g, raw) {
+    if (raw) { const t = setTimeout(() => { timers.delete(t); if (live(g)) fn(); }, ms); timers.add(t); return t; }
+    const rec = { fn, g, due: now() + ms, h: null }; pending.add(rec); if (!pauseN) arm(rec); return rec;
+  }
+  function cancel(t) { if (t && typeof t === 'object') { clearTimeout(t.h); timers.delete(t.h); pending.delete(t); } else { clearTimeout(t); timers.delete(t); } }
+  function pause() { if (pauseN++ === 0) { pausedAt = performance.now(); pending.forEach(r => { clearTimeout(r.h); timers.delete(r.h); r.h = null; }); } }
+  function resume() { if (pauseN === 0) return; if (--pauseN === 0) { pausedTotal += performance.now() - pausedAt; pending.forEach(arm); } }
+  function resetPause() { pending.clear(); if (pauseN) { pausedTotal += performance.now() - pausedAt; pauseN = 0; } }
   const sleep = (ms, g) => new Promise(res => later(res, ms, g));
 
   // タップ待ち
@@ -273,7 +285,7 @@ const Stage = (() => {
   document.addEventListener('click', closeMenu);
   $('sheet-log').addEventListener('click', e => { if (e.target === $('sheet-log')) $('sheet-log').hidden = true; });
 
-  return { NAME, HS, fire, begin, home, live, later, cancel, sleep, waitTap, waitTapOr, onTap, bar, say, setText, narr, thinking, expr, meter,
+  return { NAME, HS, fire, begin, home, live, later, cancel, sleep, now, pause, resume, waitTap, waitTapOr, onTap, bar, say, setText, narr, thinking, expr, meter,
            focus, soft, watchAll, scene, leave, tag, air, note, dots, dotsText, clear, hint, put, btn, row, el, menu, logRound, openLog, end, dbg, dbgOn, esc,
            get log() { return log; } };
 })();
