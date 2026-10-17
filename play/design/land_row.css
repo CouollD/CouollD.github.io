@@ -10,5 +10,5 @@
 .cmds .panelcmd .clock.hold { position: absolute !important; left: -20px; right: -20px; top: calc(-46vh + 96px); height: 5px !important; border-radius: 3px !important; margin: 0 !important; }
 .cmds .panelcmd .clock.hold > span { display: none !important; }
 /* LS と組むとき：伸びた帯の高さに合わせる */
-.app:has(#cmds .panelcmd) .cmds .panelcmd .clock.hold { height: calc((100vh - 46px) * 0.46) !important; }
+.app:has(#cmds .panelcmd) .cmds .panelcmd .clock.hold { height: calc((100dvh - 46px) * 0.46) !important; }
 .app:has(#cmds .panelcmd) .cmds .panelcmd .clock.hold > span { inset: 10px 16px auto auto !important; }

@@ -17,7 +17,7 @@
    3Dで確かめた事実：横長の画面（横の画角約104°）なら、友達が「身を乗り出す」（卓の方へ40cm）だけで、
    首をほぼ振らずに（8°）視界の端に顔が入る。女子3人も見えたまま */
 html, body { height: 100%; }
-.app { max-width: none !important; height: 100vh !important; display: flex !important; flex-direction: column; gap: 4px !important; padding: 6px 10px 8px !important; box-sizing: border-box; position: relative; }
+.app { max-width: none !important; height: 100dvh !important; display: flex !important; flex-direction: column; gap: 4px !important; padding: 6px 10px 8px !important; box-sizing: border-box; position: relative; }
 .top { height: 28px !important; }
 .stage { flex: 1 1 auto; min-height: 0 !important; background-size: 112% auto !important; background-position: 50% 30% !important; transition: background-position .5s ease !important; }
 .stage .table { display: none !important; }

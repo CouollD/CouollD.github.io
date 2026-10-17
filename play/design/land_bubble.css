@@ -9,4 +9,4 @@
 .cmds .panelcmd .clock.hold { width: 46% !important; height: 5px !important; margin: 4px 0 0 !important; }
 .cmds .panelcmd .clock.hold > span { display: none !important; }
 .cmds .panelcmd .cmd.pill { background: rgba(16,14,40,.95) !important; }
-@media (min-height: 600px) { .cmds:has(.panelcmd) { bottom: calc((100vh - 46px) * 0.22 + 14px); } }
+@media (min-height: 600px) { .cmds:has(.panelcmd) { bottom: calc((100dvh - 46px) * 0.22 + 14px); } }
