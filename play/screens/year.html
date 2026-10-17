@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>今夜のスタメン！ — 一年</title>
+<!--
+  screens/year.html — 一周（キャラクリ→4月…3月→エンディング）を1枚でつなぐ画面（GDD_v6 §13、10/15 作業2〜4。10/16 見た目を案Aに：design/year.css）
+  進行：js/year/year.js ／ キャラクリの値と7パラメータ：data/gamedata.js（ENV_LABELS・derivePlayerParams・CHARACTERS・HEROINES）
+  セーブ：localStorage 'stamen_year'（旧 goukon_save・goukon_config は読まない・消さない）
+  合コンの月（5・7・10・2月）：7月・2月は先に布陣（知っている友達から2人）。night_i.html?loop=1 へ移り、夜の結果（stamen_year.lastNight）を持って戻ってくる。反映は year.js の applyNight
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Dela+Gothic+One&display=swap">
+<link rel="stylesheet" href="../design/year.css">
+</head>
+<body>
+<main id="app"></main>
+<div class="rotate" aria-live="polite">スマホを横にしてください<br><small>このゲームは横画面で作っています</small></div>
+<script src="../data/gamedata.js"></script>
+<script src="../js/year/year.js"></script>
+</body>
+</html>

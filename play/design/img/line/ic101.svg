@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><!-- あおい：窓辺の文庫本としおり -->
+<rect width="96" height="96" fill="#E9E2D3"/><rect x="0" y="0" width="96" height="30" fill="#D7E4EC"/><rect x="46" y="0" width="3" height="30" fill="#C3B9A6"/>
+<g transform="rotate(-8 48 58)"><rect x="18" y="36" width="60" height="42" rx="2" fill="#FBF8F1"/><rect x="47" y="36" width="2" height="42" fill="#D9D1C2"/>
+<g stroke="#B9AF9E" stroke-width="1.4"><path d="M23 44h20M23 49h18M23 54h20M23 59h16M23 64h19M53 44h20M53 49h17M53 54h20M53 59h18M53 64h14"/></g>
+<path d="M60 34 v24 l4 -4 l4 4 v-24z" fill="#E27FA0"/></g></svg>

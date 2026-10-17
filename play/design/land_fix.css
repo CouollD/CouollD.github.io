@@ -1,0 +1,57 @@
+/* LFIX（10/12 夜 遊べる版の指摘を直す）
+   1 居酒屋の前（LINE・店の前）は人を出さない／背景は元のまま（夕暮れ）
+   2 卓を描く（女子の下の切れ目をそろえて隠す）
+   3 女子どうしの重なりを薄く（男子とは重なってよい）
+   4 気づきの札（トング・グラス空 など）を女子の頭の上へ */
+.stage:not([data-scene="izakaya"]) { background-size: cover !important; background-position: 50% 0 !important; }
+#stage:not([data-scene="izakaya"]):not([data-scene="out"]):not([data-scene="karaoke"]):not([data-scene="station"]) .fig,
+#stage:not([data-scene="izakaya"]):not([data-scene="out"]):not([data-scene="karaoke"]):not([data-scene="station"]) .fig * { opacity: 0 !important; visibility: hidden !important; }
+.stage:not([data-scene="izakaya"])::before, .stage:not([data-scene="izakaya"]) .desk, .stage:not([data-scene="izakaya"]) .table { display: none !important; }
+/* 10/12 夜：店の外・カラオケ・駅まで も人を出す（帰った子は消える）。卓の代わりに、下を暗くして切れ目を隠す */
+.stage[data-scene="out"] .desk, .stage[data-scene="karaoke"] .desk, .stage[data-scene="station"] .desk { display: block !important;
+  background: linear-gradient(180deg, rgba(10,14,39,0) 0%, rgba(10,14,39,.85) 30%, #0A0E27 60%) !important; box-shadow: none !important; border: 0 !important; }
+.stage[data-scene="out"] .desk::before, .stage[data-scene="out"] .desk::after, .stage[data-scene="karaoke"] .desk::before, .stage[data-scene="karaoke"] .desk::after,
+.stage[data-scene="station"] .desk::before, .stage[data-scene="station"] .desk::after { display: none !important; }
+#stage .fig.gone, #stage .fig.gone * { opacity: 0 !important; visibility: hidden !important; }
+.stage[data-scene="karaoke"] .board, .stage[data-scene=""] .board, .stage:not([data-scene]) .board { display: none !important; }
+:root { --gh: 80%; --gtop: 1%; --gw: 21%; }
+.stage .fig.h, body[data-seat] .stage .fig.h { top: var(--gtop) !important; height: var(--gh) !important; width: var(--gw) !important; }
+/* 卓：上の縁が舞台の 66%。女子より手前、友達より奥 */
+.stage .desk { position: absolute; left: 0; right: 0; top: 66%; bottom: 0; z-index: 5; pointer-events: none;
+  background: linear-gradient(180deg, #b07a4a 0, #9a6438 10%, #7d4f2c 22%, #4a2e1a 60%, #2b1a10 100%);
+  box-shadow: 0 -2px 0 rgba(255,220,170,.35) inset, 0 -6px 14px rgba(0,0,0,.35); }
+.stage .desk::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: rgba(255,226,180,.55); }
+/* 女子の並び（中心の間隔 23%） */
+#fig-101 { left: calc(27% - var(--gw) / 2) !important; }  #fig-102 { left: calc(50% - var(--gw) / 2) !important; }  #fig-103 { left: calc(73% - var(--gw) / 2) !important; }
+body[data-seat="L"] #fig-101 { left: calc(32% - var(--gw) / 2) !important; } body[data-seat="L"] #fig-102 { left: calc(55% - var(--gw) / 2) !important; } body[data-seat="L"] #fig-103 { left: calc(78% - var(--gw) / 2) !important; }
+body[data-seat="R"] #fig-101 { left: calc(22% - var(--gw) / 2) !important; } body[data-seat="R"] #fig-102 { left: calc(45% - var(--gw) / 2) !important; } body[data-seat="R"] #fig-103 { left: calc(68% - var(--gw) / 2) !important; }
+/* 卓の上の物（端の席）は卓の上に */
+body[data-seat] .stage .table { z-index: 6 !important; bottom: 34% !important; }
+/* 気づきの札：女子の頭の上 */
+.stage .cue { top: 2% !important; z-index: 11 !important; }
+.stage .cue[data-cue="tong"] { left: 27% !important; } .stage .cue[data-cue="glass102"] { left: 50% !important; } .stage .cue[data-cue="glass103"], .stage .cue[data-cue="chaser103"] { left: 73% !important; }
+body[data-seat="L"] .stage .cue[data-cue="tong"] { left: 32% !important; } body[data-seat="L"] .stage .cue[data-cue="glass102"] { left: 55% !important; } body[data-seat="L"] .stage .cue[data-cue="glass103"], body[data-seat="L"] .stage .cue[data-cue="chaser103"] { left: 78% !important; }
+body[data-seat="R"] .stage .cue[data-cue="tong"] { left: 22% !important; } body[data-seat="R"] .stage .cue[data-cue="glass102"] { left: 45% !important; } body[data-seat="R"] .stage .cue[data-cue="glass103"], body[data-seat="R"] .stage .cue[data-cue="chaser103"] { left: 68% !important; }
+.stage .cue.table { top: auto !important; bottom: calc(28% + 12px) !important; left: 50% !important; }
+
+/* 居酒屋の前（LINE）の返事は、帯の位置に横一列（吹き出しにしない） */
+.app:has(#stage:not([data-scene="izakaya"])) .cmds:has(.panelcmd) { left: 30px !important; right: 30px !important; bottom: 16px !important; top: auto !important; width: auto !important; translate: none !important; }
+.app:has(#stage:not([data-scene="izakaya"])) .cmds .panelcmd .cmd::after { display: none !important; }
+.app:has(#stage:not([data-scene="izakaya"])) .cmds .panelcmd .clock.hold { display: none !important; }
+/* 端の席：友達の陰に隠れた子が話すときは、身を乗り出して友達の前へ顔を出す（10/12 案③） */
+html:not(.hide1):not(.hide2) body[data-seat="L"] .stage:has(#fig-103.speak) #fig-103 { left: calc(72% - var(--gw) / 2) !important; z-index: 8 !important; transform: scale(1.04); }
+html:not(.hide1):not(.hide2) body[data-seat="R"] .stage:has(#fig-101.speak) #fig-101 { left: calc(28% - var(--gw) / 2) !important; z-index: 8 !important; transform: scale(1.04); }
+body[data-seat] .stage .fig.h { transition: left .35s ease, transform .35s ease !important; }
+/* 比較用（10/12）：?hide=1 声だけ（だれも動かない）／?hide=2 手前の友達がよける／既定は③身を乗り出す */
+html.hide2 body[data-seat="L"] .stage:has(#fig-103.speak) #fig-1 { left: 80% !important; } html.hide2 body[data-seat="L"] .stage:has(#fig-103.speak) #fig-4 { left: 92% !important; }
+html.hide2 body[data-seat="R"] .stage:has(#fig-101.speak) #fig-4 { left: -17% !important; } html.hide2 body[data-seat="R"] .stage:has(#fig-101.speak) #fig-1 { left: -24% !important; }
+/* 10/12：話のネタの札を配る（行きの道／チュートリアルなしは店で） */
+#stage .deal { position: absolute; left: 50%; top: 14%; translate: -50% 0; z-index: 40; text-align: center; pointer-events: none; transition: opacity .45s ease, transform .45s ease; }
+#stage .deal.away { opacity: 0; transform: translate(30%, 60%) scale(.6); }
+#stage .deal .dlab { font-weight: 700; font-size: 14px; color: var(--ink); text-shadow: 0 1px 6px rgba(0,0,0,.8); margin-bottom: 8px; letter-spacing: .06em; }
+#stage .deal .dcards { display: flex; gap: 10px; justify-content: center; }
+#stage .deal .dcard { min-width: 92px; padding: 18px 12px; border-radius: 10px; background: linear-gradient(160deg, #FFF6D6, #FFE27A); color: #2A2400; font-weight: 800; font-size: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.45), 0 0 0 2px rgba(255,255,255,.6) inset; opacity: 0; transform: translateY(18px) rotate(calc((var(--i) - 1) * 5deg));
+  animation: dealIn .4s ease forwards; animation-delay: calc(var(--i) * .22s); }
+#stage .deal .dsub { margin-top: 10px; font-size: 12px; color: var(--ink2); text-shadow: 0 1px 6px rgba(0,0,0,.8); }
+@keyframes dealIn { to { opacity: 1; transform: translateY(0) rotate(calc((var(--i) - 1) * 5deg)); } }

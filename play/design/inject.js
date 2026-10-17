@@ -17,12 +17,13 @@
     const sync = () => {
       const ex = fig.querySelector('[data-expr]');
       const e = EXPR[ex ? ex.textContent.trim() : ''] || 'normal';
-      const src = isHero ? `${IMG}h${id}_${e}.png` : `${IMG}m${id}.png`;
+      const SIT = new URL('img_sit/', IMG).href.replace('/img/img_sit/','/img_sit/'); const src = isHero ? `${SIT}h${id}_${'front'}.png` : `${SIT}m${id}_${(window.__turnAll || (fig.classList.contains('speak') && window.__turn)) ? 'turn' : 'side'}.png`;
       if (img.dataset.src !== src) { img.dataset.src = src; img.src = src; }
     };
     fig.insertBefore(img, fig.firstChild); sync();
     const ex = fig.querySelector('[data-expr]');
     if (ex) new MutationObserver(sync).observe(ex, { childList: true, characterData: true, subtree: true });
+    new MutationObserver(sync).observe(fig, { attributes: true, attributeFilter: ['class'] });
   });
 
   // 2. 話者（名札の色） -----------------------------------------------------

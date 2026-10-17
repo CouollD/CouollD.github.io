@@ -1,0 +1,14 @@
+/* LB1 帯の中に横並び：口を挟める間だけ帯が上へ伸び、セリフの下に選択肢が横一列に並ぶ。
+   2つなら左右の親指の下、3つなら左・中・右。残り時間は帯の上の縁を走る細い線 */
+.app:has(#cmds .panelcmd) .stage .win { height: 46% !important; }
+.app:has(#cmds .panelcmd) .stage .fig.h { translate: 0 -6%; }
+.cmds:has(.panelcmd) { left: 30px; right: 30px; bottom: 18px; width: auto; }
+.cmds .panelcmd { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; gap: 8px !important; }
+.cmds .panelcmd .top2 { display: none !important; }
+.cmds .panelcmd .row { gap: 14px !important; }
+.cmds .panelcmd .cmd.pill { min-height: 48px !important; font-size: 14.5px !important; }
+.cmds .panelcmd .clock.hold { position: absolute !important; left: -20px; right: -20px; top: calc(-46vh + 96px); height: 5px !important; border-radius: 3px !important; margin: 0 !important; }
+.cmds .panelcmd .clock.hold > span { display: none !important; }
+/* LS と組むとき：伸びた帯の高さに合わせる */
+.app:has(#cmds .panelcmd) .cmds .panelcmd .clock.hold { height: calc((100vh - 46px) * 0.46) !important; }
+.app:has(#cmds .panelcmd) .cmds .panelcmd .clock.hold > span { inset: 10px 16px auto auto !important; }

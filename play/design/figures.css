@@ -43,6 +43,12 @@
 .lc-row[data-sp="103"] .lc-av { background-image: url(img/av103.png); }
 .lc-row[data-sp="1"]   .lc-av { background-image: url(img/av1.png); }
 .lc-row[data-sp="4"]   .lc-av { background-image: url(img/av4.png); }
+/* LINE のアイコンは本人が設定していそうな写真ふうの絵（10/16 ユーザー「自画像じゃさすがに」）。顔の絵（av*.png）はログ・ヒントの箱・名札で使う */
+.phone .lc-row[data-sp="101"] .lc-av { background-image: url(img/line/ic101.svg); background-position: center; }
+.phone .lc-row[data-sp="102"] .lc-av { background-image: url(img/line/ic102.svg); background-position: center; }
+.phone .lc-row[data-sp="103"] .lc-av { background-image: url(img/line/ic103.svg); background-position: center; }
+.phone .lc-row[data-sp="1"] .lc-av { background-image: url(img/line/ic1.svg); background-position: center; }
+.phone .lc-row[data-sp="4"] .lc-av { background-image: url(img/line/ic4.svg); background-position: center; }
 .tip .tav { background: var(--hintInk) url(img/av1.png) center top / cover no-repeat; font-size: 0 !important; color: transparent; }   /* ヒントの箱のけんた */
 
 /* LINE の画面が出ている間は、後ろの窓・卓を隠して、場所の背景を見せる */

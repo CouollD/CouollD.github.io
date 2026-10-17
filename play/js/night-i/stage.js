@@ -24,7 +24,7 @@ const Stage = (() => {
   }
   const live = g => g === gen;
   // 10/10：最初から・設定へ戻ったときに、LINE・ヒントの箱・気づきの札が残っていた
-  function clearOverlays() { document.querySelectorAll('#stage .phone, .tip, #stage .metastop, #stage .veil, #stage .cue, .spot').forEach(x => x.remove()); document.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); }
+  function clearOverlays() { document.querySelectorAll('#stage .phone, .tip, #stage .metastop, #stage .veil, #stage .cue, #stage .deal, .spot').forEach(x => x.remove()); document.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); }
   function home() { gen++; tapFn = null; alwaysTap = null; timers.forEach(t => clearTimeout(t)); timers.clear(); resetPause(); clearOverlays();
     $('play').hidden = true; $('home').hidden = false; $('sheet-end').hidden = true; $('sheet-log').hidden = true; }
   // 10/11：ヒントの箱が出ている間は時間を止める（pause/resume）。止まっている間は later の待ちが進まない。
@@ -253,7 +253,13 @@ const Stage = (() => {
     const R = RESULT[o.result] || { title: o.title, lead: o.lead };
     let h = `<h2>${R.title}</h2><p>${o.lead || R.lead}</p>`;
     if (o.said) h += `<p>${o.said}</p>`;
-    if (o.hearts) {
+    // 10/12：試遊では数字を見せない（数字を上げる遊び方になるので）。?dev=1 のときだけ数字
+    const DEV = document.documentElement.classList.contains('dev');
+    const FEEL = d => d >= 20 ? 'かなり話が合った' : d >= 10 ? '話せた' : d >= 4 ? '少し話した' : 'あまり話せなかった';   // 始まりからどれだけ上がったか
+    if (o.hearts && !DEV) {
+      h += '<h3>今夜の手ごたえ</h3><div class="hearts feel">' + HS.map(id => `<div>${NAME[id]}<b>${FEEL(Math.round(o.hearts[id]) - Math.round(o.base ? o.base[id] : 25))}</b></div>`).join('') + '</div>';
+    }
+    if (o.hearts && DEV) {
       h += '<h3>好感度（本番では見せない）</h3><div class="hearts">' + HS.map(id => {
         const v = Math.round(o.hearts[id]), d = o.base ? v - Math.round(o.base[id]) : null;
         return `<div>${NAME[id]}<b>${v}</b>${d == null ? '' : (d >= 0 ? '+' : '') + d}</div>`;
@@ -270,8 +276,10 @@ const Stage = (() => {
       box.appendChild(document.createElement('br')); box.appendChild(a); $('end').insertBefore(box, $('end').querySelector('.row'));
     }
     const r = $('end').querySelector('.row');
+    // 10/15 GDD §13：一周の中（o.next あり）では、ボタンは「次へ」1つだけ。押すと一周の画面へ戻る
+    if (o.next) { r.style.gridTemplateColumns = '1fr'; r.appendChild(btn('次へ', null, 'go-next',() => { $('sheet-end').hidden = true; o.next(); })); $('sheet-end').hidden = false; clear(); return; }
     r.appendChild(btn('ログ', null, 'quiet', openLog));
-    r.appendChild(btn(o.backLabel || '設定へ', null, 'quiet', () => { $('sheet-end').hidden = true; if (o.back) o.back(); }));
+    r.appendChild(btn(o.backLabel || '最初の画面へ', null, 'quiet', () => { $('sheet-end').hidden = true; if (o.back) o.back(); }));
     r.appendChild(btn('もう一回', null, '', () => { $('sheet-end').hidden = true; o.again(); }));
     $('sheet-end').hidden = false; clear();
   }

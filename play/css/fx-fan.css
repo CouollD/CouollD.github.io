@@ -1,5 +1,0 @@
-/* css/fx-fan.css — 演出。ここだけを触る（並列作業の衝突を避けるため分離してある） */
-
-/* 扇のゆらぎ（手で持った感じ）は札ごとに固定値で、既存の
-   .fan-card { transition:transform .16s ease-out } にそのまま乗る。
-   CSSで足すものが無いので空のまま＝ JS（kotodama-panel.js の _jitter）で完結。 */

@@ -1,0 +1,147 @@
+/* design/year.css — 一周の画面（screens/year.html）の見た目。案A「金曜の夜・ネオン・ほろ酔い」に合わせる（10/16）
+   横長 844×390 で1画面に収める。左＝見出しと結果、右＝選ぶボタン。縦長（スマホ縦）は1列で下へ流す
+   進行（year.js）が出す #app[data-screen] と html[data-scene] を見て、背景と並びを変えるだけ。ゲームの中身には触らない
+   テストが見る部品（#app h2・h1・.res・.btns button の文字）は変えない。飾りは文字を持たない要素か画像で足す */
+
+:root {
+  color-scheme: dark;
+  --bg: #0A0E27; --ink: #F6EEE1; --ink2: #D2CCDF; --ink3: #A7AACB; --line: #3B4379;
+  --card: rgba(20, 27, 68, .86); --glass: rgba(9, 13, 40, .80);
+  --rose: #FF7FA6; --rose2: #FF5C93; --lemon: #FFE95C;
+  --glow-rose: 255, 92, 147; --glow-lemon: 255, 233, 92;
+  --font: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --neon: "Dela Gothic One", var(--font);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); }
+body { overflow: hidden; }
+button { font-family: inherit; color: inherit; }
+
+/* ── 背景：場所ごと。左を暗くして文字を読ませる ── */
+html { background: var(--bg) url(bg/A_street.svg) center 88% / cover no-repeat; }
+html[data-scene="izakaya"] { background-image: url(bg/A_izakaya.svg); background-position: 50% 0; }
+html[data-scene="out"]     { background-image: url(bg/A_out.svg); background-position: 50% 0; }
+html[data-scene="station"] { background-image: url(bg/A_station.svg); background-position: 50% 30%; }
+body { background: linear-gradient(90deg, rgba(10,14,39,.93) 0%, rgba(10,14,39,.80) 48%, rgba(10,14,39,.58) 100%); }
+html[data-scene="izakaya"] body { background: linear-gradient(90deg, rgba(10,14,39,.92) 0%, rgba(10,14,39,.70) 50%, rgba(10,14,39,.50) 100%); }
+
+/* ── 並び：左（見出し）・右（ボタン）。月の帯は上いっぱい ── */
+#app { height: 100%; max-width: 1100px; margin: 0 auto; display: grid; gap: 1.6vh 4vw;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "cal cal" "lead btns";
+  padding: max(10px, 3vh) max(18px, 4vw) max(10px, 3vh);
+  padding-left: max(18px, 4vw, env(safe-area-inset-left)); padding-right: max(18px, 4vw, env(safe-area-inset-right)); }
+#app > .cal { grid-area: cal; }
+#app > .lead { grid-area: lead; align-self: center; min-width: 0; min-height: 0; }
+#app > .btns { grid-area: btns; align-self: center; min-width: 0; }
+#app:not(:has(> .cal)) { grid-template-areas: "lead btns"; grid-template-rows: minmax(0, 1fr); }
+
+/* ── 1年の帯（4月〜3月）。過ぎた月・今の月・合コンの月 ── */
+.cal { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+.cal li { position: relative; height: clamp(18px, 5.4vh, 24px); border-radius: 6px; display: grid; place-items: center;
+  font-size: clamp(10px, 2.9vh, 12px); font-weight: 700; color: var(--ink3); background: rgba(20,27,68,.55); border: 1px solid rgba(255,255,255,.08); }
+.cal li.past { color: var(--ink2); background: rgba(59,67,121,.55); }
+.cal li.go::after { content: ""; position: absolute; top: 3px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--lemon); box-shadow: 0 0 6px rgba(var(--glow-lemon), .9); }
+.cal li.now { color: #2A0716; background: var(--rose); border-color: #FFC2D5; box-shadow: 0 0 12px rgba(var(--glow-rose), .7); }
+.cal li.now.go::after { background: #2A0716; box-shadow: none; }
+
+/* ── 見出し ── */
+h1, h2 { margin: 0; font-weight: 400; text-wrap: balance; }
+.lead h2 { font-family: var(--neon); font-size: clamp(30px, 11vh, 52px); line-height: 1.1; letter-spacing: .04em; color: #fff;
+  text-shadow: 0 0 10px rgba(var(--glow-rose), .9), 0 0 26px rgba(var(--glow-rose), .45); }
+.lead .tag { display: inline-block; margin: 1.2vh 8px 0 0; padding: 2px 12px; border-radius: 999px; font-size: clamp(11px, 3.2vh, 13px); font-weight: 700;
+  color: #FFC2D5; background: rgba(255,127,166,.14); border: 1px solid rgba(255,127,166,.4); }
+.lead .tag.night { color: #2A2400; background: var(--lemon); border-color: var(--lemon); box-shadow: 0 0 12px rgba(var(--glow-lemon), .5); }
+.lead p { margin: 1vh 0 0; line-height: 1.6; font-size: clamp(12px, 3.6vh, 15px); color: var(--ink); }
+.lead .sub { color: var(--ink2); }
+.lead .note { color: var(--ink3); font-size: clamp(11px, 3.2vh, 13px); }
+
+/* 結果の1行：レモンの細い線とガラス */
+.res { margin-top: 1.6vh !important; padding: 1.2vh 14px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.14); border-left: 3px solid var(--lemon); line-height: 1.6; font-size: clamp(12px, 3.6vh, 15px); }
+
+/* ── 顔（座った絵の上の方を丸く切る） ── */
+.faces { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 1.6vh; }
+.faces figure { margin: 0; display: grid; justify-items: center; gap: 2px; font-size: clamp(10px, 2.8vh, 12px); color: var(--ink2); }
+.face { display: block; width: clamp(34px, 12vh, 52px); aspect-ratio: 1; border-radius: 50%; border: 1.5px solid var(--line);
+  background: #fff1 var(--src) 66% 13% / 300% auto no-repeat; flex: none; }
+.face.h { background-position: 50% 20%; background-size: 260% auto; border-color: rgba(255,127,166,.55); }
+.faces .new .face { border-color: var(--lemon); box-shadow: 0 0 10px rgba(var(--glow-lemon), .45); }
+.faces.mini { gap: 0; margin-top: .6vh; }
+.faces.mini .face { width: clamp(26px, 9vh, 38px); margin-right: -6px; box-shadow: 0 0 0 2px var(--bg); }
+.faces .big .face { width: clamp(64px, 26vh, 104px); border-width: 2px; border-color: var(--rose); box-shadow: 0 0 18px rgba(var(--glow-rose), .45); }
+
+/* ── ボタン：ガラスの札。押せる所はローズのふち ── */
+.btns { display: flex; flex-direction: column; gap: 1.4vh; }
+.btns button { position: relative; display: flex; align-items: center; gap: 12px; min-height: clamp(40px, 13vh, 54px);
+  padding: 1vh 16px; text-align: left; font-size: clamp(14px, 4.2vh, 17px); font-weight: 700; cursor: pointer;
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; transition: border-color .15s, transform .1s, box-shadow .15s; }
+.btns button:hover:not(:disabled), .btns button:focus-visible { border-color: var(--rose); box-shadow: 0 0 14px rgba(var(--glow-rose), .3); outline: none; }
+.btns button:active:not(:disabled) { transform: scale(.985); }
+.btns button:disabled { cursor: default; color: var(--ink3); background: rgba(20,27,68,.5); border-color: rgba(59,67,121,.6); }
+/* 進む・決めるボタン（1つだけのとき）はローズで塗る */
+.btns.one button:not(:disabled), .btns.go button:not(:disabled) { justify-content: center; background: var(--rose2); border-color: #FFC2D5; color: #2A0716;
+  box-shadow: 0 0 16px rgba(var(--glow-rose), .45); }
+/* 日常の3択：左に小さな印（文字は持たない） */
+.btns button[data-k]::before { content: ""; width: 10px; height: 10px; border-radius: 3px; flex: none; transform: rotate(45deg); background: var(--ink3); }
+.btns button[data-k="part"]::before { background: #FFC2D5; }
+.btns button[data-k="circle"]::before { background: #9FE1C4; }
+.btns button[data-k="kenta"]::before { background: var(--lemon); }
+
+/* ── タイトル ── */
+#app[data-screen="title"] .lead h1 { white-space: nowrap; font-family: var(--neon); font-size: min(12vh, 5.2vw, 60px); line-height: 1.1; letter-spacing: .04em; color: #fff;
+  text-shadow: 0 0 10px rgba(var(--glow-rose), .9), 0 0 26px rgba(var(--glow-rose), .5); }
+#app[data-screen="title"] .btns { max-width: 340px; width: 100%; justify-self: end; }
+#app[data-screen="title"] .btns button:first-child:not(:disabled) { justify-content: center; background: var(--rose2); border-color: #FFC2D5; color: #2A0716; box-shadow: 0 0 16px rgba(var(--glow-rose), .45); }
+#app[data-screen="title"] .btns button { justify-content: center; }
+.trio { display: flex; gap: 0; margin-top: 3vh; }
+.trio .face { width: clamp(40px, 15vh, 64px); margin-right: -8px; border-color: rgba(255,127,166,.55); box-shadow: 0 0 0 2px var(--bg); }
+
+/* ── キャラクリ：問いを大きく、選ぶ札は右 ── */
+#app[data-screen="chara"] .lead p { font-family: var(--neon); font-size: clamp(22px, 8vh, 36px); color: #fff; margin-top: .6vh; }
+#app[data-screen="chara"] .lead h2 { font-family: var(--font); font-weight: 700; font-size: clamp(12px, 3.6vh, 14px); letter-spacing: .1em; text-shadow: none; color: var(--ink3); }
+.steps { display: flex; gap: 6px; margin-top: 2vh; }
+.steps i { width: 26px; height: 5px; border-radius: 3px; background: var(--line); }
+.steps i.on { background: var(--rose); box-shadow: 0 0 8px rgba(var(--glow-rose), .7); }
+
+/* ── 布陣：顔の札を並べる。選んだ2人はローズで光る ── */
+#app[data-screen="squad"] { grid-template-areas: "cal cal" "lead pick" "lead go"; grid-template-rows: auto minmax(0, 1fr) auto; }
+#app[data-screen="squad"] > .btns.pick { grid-area: pick; display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 1.2vh 8px; align-content: center; overflow: auto; }
+#app[data-screen="squad"] > .btns.go { grid-area: go; }
+#app[data-screen="squad"] .lead h2 { font-size: clamp(24px, 9vh, 40px); }
+.btns.pick button { min-height: clamp(36px, 11vh, 46px); padding: 4px 10px 4px 6px; gap: 8px; font-size: clamp(13px, 3.8vh, 15px); }
+/* キャラクリの誕生日（12か月）：4列のグリッド */
+.btns.months { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2vh 8px; }
+.btns.months button { justify-content: center; min-height: clamp(34px, 11vh, 46px); padding: 4px; }
+.btns.pick button .face { width: clamp(26px, 8.6vh, 36px); }
+.btns.pick button.on { font-size: clamp(11px, 3.2vh, 13px); line-height: 1.25; }
+.btns.pick button.on { border-color: var(--rose); background: rgba(142,59,79,.75); box-shadow: 0 0 14px rgba(var(--glow-rose), .5); }
+.btns.pick button .bond { position: absolute; left: 10px; right: 10px; bottom: 3px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.08); overflow: hidden; }
+.btns.pick button .bond i { display: block; height: 100%; width: var(--w); background: linear-gradient(90deg, var(--rose2), var(--lemon)); }
+.btns.pick button:disabled .face { filter: grayscale(.6) brightness(.7); }
+
+/* ── エンディング：左に名前、右に1年の記録 ── */
+#app[data-screen="ending"] { grid-template-areas: "lead rec" "lead btns"; grid-template-rows: minmax(0, 1fr) auto; }
+#app[data-screen="ending"] .lead h2 { font-family: var(--font); font-weight: 700; font-size: clamp(12px, 3.6vh, 14px); letter-spacing: .1em; text-shadow: none; color: var(--ink3); }
+#app[data-screen="ending"] .lead h1 { font-family: var(--neon); font-size: clamp(28px, 10vh, 46px); line-height: 1.15; margin-top: .6vh; color: #fff;
+  text-shadow: 0 0 10px rgba(var(--glow-lemon), .8), 0 0 26px rgba(var(--glow-rose), .45); }
+#app > .rec { grid-area: rec; min-height: 0; overflow: auto; padding: 1.2vh 14px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); }
+.rec h2 { font-size: clamp(12px, 3.4vh, 14px); font-weight: 700; color: var(--ink3); letter-spacing: .1em; margin-bottom: .6vh; }
+.rec ul { margin: 0; padding: 0; list-style: none; font-size: clamp(11px, 3.2vh, 13px); line-height: 1.6; color: var(--ink2); }
+.rec li { padding: .4vh 0; border-bottom: 1px dashed rgba(255,255,255,.08); }
+#app[data-screen="ending"] > .btns { align-self: end; }
+
+/* ── 縦長（スマホ縦・狭い画面）：1列で下へ流す ── */
+/* 縦長（スマホ縦）：ゲーム全体を横長でそろえる（10/17 ユーザー）。夜の画面（land.css）と同じく「横にしてください」を全面に出す */
+.rotate { display: none; }
+@media (orientation: portrait) and (max-width: 700px) {
+  .rotate { display: flex; position: fixed; inset: 0; z-index: 9999; background: var(--bg); color: var(--ink); align-items: center; justify-content: center;
+    flex-direction: column; text-align: center; font-size: 16px; line-height: 1.8; padding: 24px; }
+  .rotate small { color: var(--ink3); }
+}
+@media (prefers-reduced-motion: reduce) { .btns button { transition: none; } }
+
+/* タイトルの小さなリンク（合コン1回だけ）。ボタンにしない（テストの .btns に入れない） */
+#app[data-screen="title"] .note { margin-top: 2.4vh; }
+.quick { color: var(--ink3); text-decoration: underline; text-underline-offset: 3px; }
+.quick:hover, .quick:focus-visible { color: var(--rose); }

@@ -1,0 +1,61 @@
+/* land_home.css — 試遊用の最初の画面（10/12）。横長1画面に収める。開発用の切り替えは html.dev のときだけ */
+.app[hidden] { display: none !important; }
+html:not(.dev) .home .opts, html:not(.dev) .home .devlead { display: none; }
+.home { max-width: none; height: 100%; margin: 0; padding: 0; overflow: hidden; position: relative;
+  background: url(bg/A_street.svg) center 88% / cover no-repeat, var(--bg); }
+.home::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,14,39,.92) 0%, rgba(10,14,39,.78) 46%, rgba(10,14,39,.55) 100%); pointer-events: none; }
+.home .hwrap { position: relative; height: 100%; display: grid; grid-template-columns: 1fr 1.1fr; gap: 3vw; align-content: center;
+  padding: max(14px, 4vh) max(18px, 4vw) max(12px, 3vh); box-sizing: border-box; }
+.home .hl-col { display: flex; flex-direction: column; min-height: 0; align-self: stretch; }
+@media (min-width: 1000px) and (min-height: 600px) { .home .hl-col { align-self: center; } }
+.home h1 { font-family: "Dela Gothic One", var(--font); font-weight: 400; font-size: clamp(26px, 7.4vh, 44px); margin: 0 0 .3em; letter-spacing: .04em;
+  color: #fff; text-shadow: 0 0 10px rgba(var(--glow-rose, 255,92,147), .9), 0 0 26px rgba(var(--glow-rose, 255,92,147), .5); }
+.home .pitch { font-size: clamp(12px, 3.5vh, 15px); line-height: 1.6; color: var(--ink); margin: 0 0 .7em; }
+.home ul.how { list-style: none; margin: 0; padding: 0; font-size: clamp(11px, 3.1vh, 13.5px); line-height: 1.55; color: var(--ink2); }
+.home ul.how li { position: relative; padding-left: 1.1em; margin-bottom: .25em; }
+.home ul.how li::before { content: "・"; position: absolute; left: 0; color: var(--hint, #FFE95C); }
+.home ul.how b { color: var(--ink); font-weight: 700; }
+.home .meta { margin-top: auto; padding-top: .6em; font-size: clamp(10.5px, 2.9vh, 12px); color: var(--ink3); display: flex; flex-wrap: wrap; gap: .4em 1em; align-items: center; }
+.home .meta label { display: inline-flex; align-items: center; gap: .4em; cursor: pointer; color: var(--ink2); }
+.home .meta input { accent-color: var(--kw, #FF7FA6); width: 16px; height: 16px; margin: 0; }
+.home .pick-col { display: flex; flex-direction: column; min-height: 0; }
+.home h2 { font-size: clamp(12px, 3.4vh, 14.5px); margin: .2em 0 .6em; color: var(--ink); font-weight: 700; }
+.home h2 small { font-weight: 400; color: var(--ink3); margin-left: .6em; font-size: .85em; }
+.home .mcard { background: none; border: 0; padding: 0; margin: 0; min-height: 0; }
+.home .mcard .go.prof { display: flex; flex-direction: column; gap: 1.6vh; height: 100%; }
+.home .mcard .go button.pbtn { flex: 0 1 auto; min-height: 0; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; column-gap: 10px;
+  align-items: center; padding: 1.2vh 12px; border-radius: 12px; text-align: left; font-weight: 400;
+  background: rgba(20,27,68,.86); color: var(--ink); border: 1.5px solid var(--line); transition: border-color .15s, transform .1s; }
+.home .mcard .go button.pbtn:hover, .home .mcard .go button.pbtn:focus-visible { border-color: var(--kw, #FF7FA6); }
+.home .mcard .go button.pbtn:active { transform: scale(.985); }
+.home .pbtn .tags { grid-column: 1; display: flex; flex-wrap: nowrap; gap: 4px; overflow: hidden; }
+.home .pbtn .tags i { font-style: normal; font-size: clamp(10px, 2.8vh, 12px); font-weight: 700; padding: 1px 6px; white-space: nowrap; border-radius: 999px; background: rgba(255,127,166,.16); color: #FFC2D5; border: 1px solid rgba(255,127,166,.35); }
+.home .pbtn .fl { grid-column: 1; font-size: clamp(10.5px, 3vh, 12.5px); color: var(--ink2); line-height: 1.45; margin-top: .25em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.home .pbtn .mate { grid-column: 2; grid-row: 1 / 4; display: flex; flex-direction: column; align-items: center; gap: 0; line-height: 1.25; text-align: center; font-size: clamp(9.5px, 2.6vh, 11px); color: var(--ink3); white-space: nowrap; }
+.home .pbtn .mate small { font-size: inherit; opacity: 1; display: block; }
+.home .pbtn .mate b { color: var(--ink); font-weight: 700; margin-top: 2px; }
+.home .pbtn .mate img { width: clamp(30px, 11vh, 46px); height: clamp(30px, 11vh, 46px); border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 1.5px solid var(--line); background: #fff1; }
+.home .foot, .home .lead, .home > h2 { display: none; }
+html.dev .home { overflow: auto; }
+html.dev .home .hwrap { height: auto; min-height: 100%; }
+html.dev .home .opts { display: flex; grid-column: 1 / 3; margin: 0; font-size: 12px; }
+/* 縦持ち（回転の案内が出る）とPCの広い画面 */
+@media (min-width: 1000px) and (min-height: 600px) {
+  .home .hwrap { max-width: 1120px; margin: 0 auto; height: 100%; align-content: center; gap: 48px; }
+  .home h1 { font-size: 52px; }
+  .home .pitch { font-size: 17px; }
+  .home ul.how { font-size: 15px; }
+  .home .meta { margin-top: 1.6em; font-size: 13px; }
+  .home h2 { font-size: 17px; }
+  .home .mcard .go.prof { gap: 14px; }
+  .home .mcard .go button.pbtn { padding: 14px 16px; }
+  .home .pbtn .tags i { font-size: 13px; }
+  .home .pbtn .fl { font-size: 14px; }
+  .home .pbtn .mate { font-size: 12px; }
+  .home .pbtn .mate small { font-size: inherit; opacity: 1; display: block; }
+.home .pbtn .mate b { color: var(--ink); font-weight: 700; margin-top: 2px; }
+.home .pbtn .mate img { width: 58px; height: 58px; }
+}
+
+@media (orientation: portrait) and (max-width: 700px) { .rotate { flex-direction: column; } }
+.home .fsbtn { border: 1px solid var(--line); background: rgba(20,27,68,.86); color: var(--ink); border-radius: 999px; padding: 3px 12px; font-size: inherit; cursor: pointer; }

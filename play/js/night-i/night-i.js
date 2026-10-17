@@ -1,4 +1,4 @@
-// js/night-i/night-i.js — 本編の合コン1回（案I：流れる会話＋気づき）。10/4 決定（GDD_v6 §18）
+// js/night-i/night-i.js — 本編の合コン1回（案I：流れる会話＋気づき）。10/4 決定（GDD_v6 §19）
 // 元：prototypes/compare-2026-10 の案I（方式くらべ v13、10/4）。10/8 に本編へ移した。以後はこのファイルを直す
 // 行の書き方: [話し手, 相手, 「台詞」, 行為?, 表情?]。話し手 'n' は地の文、'P' は自分、'S' は店員
 // 画面の部品は js/night-i/stage.js（Stage）。数値は仮
@@ -34,7 +34,13 @@ const NightI = (() => {
   }
   let slowHint = null;   // 流れている間の下の一行（I は話のネタを出す）
   let curTy = null, holdBreak = false;   // いま流れている行と、その後の間（気づきの札で遮る・間を切るため。10/10）
+  // 10/12：二人の世界（話し込んだ2人だけが明るく、ほかは置いていかれる）。['two', [1, 101]] で入る、['two', null] で出る
+  function setTwo(ids) {
+    const st = document.getElementById('stage'); st.querySelectorAll('.fig.tw').forEach(f => f.classList.remove('tw'));
+    st.classList.toggle('two', !!ids); if (ids) ids.forEach(id => { const f = document.getElementById('fig-' + id); if (f) f.classList.add('tw'); });
+  }
   async function saySlow(x, g, hold) {
+    if (x[0] === 'two') { setTwo(x[1]); return 'done'; }
     if (x[0] === 'n') { S.narr(x[1]); await S.sleep(1500, g); return 'done'; }
     const ty = typeLine(x, g, 60);
     curTy = ty;
@@ -64,7 +70,9 @@ const NightI = (() => {
   // ════════════════════════════════════════════════════════
   NAME.S = '店員';
   const I_CARDS = { juku: '#塾バイト', jikka: '#実家', bushitsu: '#部室の主' };
-  const NETA = k => 'ネタ：' + I_CARDS[k].replace(/^#/, '');   // 10/10：画面では「手札」ではなく「話のネタ」と呼ぶ
+  const NETA = k => 'ネタ：' + I_CARDS[k].replace(/^#/, '');
+  // 10/12：話のネタは何度でも使える。同じネタを2回目以降話すと、けいたがツッコみ、効きが落ちる（1晩ごとに数える）
+  const NETA_SHORT = { juku: '塾', jikka: '実家', bushitsu: '部室', izakaya: '居酒屋', hitori: '一人暮らし', futsal: 'フットサル', panya: 'パン屋', ryo: '寮', keion: '軽音' };   // 10/10：画面では「手札」ではなく「話のネタ」と呼ぶ
   const I_CUE = {
     glass103: { at: 103, label: 'グラス空', need: 40, m: 4, fx: { 103: 6 }, lines: [['n', '（めいのグラスに気づいて、メニューを渡した）'], [103, 'P', '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], miss: [[4, 103, '「めいちゃん、グラス空いてる。次なに飲む」'], [103, 4, '「……あ。じゃあ、同じの」', null, { 103: 'はにかみ' }]], missFfx: { 103: { 4: 6 } }, missBy: 4 },
     tong: { noBridge: true, at: 101, label: 'トング', need: 35, m: 6, fx: { 101: 8, 102: 2, air: 4 }, lines: [['P', 'all', '「あ、各自で取ろ。好きなだけ」', '声をかけた'], [101, 'P', '「……あ、はい。じゃあ、自分の分だけ」', null, { 101: 'はにかみ' }]],
@@ -73,10 +81,10 @@ const NightI = (() => {
           { k: 'go', label: 'ありがと', say: '「あ、ありがと」', fx: { 101: 3 }, lines: [[101, 'P', '「……いえ」', null, { 101: 'はにかみ' }]] },
           { k: 'go', label: '任せちゃってごめん', say: '「ごめん、任せちゃった。ありがと」', fx: { 101: 5 }, lines: [[101, 'P', '「……いえ。慣れてるので」', null, { 101: 'はにかみ' }]] }],
           silence: { fx: { 101: -1 }, lines: [[102, 101, '「あおいちゃん、ありがと〜」']] } } }] },
-    glass102: { at: 102, label: '店員を探してる', need: 45, m: 4, fx: { 102: 6 }, lines: [['n', '（ゆなの代わりに、店員を呼んだ）'], [102, 'P', '「え、ありがと！ レモンサワー」', null, { 102: '笑' }]],
+    glass102: { at: 102, label: '店員を探してる', need: 45, m: 4, fx: { 102: 6 }, lines: [['n', '（ゆなの代わりに、店員を呼んだ）'], [102, 'P', '「え、ありがと！ ノンアルのレモンサワー」', null, { 102: '笑' }]],
       miss: [[102, 'all', '「すみませーん！ ……あれ、聞こえてない」'], [4, 'all', '「すみません、こっちお願いします」', '手を上げた'], [102, 4, '「え、通った。ありがと」', null, { 102: '笑' }]], missFfx: { 102: { 4: 6 } }, missBy: 4 },
     chaser103: { mem: { h: 103, send: '「昨日、ちゃんと帰れた？」', echo: '「……帰れた。水、ありがと」' }, at: 103, label: 'ほろ酔い', need: 60, m: 2, fx: { 103: 10 }, lines: [['n', '（何も言わずに、めいの分の水を頼んだ）'], [103, 'P', '「……あ。……ありがと」', null, { 103: 'はにかみ' }]], miss: [['n', '（めいは、少し眠そうにしていた）']] },
-    order: { noBridge: true, at: 'table', label: 'ラストオーダー', need: 0, m: 6, fx: { 101: 2, 102: 2, 103: 2, air: 6 }, quietSay: '「あ、みんな最後なに飲む？」', lines: [['P', 'all', '「すみません、お願いします。みんな最後なに飲む？」', 'まとめた'], [102, 'P', '「うちレモンサワー！」', null, { 102: '笑' }], [101, 'P', '「……ウーロン茶で」']], miss: [[1, 'all', '「あ、ラストオーダー！ 全員ウーロン茶で！」'], ['n', '（けんたが、雑にまとめた）']], missFfx: { 102: { 1: 3 } } },
+    order: { noBridge: true, at: 'table', label: 'ラストオーダー', need: 0, m: 6, fx: { 101: 2, 102: 2, 103: 2, air: 6 }, quietSay: '「あ、みんな最後なに飲む？」', lines: [['P', 'all', '「すみません、お願いします。みんな最後なに飲む？」', 'まとめた'], [102, 'P', '「うち、ノンアルのレモンサワー！」', null, { 102: '笑' }], [101, 'P', '「……ウーロン茶で」']], miss: [[1, 'all', '「あ、ラストオーダー！ 全員ウーロン茶で！」'], ['n', '（けんたが、雑にまとめた）']], missFfx: { 102: { 1: 3 } } },
   };
   // 話題（途切れたときに出せる）。openP＝自分が出す一言、openF＝待ったときに友達が出す一言。fans＝その話題で上がる子
   const I_TOPICS = {
@@ -101,7 +109,7 @@ const NightI = (() => {
         { k: 'card', card: 'jikka', label: '実家はうるさい', say: '「実家だと、逆に静かになんないよ」', fx: { 103: 3 }, lines: [[103, 'P', '「……うらやましい、かも」']] }],
         silence: { lines: [[102, 103, '「わかる、冷蔵庫な。夜中に急に鳴るやつ」'], [103, 102, '「……鳴る。びくってする」']] } } }] },
     circle: { label: 'サークルの話', fans: { 101: 3, 103: 3 }, openP: '「サークルって、みんな何やってる？」', openF: [4, 'all', '「サークルは？ 俺は写真」'], nodes: [
-      [102, 'all', '「うちテニス。朝練がほんと無理」'],
+      [102, 'all', '「うち、フットサルのマネージャー。朝練がほんと無理」'],
       { line: [103, 'all', '「天文。……[[部室]]に、ずっといる人がいる」'], b: { at: 'end', ms: 5000, opts: [
         { k: 'dig', label: 'ずっと？', need: 0, say: '「ずっといるって、住んでんの？」', ok: { fx: { 103: 5 }, lines: [[103, 'P', '「たぶん。椅子が、その人の形になってる」']] } },
         { k: 'card', card: 'bushitsu', label: 'うちにもいる', say: '「部室の主な。うちにもいる」', mem: { h: 103, send: '「うちの部室の主、今日もいた」', echo: '「……やっぱり。見に行きたい」' }, fx: { 103: 10 }, lines: [[103, 'P', '「いる。あれはもう、部屋の一部」', null, { 103: 'はにかみ' }], [103, 'P', '「……今度、見に行っていい。君のとこの」']] }],
@@ -118,7 +126,7 @@ const NightI = (() => {
       [101, 4, '「……止まってる一冊があって。ずっと同じところ」'],
       [103, 101, '「わかる。……わたしも、ずっと同じページ」'],
       { line: [102, 'all', '「……へー」', null, { 102: '退屈' }], b: { at: 'end', ms: 5000, opts: [
-        { k: 'furu', label: 'ゆなに：朝練の話', say: '「ゆなちゃん、テニスの朝練って何時から？」', mem: { h: 102, send: '「朝練、起きれた？」', echo: '「起きれなかった！ 目覚まし三つ止めた」' }, fx: { 102: 10, air: 4 }, lines: [[102, 'P', '「6時！ ありえなくない？」', null, { 102: '笑' }], [4, 102, '「それは無理だわ」']] },
+        { k: 'furu', label: 'ゆなに：朝練の話', say: '「ゆなちゃん、朝練の日って何時起き？」', mem: { h: 102, send: '「朝練、起きれた？」', echo: '「起きれた！ 目覚まし三つ止めたけど」' }, fx: { 102: 10, air: 4 }, lines: [[102, 'P', '「5時！ かご出すの、うちだから。ありえなくない？」', null, { 102: '笑' }], [4, 102, '「選手より早いのかよ」']] },
         { k: 'furu', label: 'ゆなに：漫画は？', say: '「ゆなちゃんは、漫画とか読む？」', fx: { 102: 5 }, lines: [[102, 'P', '「漫画なら読む！ 最近のやつ」', null, { 102: '笑' }]] }],
         silence: { fx: { 102: -3 }, ffx: { 102: { 1: 6 } }, lines: [['n', '（ゆなは、けんたと別の話をはじめていた）']] } } },
       { expr: { 102: '真顔' } }] },
@@ -151,7 +159,7 @@ const NightI = (() => {
       silence: { ffx: { 103: { 1: 4 } }, lines: [[103, 1, '「……こたつから、出ない」'], [1, 103, '「それ冬眠じゃん」', null, { 103: '笑' }]] } } }] };
   // 10/3 追加の話題（サブエージェント作）
   I_TOPICS.holiday = { label: '休みの日の話', fans: { 101: 2, 102: 1, 103: 2 }, openP: '「休みの日って、みんな何してる？ 俺はだいたい寝てる」', openF: [1, 'all', '「てかさ、みんな休みの日なにしてんの」'], nodes: [
-    [102, 'all', '「うち、昼まで寝る！ 起きたらもう夕方」', null, { 102: '笑' }],
+    [102, 'all', '「うち、日曜は夕方まで寝る！ 土曜が早すぎるから」', null, { 102: '笑' }],
     [1, 102, '「うわ、真逆だわ。俺は朝イチで走ってる」'],
     { line: [101, 'all', '「……電車に乗って、[[終点]]まで行きます。ひとりで」'], b: { at: 'end', ms: 5000, opts: [
       { k: 'dig', label: '終点で何する？', need: 25, say: '「終点で何するの？ 降りたりする？」', mem: { h: 101, send: '「今日の終点、どこだった？」', echo: '「……海の見える駅でした。誰もいなくて」' },
@@ -170,13 +178,13 @@ const NightI = (() => {
       silence: { lines: [[102, 103, '「うち、洗濯機の前で絶対寝る」'], [103, 102, '「……寝ても、洗濯機は、回ってる」']] } } },
     [102, 'all', '「うち、ひとりだと三十分で誰か呼んじゃう」']] };
 
-  I_TOPICS.osake = { label: 'お酒の強さの話', fans: { 101: 2, 102: 1, 103: 2 }, openP: '「お酒って、みんな強い方？ 弱い方？」', openF: [1, 'all', '「てかさ、みんな酒つよい？ 俺はザル」'], nodes: [
-    [102, 'all', '「うちは強い方！ あ、でも次の日が」', null, { 102: '笑' }],
-    { line: [1, 'all', '「俺はザルだけど。弱い人[[挙手]]な、正直に」'], b: { at: 'start', extra: 1400, opts: [
-      { k: 'dig', label: 'ほんとにザル？', need: 0, say: '「お前、ほんとにザル？ 証拠あんの」', mem: { h: 102, send: '「けんたのザル疑惑、結局どうなった？」', echo: '「記憶ないだけだった！ 証拠なし！」' },
-        ok: { fx: { 102: 5, air: 3 }, lines: [[1, 'P', '「証拠はない。覚えてないからな」'], [102, 1, '「それザルじゃなくて、記憶ないだけじゃん」', null, { 102: '笑' }]] },
-        ng: { fx: { 102: 1 }, lines: [[1, 'P', '「ザルだよ。見てりゃわかるだろ」']] } },
-      { k: 'go', label: '弱い側です', say: '「はい、俺は弱いほう。ウーロンでいいや」', mem: { h: 101, send: '「昨日のウーロン、正解だったよな」', echo: '「……はい。わたしも、ウーロンで助かりました」' }, fx: { 101: 4, 103: 2, air: 4 }, lines: [[1, 'P', '「おっけ、一人目な。飲めないやつは飲まなくていいぞ」'], [102, 'P', '「うちもウーロンの日あるよ、わりと」']] },
+  I_TOPICS.osake = { label: 'お酒の強さの話', fans: { 101: 2, 102: 1, 103: 2 }, openP: '「お酒って、みんな強い方？ 弱い方？」', openF: [1, 'all', '「てかさ、みんな酒つよい？ 俺はたぶんザル」'], nodes: [
+    [102, 'all', '「うちまだノンアル！ 9月解禁。でも絶対強い」', null, { 102: '笑' }],
+    { line: [1, 'all', '「俺もたぶんザル。弱い人[[挙手]]な、正直に」'], b: { at: 'start', extra: 1400, opts: [
+      { k: 'dig', label: 'ほんとにザル？', need: 0, say: '「お前、ほんとにザル？ 証拠あんの」', mem: { h: 102, send: '「けんたのザル疑惑、結局どうなった？」', echo: '「12月まで分かんない！ 証拠なし！」' },
+        ok: { fx: { 102: 5, air: 3 }, lines: [[1, 'P', '「証拠はない。12月まで飲めねえからな」'], [102, 1, '「それザルじゃなくて、ただの予言じゃん」', null, { 102: '笑' }]] },
+        ng: { fx: { 102: 1 }, lines: [[1, 'P', '「ザルだよ。親父がザルだからな」']] } },
+      { k: 'go', label: '弱い側です', say: '「はい、俺は弱いほう。ウーロンでいいや」', mem: { h: 101, send: '「昨日のウーロン、正解だったよな」', echo: '「……はい。わたしも、ウーロンで助かりました」' }, fx: { 101: 4, 103: 2, air: 4 }, lines: [[1, 'P', '「おっけ、一人目な。飲めないやつは飲まなくていいぞ」'], [102, 'P', '「うちらノンアル組もいるし、仲間じゃん」']] },
       { k: 'tease', label: '仕切り方が圧', say: '「ザルが仕切ると、弱い側は手あげづらいだろ」', mem: { h: 102, send: '「けんたの圧、昨日も健在だったな」', echo: '「健在！ 解散するまで圧だった！」' }, fx: { 102: 4, 101: 2, air: 4 }, lines: [[1, 'P', '「いや、圧かけてねえだろ」'], [102, 1, '「かけてる！ 声がもう圧！」', null, { 102: '笑' }]],
         cut: { fx: { 102: 6, 101: 3, air: 6 }, lines: [[1, 'P', '「まだ言い終わってねえよ！ ……圧あった？」'], [101, 'P', '「……ふふ。ちょっとだけ、ありました」', null, { 101: '笑' }]] } }],
       silence: { ffx: { 103: { 1: 4 } }, lines: [[1, 'all', '「いないな！ よし、全員つよい扱いで」'], [103, 1, '「……いるよ。手、あげてないだけ」', null, { 103: '真顔' }]] } } },
@@ -213,6 +221,7 @@ const NightI = (() => {
   const I_FLOW = [
     { heading: 'バイトの話' },
     ['n', '（乾杯。けんたが仕切りはじめた）'],
+    { prof: ['B'], free: [[102, 'P', '「あ、土曜の人！」', null, { 102: '笑' }], ['P', 102, '「……どうも」']] },   // B（フットサル）はゆなと同じサークル（10/16 審査の必須1）
     [1, 'all', '「じゃ、とりあえず一人ずつ。バイトとか」'],
     { free: [[4, 1, '「面接かよ」'], [1, 4, '「うっせ。じゃ、ゆなちゃんから」']] },   // 目立ちを減らさない行（10/10）
     { line: [102, 'all', '「うちカフェ。[[まかない]]目当てで入ったんだけどね」'], b: { at: 'end', ms: 5000, opts: [
@@ -302,8 +311,8 @@ const NightI = (() => {
 
     // ── circle：サークルの話 ──
     // ★B ゆな「朝練がほんと無理」（吹き出しの無い行）
-    { where: 'circle', match: '朝練がほんと無理', bubble: { at: 'end', ms: 5000 }, opt: { k: 'card', card: 'futsal', label: '朝六時のコート', say: '「俺のとこも。フットサル、コート取れるの朝六時」', mem: { h: 102, send: '「今朝、起きれた？ 俺はジャージで寝た」', echo: '「ジャージで寝た！？ うちも今度やる！」' }, fx: { 102: 9, 101: 1 },
-      lines: [[102, 'P', '「六時！？ 同じじゃん。何時に起きんの」'], ['P', 102, '「五時半。前の日から、ジャージで寝てる」'], [102, 'P', '「ジャージで寝る！ うち、メイクしたまま寝たことある」', null, { 102: '笑' }]] } },
+    { where: 'circle', match: '朝練がほんと無理', bubble: { at: 'end', ms: 5000 }, opt: { k: 'card', card: 'futsal', label: '朝六時のコート', say: '「土曜の六時、いつもかご出してくれてるよな。俺、毎回ぎりぎりに来るやつ」', mem: { h: 102, send: '「今朝もかご、ありがと。足首はもう平気」', echo: '「よかった！ でも今日のラスト、走りすぎ」' }, fx: { 102: 9, 101: 1 },
+      lines: [[102, 'P', '「知ってる！ いつも5時58分に来る人」', null, { 102: '笑' }], ['P', 102, '「……ちゃんと話すの、初めてだよな」'], [102, 'P', '「ね！ てか先週、足首ひねってたでしょ。もう平気？」']] } },
     // C あおい「文芸です。ほぼ部室にいて」
     { where: 'circle', match: '文芸です', opt: { k: 'card', card: 'keion', label: '軽音の部室は爆音', say: '「俺軽音。部室、爆音。静かな部室とか、あるんだ」', fx: { 101: 4, 103: 2 },
       lines: [[101, 'P', '「……爆音。……耳、だいじょうぶですか」', null, { 101: '困り顔' }], ['P', 101, '「半分聞こえてない。そっちの静けさ、分けてほしい」'], [101, 'P', '「……ふふ。ページをめくる音しか、しませんよ」', null, { 101: '笑' }]] } },
@@ -319,7 +328,7 @@ const NightI = (() => {
     // ── osake：お酒の強さの話 ──
     // B けんた「弱い人挙手な、正直に」
     { where: 'osake', match: '正直に', opt: { k: 'card', card: 'izakaya', label: '居酒屋で見てる', say: '「居酒屋で見てる。弱い人ほど、最初の一杯だけ強気」', fx: { 101: 4, 102: 2, air: 3 },
-      lines: [[1, 'P', '「お、プロの目か。で、俺はどっち」'], ['P', 1, '「最後に、お水ください、って言うほう」'], [101, 'P', '「……ふふ。言いそう、です」', null, { 101: '笑' }]] } },
+      lines: [[1, 'P', '「お、プロの目か。で、俺はどっち」'], ['P', 1, '「解禁の日の最後に、お水ください、って言うほう」'], [101, 'P', '「……ふふ。言いそう、です」', null, { 101: '笑' }]] } },
   ];
 
   // 新しい話題2つ（会話が途切れたときに出せる話題の候補に入る）
@@ -339,13 +348,13 @@ const NightI = (() => {
         lines: [[101, 'P', '「……四時、ですか。わたしより、一時間早い」'], ['P', 101, '「窯に火入れるの、俺だけ。ちょっと王様の気分」'], [101, 'P', '「……ふふ。わたしは、やかんの番です」', null, { 101: '笑' }]] }],
       silence: { lines: [] } } },
     // けんた → ゆな（友達が子に振る）
-    [1, 102, '「ゆなは？ 朝練とか、ちゃんと行ってんの」'],
+    [1, 102, '「ゆなちゃんは夜型な。土曜の朝、毎回目が死んでる。はい、どうぞ」'],
     // ゆな：夜型。B izakaya★ / C keion
-    { line: [102, 'all', '「サボってない！ 行ってない日があるだけ。うち、[[夜]]型だから」', null, { 102: '笑' }], b: { at: 'end', ms: 5000, opts: [
-      { k: 'dig', label: '何時に寝てる？', need: 10, say: '「何時に寝んの？ 朝はどうやって起きてんの」', mem: { h: 102, send: '「今朝、何時に起きた？ 正直に」', echo: '「正直に！？ ……十一時」' },
-        ok: { fx: { 102: 6 }, lines: [[102, 'P', '「寝るのは三時！ 起きるのは、気合い！」', null, { 102: '笑' }], [102, 'P', '「目覚まし三つかけて、全部止める」']] },
+    { line: [102, 'all', '「死んでない！ ちゃんと来てるし。うち、[[夜]]型なだけ」', null, { 102: '笑' }], b: { at: 'end', ms: 5000, opts: [
+      { k: 'dig', label: '何時に寝てる？', need: 10, say: '「何時に寝んの？ 朝はどうやって起きてんの」', mem: { h: 102, send: '「今朝、何時に起きた？ 正直に」', echo: '「正直に！？ ……寝てない。そのままコート行った」' },
+        ok: { fx: { 102: 6 }, lines: [[102, 'P', '「寝るのは三時！ 起きるのは、気合い！」', null, { 102: '笑' }], [102, 'P', '「目覚まし三つかけて、三つ目で起きる」']] },
         ng: { fx: { 102: 1 }, lines: [[102, 'P', '「えー、ふつうに寝てるよ」', null, { 102: '真顔' }]] } },
-      { k: 'tease', label: '朝練ゼロでは', say: '「朝練、今年何回行った？ 数えられる？」', fx: { 102: 4, air: 4 }, lines: [[102, 'P', '「数えられる！ ……片手で」', null, { 102: '笑' }], [1, 102, '「ゼロって言えよ」']] },
+      { k: 'tease', label: '朝練ゼロでは', say: '「朝練、今年何回行った？ 数えられる？」', fx: { 102: 4, air: 4 }, lines: [[102, 'P', '「数えられるし！ 毎週だし！」', null, { 102: '笑' }], [1, 102, '「ゆなちゃん、俺らより先にコートいるもんな」']] },
       { k: 'card', card: 'izakaya', label: '閉店が一時すぎ', say: '「居酒屋だと閉店が一時すぎ。朝とか、むしろ敵」', mem: { h: 102, send: '「昨日、閉店三時だった。いま死んでる」', echo: '「うちも死んでる！ 同じ側じゃん」' }, fx: { 102: 9, air: 2 },
         lines: [[102, 'P', '「わかる！ 一時とか、まだ夕方みたいなもんじゃん」', null, { 102: '笑' }], ['P', 102, '「帰ってシャワー浴びて、気づいたら四時」'], [102, 'P', '「それ！ 寝る気なくなるやつ！」', null, { 102: '笑' }]] },
       { k: 'card', card: 'keion', label: '夜スタジオ', say: '「軽音の夜スタジオ、窓なくて時間わかんなくなる」', fx: { 102: 3, 103: 2 },
@@ -374,8 +383,8 @@ const NightI = (() => {
       { k: 'dig', label: '推しは何枚？', need: 0, say: '「推しのスクショ、何枚あんの？ 数えたことある？」', mem: { h: 102, send: '「推しのスクショ、結局何枚だった？」', echo: '「数えた！ 三百二十！ ……引いた？」' },
         ok: { fx: { 102: 6, 101: 1 }, lines: [[102, 'P', '「うーん、三百はある。……あ、引いた？」', null, { 102: '笑' }], ['P', 102, '「引いてない。待って、スクロール長くない？」'], [102, 'P', '「ほら、ここから全部！」', null, { 102: '笑' }]] } },
       { k: 'tease', label: 'ごはんは冷める', say: '「ごはんの写真、撮ってる間に冷めない？」', fx: { 102: 4, air: 3 }, lines: [[102, 'P', '「冷める！ だから一口目は、いつも冷めてる！」', null, { 102: '笑' }], [4, 102, '「窓側の席なら、撮るの早く済むぞ」']] },
-      { k: 'card', card: 'futsal', label: '集合写真ばっか', say: '「集合写真ばっか。試合のあと、毎回誰か目つぶってる」', mem: { h: 102, send: '「今日の集合写真、また俺だけ目つぶってた」', echo: '「見せて！ 絶対笑う！」' }, fx: { 102: 8, 101: 2 },
-        lines: [[102, 'P', '「誰！？ 毎回？ 同じ人？」', null, { 102: '笑' }], ['P', 102, '「毎回俺。シャッター切る直前に、閉じる」'], [102, 'P', '「うちも集合写真、半目でしか写んない！」', null, { 102: '笑' }]] },
+      { k: 'card', card: 'futsal', label: '集合写真ばっか', say: '「集合写真ばっか。タイマーで走って入るから、毎回俺だけ目つぶってる」', mem: { h: 102, send: '「今日の集合写真、また俺だけ目つぶってた」', echo: '「グループに上げて！ 絶対笑う！」' }, fx: { 102: 8, 101: 2 },
+        lines: [[102, 'P', '「あ、撮ってるのいつもそっちじゃん！」', null, { 102: '笑' }], ['P', 102, '「撮る係、いつの間にか俺になってた」'], [102, 'P', '「うちも集合写真、半目でしか写んない！」', null, { 102: '笑' }]] },
       { k: 'card', card: 'panya', label: '焼き上がりの写真', say: '「俺パンの焼き上がり。焼き色で、今日の出来わかる」', fx: { 102: 3, 101: 2 },
         lines: [[102, 'P', '「えー、見せて！ ……あ、全部おんなじじゃん」', null, { 102: '笑' }], ['P', 102, '「毎回ちょっとだけ違う。左端だけ焦げてたり」'], [102, 'P', '「焦げた端っこ、いちばん食べたいやつ！」']] }],
       silence: { ffx: { 102: { 4: 6 } }, lines: [[4, 102, '「ごはん、冷める前に撮れてる？」'], [102, 4, '「冷めた！ いつも！」', null, { 102: '笑' }]] } } },
@@ -421,10 +430,10 @@ const NightI = (() => {
   // 10/4（夜）：教えるのは けんた（LINEで誘ってくれた親友ポジ）。「同じ話、二回すんなよ」のような説明くさい言い方はやめた
   //   f[1] は文字列か、関数（その場の状況から台詞を作る）。how＝名前の横に出す言い方
   const TIPS = {
-    bubble: { f: [1, a => `「ほら、吹き出し出たろ。思いついたこと言えばいいんだよ。そうだな、『${a || '聞いてみる'}』とかどうだ？」`], m: '吹き出しが出ている間だけ、口を挟める。黙っていても話は進む。下のバーを長押しすると、早く進む' },
+    bubble: { f: [1, a => `「ほら、吹き出し出たろ。思いついたこと言えばいいんだよ。そうだな、『${a || '聞いてみる'}』とかどうだ？」`], m: '吹き出しが出ている間だけ、口を挟める。黙っていても話は進む。会話の帯を長押しすると、早く進む' },
     speak: { f: [1, '「いいじゃん。喋ると、覚えてもらいやすくなるからな。ただ目立ちすぎると『おしゃべりなやつ』になるから気をつけろ。逆に黙りすぎもな」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損', lit: true },
     sign: { f: [1, '「顔見とけ。聞いてほしそうなときだけ聞けばいい」'], m: '表情を見る。はにかみ＝聞いてほしそう。真顔のときに聞くと、浅い返事で終わる' },
-    card: { f: [1, '「お、今じゃね？ お前のネタ」'], m: '「ネタ：」がついた返しは、話のネタ（自分の経験）。1つにつき1回しか使えない。どこで使うか選ぶ' },
+    card: { f: [1, '「お、今じゃね？ お前のネタ」'], m: '「ネタ：」がついた返しは、話のネタ（自分の経験）。何度でも使える。ただ、同じ話をくり返すと飽きられる' },
     gaugeHi: { k: 'gauge', f: [1, '「ちょっと飛ばしすぎ。いったん様子見な」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損', lit: true },
     gaugeLo: { k: 'gauge', f: [1, '「黙りすぎだろ。なんか言っとけ」'], m: '上の「目立ち」：喋ると上がり、黙ると下がる。高すぎても低すぎても損', lit: true },
     cue: { how: '小声・片目をつぶって', f: [1, a => a === 'glass102' ? '「店員さん探してる子がいたら、代わりに呼ぶ。これ、ポイント高いぞ」' : /^glass|chaser/.test(a || '') ? '「グラス空いてたら勧める。これが気遣いってやつよ」' : '「皿とか注文とか、気づいたら動けばいい。これが気遣いってやつよ」'], m: '何かに気づくと札が出る。出ている間にタップ。黙っている間ほど気づきやすい' },
@@ -536,11 +545,87 @@ const NightI = (() => {
     introReply = r;
     // 10/11：LINE のあとの「今回の話のネタ」の説明の箱はやめた（無機質。話のネタは画面の下と返しのボタンに出ている。ユーザーの指摘）
   }
+  // 10/12：行きの道（駅前）。設定ごとのひとりごと2行のあと、話のネタの札を配る
+  const ON_THE_WAY = {
+    A: ['（今日も小4に「先生、字きたない」と言われた。……これ、ネタになるか）', '（部室には寄れなかった。家には「夕飯いらない」とだけ送った）'],
+    B: ['（店長に頼んで、一時間早く上がらせてもらった。「合コン？ がんばれよ」と笑われた）', '（出る前に、部屋を少しだけ片づけた。誰も来ないのに）'],
+    C: ['（明日もパン屋の朝番。五時起き。……一次会で帰れるか）', '（寮の風呂は十分で済ませた。ギターは部室に置いてきた）'] };
+  async function onTheWay(pkey, prof, g) {
+    S.scene('street', '駅前'); S.clear();
+    for (const t of ON_THE_WAY[pkey] || []) { S.narr(t); await S.sleep(2300, g); }
+    S.narr('（……話のネタ、整理しとくか）'); await S.sleep(1000, g);   // 10/12 ユーザーの案：整理するひとりごとのあとに札が出る
+    await dealCards(prof, g);
+  }
+  async function dealCards(prof, g) {
+    const st = document.getElementById('stage'); st.querySelectorAll('.deal').forEach(e => e.remove());
+    const deck = document.documentElement.classList.contains('deck');   // 比較用：デッキから1枚ずつ引く（?deal=deck）
+    const box = S.el('div', 'deal', '<div class="dlab">今夜の話のネタ</div><div class="dcards">' + (deck ? '<div class="dpile"></div>' : '') + prof.cards.map((k, i) => `<div class="dcard" style="--i:${i}">${S.esc(I_CARDS[k].replace(/^#/, ''))}</div>`).join('') + '</div><div class="dsub">同じ話をくり返すと、飽きられる</div>');
+    st.appendChild(box);
+    await S.sleep(deck ? 4400 : 3000, g);
+    box.classList.add('away'); await S.sleep(500, g); box.remove();
+  }
+  // ── 10月の夜（第3回）：二人の世界を覚えるチュートリアル（10/12。台本は docs 外の草稿 → scenario-checker 承認）。101 の席に ゆうき が座る ──
+  const I_FLOW_OCT = [
+    { heading: 'バイトの話' },
+    ['n', '（乾杯。けんたが、ゆうきの方を手のひらで指した）'],
+    [1, 'all', '「こいつ、俺のバイト先の。ゆうき」'],
+    [101, 'all', '「どうもー。けんたの教育係です」', null, { 101: '笑' }],
+    { free: [[1, 101, '「係じゃねえよ。半年早いだけだろ」']] },
+    [102, 101, '「え、ゆうきさんが教えてたの？ うける」', null, { 102: '笑' }],
+    [101, 102, '「教えてへん。こいつが初日にジョッキ三つ割ったん、見てただけ」'],
+    { line: [1, 101, '「二つな。三つ目は店長」'], b: { at: 'end', ms: 5500, opts: [
+      { k: 'dig', label: '割った日？', need: 0, say: '「初日に三つって、何があったの」', ok: { fx: { 101: 4 }, lines: [[101, 'P', '「土曜の八時やで。いちばん混む時間にガシャーンや」', null, { 101: '笑' }], [1, 'P', '「その話、もう百回された」']] } },
+      { k: 'tease', label: '割りそう', say: '「けんた、割りそうな顔してるもんな」', fx: { 102: 3, air: 4 }, lines: [[1, 'P', '「どんな顔だよ」'], [102, 1, '「わかる！ 割りそう！」', null, { 102: '笑' }]] },
+      { k: 'card', card: 'izakaya', label: 'ジョッキは割る', say: '「俺も居酒屋。ジョッキ、一回は割るよな」', fx: { 101: 4 }, lines: [[101, 'P', '「割るよな！ アンタどこの店？」', null, { 101: '笑' }], [1, 101, '「でもうちのは割れ方がさ。な」'], [101, 1, '「あれは別格やったな」', null, { 101: '笑' }]] }],
+      silence: { lines: [[102, 101, '「ゆうきさん、そういうの全部覚えてるよね」'], [101, 102, '「全部ちゃうて。こいつのだけや」', null, { 101: '笑' }]] } } },
+    { heading: '二人で話し込む' },
+    ['two', [1, 101]],
+    [101, 1, '「そや、火曜の店長のあれ、何なん」'],
+    [1, 101, '「レモン？」'],
+    [101, 1, '「それ。けんたに『半月切り言うたやろ』て怒ってたやつ」'],
+    [1, 101, '「くし切りって言ってたって。絶対」'],
+    [101, 1, '「三番さんも見てたやろ、あれ」'],
+    [1, 101, '「三番さん、あの日ホッピー五杯な」'],
+    [102, 101, '「え、三番さんって誰？」'],
+    [101, 102, '「あ、ごめんごめん。お客さん。でな、けんた——」'],
+    ['n', '（ゆなが、ストローを噛んで黙った）'],
+    { line: [103, 'P', '「……あそこだけ、音が近い」', null, { 103: 'ぽやっと' }], b: { at: 'end', ms: 6000, opts: [
+      { k: 'furu', label: 'ゆなちゃんは？', say: '「ゆなちゃんのカフェにも、変な店長いる？」', fx: { 102: 5, air: 3 }, lines: [[102, 'P', '「いる！ パスタしか作れないの！」', null, { 102: '笑' }], [103, 102, '「……パスタだけで、お店、回るんだ」']] },
+      { k: 'dig', label: '音が近い？', need: 0, say: '「音が近いって、どういうこと」', ok: { fx: { 103: 5 }, lines: [[103, 'P', '「……二人で、ひとつの部屋にいるみたい」', null, { 103: 'はにかみ' }], [103, 'P', '「ドア、閉まってる」']] } },
+      { k: 'tease', label: '内輪すぎ', say: '「おーい、店長の話、こっち置いてけぼり」', fx: { air: 3 }, lines: [['two', null], [1, 'P', '「わり、つい」'], [101, 'all', '「ごめんな、内輪で」', null, { 101: '笑' }], ['n', '（少しして、二人はまた三番さんの話をしていた）'], ['two', [1, 101]]] }],
+      silence: { fx: { air: -6 }, lines: [[102, 'all', '「てかさ！ こっちもなんか話そ！ はい、めい！」', null, { 102: '笑' }], [103, 102, '「……え。わたし、店長、いないよ」', null, { 103: '困り顔' }]] } } },
+    { heading: 'けいたの小声' },
+    { line: [4, 'P', '「……あれ、二人の世界ってやつ」', '小声'], b: { at: 'end', ms: 6000, opts: [
+      { k: 'dig', label: '割って入る？', need: 0, say: '「俺が割って入ったら？」', ok: { fx: {}, lines: [[4, 'P', '「戻ってくるよ。二人とも」'], [4, 'P', '「……すぐまた閉じるけどな」']] } },
+      { k: 'dig', label: '放っとく？', need: 0, say: '「放っといたら？」', ok: { fx: {}, lines: [[4, 'P', '「こっちが静かになる。それだけ」'], [4, 'P', '「……ゆなちゃんが、また一人で頑張る」']] } }],
+      silence: { lines: [['n', '（けいたは、二人の方を見たままグラスを空けた）']] } } },
+    [4, 'P', '「……けんた、ああなると長いぞ」'],
+    { heading: 'けんたが抜ける' },
+    ['n', '（ゆうきのグラスが空いた。ゆうきは、自分のじゃなくて、ゆなのグラスを見ている）'],
+    [101, 'all', '「次なに飲む？ うちが頼んだるわ」'],
+    [1, 101, '「いいいい、幹事俺だから」'],
+    ['two', null],
+    { line: [1, 'all', '「わり、俺ばっか喋ってた。ゆなちゃん、めいちゃん、次なに？」', null, { 1: '笑' }], b: { at: 'end', ms: 9000, fork: true, opts: [
+      { k: 'go', label: '幹事、代わる', sub: 'けんたの後押し', say: '「けんた、注文は俺やる。座ってろ」', pickAs: '幹事を代わった（けんたの後押し）', fx: { 102: 3, 103: 3 }, lines: [
+        [1, 'P', '「え、いいって。俺幹事——」'], ['P', 1, '「店長の話、途中だろ」'], [1, 'P', '「……わり。サンキュ」'],
+        ['n', '（けんたが座りなおした。体が、ゆうきの方に戻る）'], ['two', [1, 101]],
+        ['P', 102, '「ゆなちゃん、レモンサワーだっけ。めいちゃんは？」'], [102, 'P', '「え、覚えてんの！ 気きくじゃん」', null, { 102: '笑' }], [103, 'P', '「……同じの。あと、お水」', null, { 103: 'はにかみ' }],
+        ['n', '（向こうの席から、声が少しだけ聞こえる）'],
+        [101, 1, '「店長な、うちには何も言わへんねん。楽でええわ」', null, { 101: '笑' }], [1, 101, '「お前が怒られてんの、見たことねえもんな」', null, { 1: '笑' }],
+        ['n', '（ゆうきは笑ったまま、けんたのグラスにノンアルの瓶を傾けた）'],
+        [102, 'P', '「てか、ゆうきさんのグラス、さっきから空っぽじゃない？」']] },
+      { k: 'go', label: 'ゆうきと話す', sub: '自分の狙い', say: '「ゆうきさん、隣いい？ 居酒屋の話、もうちょい聞きたい」', pickAs: 'ゆうきと話した（自分の狙いを取った）', fx: { 101: 5 }, lines: [
+        [101, 'P', '「ん？ ええよ、座り座り」', null, { 101: '笑' }], ['n', '（けんたが、こっちを一度だけ見た）'], [1, 'P', '「お、いいじゃん。行け行け」', null, { 1: '笑' }],
+        [101, 'P', '「うちの話はええねん。アンタの話しよ」', null, { 101: '笑' }],
+        ['n', '（ゆうきは話しながら、一度だけ、メニューを持つけんたの手を見た）'], [4, 'P', '「……ま、お前の夜だしな」', '小声']] }],
+      silence: { lines: [['n', '（けんたが注文をまとめはじめた。ゆうきは、ゆなのおしぼりに手を伸ばした）'], [101, 102, '「それ濡れてるやろ。替えたるわ」'], ['n', '（二人とも、もう相手の方を見ていない）'], [4, 'P', '「……あれ、終わったな」']] } } },
+  ];
   let iYomi = 50;                           // 空気読み（キャラクリの能力値のつもり。メニューで変えられる）
 
   async function runI(mode, g) {
-    const pkey = mode.profile || 'A', prof = I_PROFILES[pkey];
-    const st = newState(), hand = new Set(prof.cards), live = {}, opened = new Set();
+    const pkey = mode.profile || 'A', prof = mode.cards ? Object.assign({}, I_PROFILES[pkey], { cards: mode.cards }) : I_PROFILES[pkey];
+    S.NAME[101] = mode.oct ? 'ゆうき' : 'あおい'; document.body.classList.toggle('oct', !!mode.oct); setTwo(null);   // 10/12：10月の夜は 101 の席に ゆうき
+    const st = newState(), hand = new Set(prof.cards), usedN = {}, live = {}, opened = new Set();
     const f = { 101: { 1: 30, 4: 30 }, 102: { 1: 30, 4: 30 }, 103: { 1: 30, 4: 30 } };   // 友達それぞれへの好感（帰り道で使う）
     const tipped = new Set();
     const tip = (k, arg) => { const T = TIPS[k], key = T.k || k; if (!iTips || tipped.has(key)) return false; tipped.add(key); showTip(T, g, arg, T.k || k); return true; };
@@ -548,12 +633,12 @@ const NightI = (() => {
     const pending = [];
     S.soft(true); S.focus(null); S.scene(iTips ? 'street' : 'izakaya', iTips ? '' : '居酒屋');
     S.menu([{ label: () => `ヒント（チュートリアル）：${iTips ? 'オン' : 'オフ'}`, fn: () => { iTips = !iTips; } },
-            { label: () => `空気読み：${iYomi}（変えて最初から）`, fn: () => { iYomi = iYomi === 50 ? 70 : iYomi === 70 ? 30 : 50; mode.start(mode.back); } },
-            { label: '最初から', fn: () => mode.start(mode.back) }]);
+            { yomi: 1, label: () => `空気読み：${iYomi}（変えて最初から）`, fn: () => { iYomi = iYomi === 50 ? 70 : iYomi === 70 ? 30 : 50; mode.start(mode.back); } },
+            { label: '最初から', fn: () => mode.start(mode.back) }].filter(it => !(mode.onDone && it.yomi)));   // 一周の中では空気読みはキャラクリの値のまま（変える項目を出さない）
     const drawM = () => { maxM = Math.max(maxM, m); if (m >= 55) tip('gaugeHi'); else if (m <= 8) tip('gaugeLo'); document.getElementById('dots').innerHTML = `<span>目立ち</span><span class="mbar"><i style="width:${m}%"></i></span>`; };
     drawM();
     const notice = () => iYomi + (50 - m) * 0.5;
-    const handText = () => { const nm = k => I_CARDS[k].replace(/^#/, ''); const used = prof.cards.filter(k => !hand.has(k)); return '話のネタ：' + ([...hand].map(nm).join('・') || 'なし') + (used.length ? `（使った：${used.map(nm).join('・')}）` : ''); };
+    const handText = () => { const nm = k => I_CARDS[k].replace(/^#/, ''); const used = prof.cards.filter(k => usedN[k]); return '話のネタ：' + prof.cards.map(nm).join('・') + (used.length ? `（話した：${used.map(k => nm(k) + (usedN[k] > 1 ? '×' + usedN[k] : '')).join('・')}）` : ''); };
     slowHint = () => `（会話は勝手に進む）　${handText()}`;
     const idle = () => S.hint(slowHint());
     const ffx = d => Object.entries(d || {}).forEach(([h, o]) => Object.entries(o).forEach(([k, v]) => { f[h][k] += v; }));
@@ -602,7 +687,7 @@ const NightI = (() => {
           fx(st, { 101: -6, air: -6 }); pick(`${c.label}（あおいの話の途中）`, 'cut');
           await saySlow(['P', 'all', c.quietSay || '「あ、ちょっといい？」', '割って入った'], g, 500);
           await saySlow([101, 'P', '「……あ、すみません。大丈夫です」', null, { 101: '困り顔' }], g);
-          if (id === 'order') { fx(st, { 102: 2, air: 3 }); await saySlow([102, 'P', '「うちレモンサワー！」'], g, 600); }
+          if (id === 'order') { fx(st, { 102: 2, air: 3 }); await saySlow([102, 'P', '「うち、ノンアルのレモンサワー！」'], g, 600); }
           await saySlow(['n', '（あおいの話は、そこで終わった）'], g);
           continue;
         }
@@ -713,19 +798,22 @@ const NightI = (() => {
       let res;
       if (v.k === 'dig') res = cut && v.cut ? v.cut : (st.h[sp] == null || st.h[sp] >= v.need) ? v.ok : (v.ng || v.ok);
       else res = cut && v.cut ? v.cut : v;
-      if (v.k === 'card') hand.delete(v.card);
+      const rep = v.k === 'card' ? (usedN[v.card] = (usedN[v.card] || 0) + 1) : 0;   // 何回目のネタか
       if (v.mem && (v.k !== 'dig' || res === v.ok)) memories.push(v.mem);
       const high = m >= 70;
       m = Math.min(100, m + 15 + (cut && isHer ? 8 : 0)); drawM(); tip('speak');
-      pick(v.label + (v.k === 'card' ? `（${NETA(v.card)}）` : '') + (cut ? '（遮った）' : ''), v.k);
+      pick((v.pickAs || v.label) + (v.k === 'card' ? `（${NETA(v.card)}）` : '') + (cut ? '（遮った）' : ''), v.k);
       const to = v.k === 'furu' ? 102 : sp;
       await saySlow(['P', to, v.say, cut ? '割り込んだ' : KIND[v.k] || '自分の話'], g, 600);
       let eff = res.fx;
       if (cut && isHer && !v.cut) { eff = Object.assign({}, eff); eff[sp] = (eff[sp] || 0) - 3; await saySlow([sp, 'P', '「……あ、はい」', null, { [sp]: '困り顔' }], g, 600); }
       if (high) eff = half(eff);
+      if (rep === 2) eff = half(eff);   // 同じネタの2回目：効きが半分
+      if (rep >= 3) eff = Object.fromEntries(Object.entries(eff || {}).map(([k, x]) => [k, k === 'air' ? -3 : Math.min(0, x)]));   // 3回目以降：女子には効かず、場が少し冷える
       fx(st, eff);
       if (v.k === 'furu') S.expr(102, '笑');
       for (const x of res.lines) await saySlow(x, g);
+      if (rep >= 2) await saySlow([4, 'P', rep === 2 ? `「また${NETA_SHORT[v.card]}の話？」` : `「${NETA_SHORT[v.card]}の話、何回目？」`], g, 600);
       await afterSpeak();
       await flush(); await tickCues();
     }
@@ -768,7 +856,7 @@ const NightI = (() => {
       for (const node of nodes) {
         if (Array.isArray(node)) { await line(node); continue; }
         if (node.heading) { S.logRound(node.heading); continue; }
-        if (node.free) { for (const x of node.free) { idle(); await saySlow(x, g); if (typeof x[0] === 'number') lastSp = x[0]; } continue; }   // 友達どうしの掛け合い：目立ちは動かさない
+        if (node.free) { if (node.prof && !node.prof.includes(pkey)) continue; for (const x of node.free) { idle(); await saySlow(x, g); if (typeof x[0] === 'number') lastSp = x[0]; } continue; }   // 友達どうしの掛け合い：目立ちは動かさない
         if (node.block) { lowFired = false; continue; }
         if (node.ffx) { ffx(node.ffx); continue; }
         if (node.expr && !node.cue) { Object.entries(node.expr).forEach(([h, x]) => S.expr(+h, x)); continue; }
@@ -795,12 +883,47 @@ const NightI = (() => {
     }
 
     introReply = null;
-    if (iTips) await introLine(prof, g);
+    if (mode.month === 7 || mode.month === 2) { S.narr('（仮：この夜の台本はまだ無い）'); await S.waitTap(g, 'タップで続き'); }   // §13 ⑤：7月・2月は5月の台本をもう一度
+    if (mode.oct) {   // 10/12：10月の夜（二人の世界を覚えるチュートリアル）。お試しなので、分かれ道のあとは短いまとめで終わる
+      S.scene('izakaya', '居酒屋'); await dealCards(prof, g);
+      S.narr('（10月。今年3回目の合コン。駅前の居酒屋）'); await S.waitTap(g, 'タップで始める');
+      await play2(I_FLOW_OCT); setTwo(null); slowHint = null;
+      const last = st.picks.filter(x => /幹事を代わった|ゆうきと話した/.test(x)).pop();
+      const choice = last ? (/幹事/.test(last) ? 'けんたの後押しをした。けんたとゆうきは、そのまま二人で話していた。' : 'ゆうきと話した。けんたは笑って引いた。') : 'どちらも選ばなかった。二人の世界は、そのまま閉じた。';
+      // §13 ⑤：10月の夜の続きはまだ無い。個別の連絡先は5月の夜と同じ線（好感度 38 以上）で出口にだけ付ける
+      const res = nightResult(mode, st, { contact: HS.filter(h => st.h[h] >= CONTACT_LINE), fork: last ? (/幹事/.test(last) ? 'kanji' : 'yuuki') : null });
+      S.end({ title: '10月の夜（お試し）', lead: choice, hearts: st.h, base: { 101: BASE, 102: BASE, 103: BASE },
+        sections: [{ h: 'この夜で覚えること', p: ['二人の世界：話し込んだ2人だけが明るくなり、ほかの人は会話に入れない。', '割って入ると一度は戻るが、すぐまた閉じる。放っておくと、ゆなが一人で場を回す。'] },
+          { h: 'この夜の手', p: [st.picks.join(' ／ ') || '（何もしなかった）'] }],
+        again: () => mode.start(mode.back), back: mode.back, next: mode.onDone ? () => mode.onDone(res) : null });
+      return;
+    }
+    // 10/12：「今日の自分」は、行きの道のひとりごと＋話のネタの札を配る（B+C 案）。（今日の自分：…）の一行はやめた
+    if (iTips) { await introLine(prof, g); await onTheWay(pkey, prof, g); }
     S.scene('izakaya', '居酒屋');
-    S.narr(prof.intro); await S.sleep(1800, g);
+    if (!iTips) await dealCards(prof, g);
     S.narr('（金曜、19時。駅前の居酒屋）'); await S.waitTap(g, 'タップで始める');
     // 10/10：会場に着いたら、けんたが迎える（LINE からのつなぎ）
     await saySlow([1, 'P', { go: '「お、来たな。こっちこっち」', maybe: '「来たじゃん。とりあえず一次会な」', shy: '「お、来た来た。顔かたいって」' }[introReply] || '「お、来たな。こっち空いてる」'], g, 700);
+    // 10/12：最初の一杯（乾杯の前）。待つと、けんたが決める
+    await saySlow([1, 'all', '「とりあえず飲み物な。何にする？」'], g, 300);
+    // 10/17：自分が19歳の夜（誕生日の月の前）は、生とレモンサワーがノンアルになる
+    const drink = await Promise.race([choose('最初の一杯は？', mode.adult ? [{ label: '生', v: 'beer' }, { label: 'レモンサワー', v: 'sour' }, { label: 'ウーロン茶', v: 'tea' }]
+      : [{ label: 'ノンアルのビール', v: 'beer' }, { label: 'ノンアルのレモンサワー', v: 'sour' }, { label: 'ウーロン茶', v: 'tea' }]), S.sleep(9000, g).then(() => 'wait')]);
+    S.clear();
+    const DR = {
+      beer: { fx: { 102: 2 }, lines: [['P', 'all', '「生で」'], [102, 'P', '「お、生じゃん！ うちはノンアルのビールー」', null, { 102: '笑' }]], nm: '生' },
+      sour: { fx: { 103: 2 }, lines: [['P', 'all', '「レモンサワーで」'], [4, 'P', '「無難」'], [103, 'P', '「……すっぱいの、飲めるんだ」']], nm: 'レモンサワー' },
+      tea: { fx: { 101: 3 }, lines: [['P', 'all', '「ウーロン茶で」'], [1, 'P', '「お、ウーロン。俺もまだノンアルだわ」'], [101, 'P', '「……わたしも、お茶です」', null, { 101: 'はにかみ' }]], nm: 'ウーロン茶' },
+      wait: { fx: {}, lines: [[1, 'P', '「お前は生でいいな。俺はノンアル、12月まで。すみませーん、生と――」']], nm: null } };
+    // 自分が19歳のとき（10/17。scenario-checker 条件付き合格、必須1件を反映）
+    const DR_MINOR = {
+      beer: { fx: { 102: 2 }, lines: [['P', 'all', '「ノンアルのビールで」'], [102, 'P', '「お、ノンアル！ うちもー。おそろじゃん」', null, { 102: '笑' }]], nm: 'ノンアルのビール' },
+      sour: { fx: { 103: 2 }, lines: [['P', 'all', '「ノンアルのレモンサワーで」'], [4, 'P', '「無難」'], [103, 'P', '「……すっぱいの、飲めるんだ」']], nm: 'ノンアルのレモンサワー' },
+      wait: { fx: {}, lines: [[1, 'P', '「お前、まだ十九だっけ。じゃ、ノンアルな。すみませーん――」']], nm: null } };
+    const DRx = (!mode.adult && DR_MINOR[drink]) || DR[drink];
+    for (const x of DRx.lines) await saySlow(x, g, 500);
+    fx(st, DRx.fx); if (DRx.nm) pick(`最初の一杯：${DRx.nm}`, 'drink');
     await play2(I_FLOW);
     Object.keys(live).forEach(id => { if (!live[id].taken) live[id].life = 1; }); await tickCues();
     Object.keys(live).forEach(id => { if (live[id].el) live[id].el.remove(); delete live[id]; });
@@ -823,7 +946,7 @@ const NightI = (() => {
       { label: '黙って歩く', say: null, d: 2, re: ['n', '（あおいは、少しだけ歩く速さを合わせた）'] }] },
     102: { start: '「てかさ、二次会行かなくてよかったの？」', opts: [
       { label: 'こっちがよかった', say: '「こっちのほうが、よかった」', d: 4, re: [102, 'P', '「……え、なにそれ。ずる」', null, { 102: '笑' }] },
-      { label: 'そっちこそ', say: '「そっちこそ。朝練は」', d: 6, re: [102, 'P', '「だから帰ってんじゃん！ ……半分は」', null, { 102: '笑' }] },
+      { label: 'そっちこそ', say: '「そっちこそ。明日、6時なんだろ」', d: 6, re: [102, 'P', '「だから帰ってんじゃん！ ……半分は」', null, { 102: '笑' }] },
       { label: '黙って歩く', say: null, d: -1, re: [102, 'P', '「え、急に静か。……まあいいけど」'] }] },
     103: { start: '「……夜の道、音が少ない」', opts: [
       { label: '静かなのはいい', say: '「静かなの、嫌いじゃない」', d: 3, re: [103, 'P', '「……うん。知ってる」'] },
@@ -905,7 +1028,7 @@ const NightI = (() => {
     await say(['n', '（店の外に出た。夜風が少し冷たい）']);
     await say([1, 'all', '「二次会、カラオケ行く人ー」']);
     const yunaGo = st.air >= 50 && st.h[102] >= 30;   // 10/10：前は必ず行っていた（空気が40を切らないため）
-    await say(yunaGo ? [102, 1, '「行く行く！」', null, { 102: '笑' }] : [102, 'all', '「うち、明日朝練だから帰る〜」']);
+    await say(yunaGo ? [102, 1, '「行く行く！」', null, { 102: '笑' }] : [102, 'all', '「うち、明日6時からコートだから帰る〜」']);
     await say([101, 'all', '「……わたしは、門限があるので」']);
     await say([103, 'all', '「……どうしよ」']);
     if (info.tip) info.tip('nijikai');
@@ -1016,24 +1139,38 @@ const NightI = (() => {
     ];
     const lead = tier === 'A' ? DATE_TXT[to] : walked ? `${NAME[walked]}と、駅まで一緒に帰った夜だった。` : got.length ? `${got.map(h => NAME[h]).join('・')}とは、個別にも連絡先を交換した。` : 'グループには入った。個別の連絡先は、だれとも交換していない。';
     const imp = info.maxM >= 90 ? '「よく喋る人」だと思われたかもしれない。' : info.lowN ? '途中、影が薄くなっていた時間があった。' : '喋る量は、ちょうどよかった。';
-    S.end({ title, lead, hearts: st.h, base: { 101: BASE, 102: BASE, 103: BASE },
+    const res = nightResult(info.mode, st, { contact: got.slice(), reply: (tier === 'A' || tier === 'B' ? [to] : []).concat(inbound), walked, date: tier === 'A' ? to : null });
+    S.end({ title, lead, next: info.mode.onDone ? () => info.mode.onDone(res) : null, hearts: st.h, base: { 101: BASE, 102: BASE, 103: BASE },
       sections: [
         { h: '今夜の勝ち（4段）', p: ladder },
         { h: '終わり方', p: lines.length ? lines : ['（特になし）'] },
         { h: 'LINEで触れられた話', p: [info.memories.length ? `${info.memories.length}つ（${[...new Set(info.memories.map(mm => NAME[mm.h]))].join('・')}）。会話で届いた返しが、翌朝の話題になる。` : 'なし。会話で届いた返しがないと、ふつうのお礼しか送れない。'] },
         { h: 'この夜の手', p: [st.picks.join(' ／ ') || '（何もしなかった）'] },
-        { h: '目立ちと気づき', p: [`目立ちは いちばん高いとき ${info.maxM}。${imp}`, `気づけた札 ${info.seen}枚。気づけなかったもの ${info.missedUnseen}つ（空気読み ${iYomi}）。`, info.keitaN ? `取り逃した気配りのうち ${info.keitaN}つは、けいたが拾っていた。` : 'けいたに先を越された気配りは、なかった。', info.storyHeard === 'cut' ? '最後の沈黙で待ったので あおいが話し出したが、途中で止めてしまった。' : info.storyHeard ? '最後の沈黙で待ったので、あおいの話が聞けた。' : '最後の沈黙で話題を出したので、あおいの番は来なかった。'] },],
+        { h: '目立ちと気づき', p: [(document.documentElement.classList.contains('dev') ? `目立ちは いちばん高いとき ${info.maxM}。${imp}` : imp), `気づけた札 ${info.seen}枚。気づけなかったもの ${info.missedUnseen}つ${document.documentElement.classList.contains('dev') ? `（空気読み ${iYomi}）` : ''}。`, info.keitaN ? `取り逃した気配りのうち ${info.keitaN}つは、けいたが拾っていた。` : 'けいたに先を越された気配りは、なかった。', info.storyHeard === 'cut' ? '最後の沈黙で待ったので あおいが話し出したが、途中で止めてしまった。' : info.storyHeard ? '最後の沈黙で待ったので、あおいの話が聞けた。' : '最後の沈黙で話題を出したので、あおいの番は来なかった。'] },],
       again: () => info.mode.start(info.mode.back), back: info.mode.back });
   }
 
   // ── 起動：最初の画面で選んだ設定で始める ──
+  // 10/15 GDD §13 ⑥：一周（year.html）から呼ぶときは cards・month・onDone を渡す。どれも無ければ今までどおり（試遊版）
   function start(opts) {
     const o = Object.assign({ profile: 'A', tips: true, yomi: 50 }, opts || {});
     iTips = !!o.tips; iYomi = +o.yomi || 50;
     const prof = I_PROFILES[o.profile] ? o.profile : 'A';
-    const mode = { profile: prof, back: () => S.home() };
-    mode.start = back => { mode.back = back || mode.back; const g = S.begin(`合コン（設定${prof}）`); S.onTap(null); runI(mode, g); };
+    const mode = { profile: prof, oct: o.night === 'oct', back: () => S.home() };
+    if (Array.isArray(o.cards)) mode.cards = o.cards.filter(k => I_CARDS[k]).slice(0, 3);   // 渡されたら profile の札より優先
+    if (o.month != null) mode.month = +o.month;
+    mode.adult = o.adult !== false;   // 10/17：自分が20歳か（一周の中では誕生日の月で決まる。1回だけ遊ぶときは20歳）
+    if (typeof o.onDone === 'function') mode.onDone = o.onDone;
+    document.getElementById('btn-back').hidden = !!mode.onDone;   // 一周の中では「‹ もどる」を出さない
+    mode.start = back => { mode.back = back || mode.back; const g = S.begin(`今夜のスタメン！`); S.onTap(null); runI(mode, g); };
     mode.start(mode.back);
+  }
+  // 夜の結果（§13 の「night_i の出口」）。席の番号 101・102・103 のまま返す。ヒロインIDへの置き換えは year.html の側
+  function nightResult(mode, st, x) {
+    return { month: mode.month == null ? null : mode.month, night: mode.oct ? 'oct' : 'may',
+      cast: mode.oct ? { 101: 104, 102: 102, 103: 103 } : { 101: 101, 102: 102, 103: 103 },
+      hearts: Object.assign({}, st.h), contact: x.contact || [], reply: x.reply || [], walked: x.walked == null ? null : x.walked,
+      date: x.date == null ? null : x.date, fork: x.fork || null, picks: st.picks.slice() };
   }
   return { start, PROFILES: I_PROFILES, CARDS: I_CARDS };
 })();

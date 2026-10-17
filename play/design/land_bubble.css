@@ -1,0 +1,12 @@
+/* LB3 卓の上に吹き出し：口を挟める間だけ、自分の席（画面の下の真ん中）から吹き出しが上がる。
+   女子の顔ではなく、卓と胸元の高さにかかる。セリフの帯は動かない */
+.cmds:has(.panelcmd) { left: 16%; right: 16%; bottom: calc(28vh - 2px); width: auto; }
+.cmds .panelcmd { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; gap: 6px !important; align-items: center; }
+.cmds .panelcmd .top2 { display: none !important; }
+.cmds .panelcmd .row { gap: 12px !important; width: 100%; }
+.cmds .panelcmd .cmd.pill { position: relative; min-height: 46px !important; font-size: 14px !important; border-radius: 18px !important; box-shadow: 0 6px 18px rgba(0,0,0,.45) !important; overflow: visible !important; }
+.cmds .panelcmd .cmd.pill::after { content: ''; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; translate: -50% 0; rotate: 45deg; background: inherit; border-right: inherit; border-bottom: inherit; }
+.cmds .panelcmd .clock.hold { width: 46% !important; height: 5px !important; margin: 4px 0 0 !important; }
+.cmds .panelcmd .clock.hold > span { display: none !important; }
+.cmds .panelcmd .cmd.pill { background: rgba(16,14,40,.95) !important; }
+@media (min-height: 600px) { .cmds:has(.panelcmd) { bottom: calc((100vh - 46px) * 0.22 + 14px); } }

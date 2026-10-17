@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>今夜のスタメン 遊べる版（案I）</title>
+<title>今夜のスタメン！</title>
 <!--
   screens/night_i.html — 遊べる版（案I：流れる会話＋気づき）。灰色の画面のまま、合コン1回が最後まで通る（10/18 の節目）
-  決定：GDD_v6 §18 ／ 進行と台詞：js/night-i/night-i.js ／ 画面の部品：js/night-i/stage.js
+  決定：GDD_v6 §19 ／ 進行と台詞：js/night-i/night-i.js ／ 画面の部品：js/night-i/stage.js
   ?p=A|B|C で自分の設定を選んで、すぐ始まる（&tips=0 でチュートリアルなし、&yomi=30|50|70）
   前の版（グノーシア型）は screens/night_v0.html に残してある
 -->
@@ -262,6 +262,7 @@
   .hearts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
   .hearts div { border: 1px solid var(--line); border-radius: 8px; padding: 6px; text-align: center; font-size: 12px; }
   .hearts b { display: block; font-size: 16px; }
+  .hearts.feel b { font-size: 13px; font-weight: 700; margin-top: 2px; }
   .log p { margin: 0 0 8px; font-size: 13px; line-height: 1.55; }
   .log .r { color: var(--ink3); font-size: 11px; margin-top: 12px; }
   .log .n { color: var(--ink3); }
@@ -281,24 +282,54 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../design/figures.css">
 <link rel="stylesheet" id="css-theme" disabled>
+<link rel="stylesheet" href="../design/land.css">
+<link rel="stylesheet" id="css-g70" href="../design/land_g70.css" disabled>
+<link rel="stylesheet" href="../design/land_fix.css">
+<link rel="stylesheet" id="css-pose" href="../design/land_pose.css">
+<link rel="stylesheet" id="css-skip" href="../design/land_skip.css">
+<link rel="stylesheet" id="css-choice" href="../design/land_bubble.css">
+<link rel="stylesheet" href="../design/land_home.css">
+<link rel="stylesheet" href="../design/land_opts.css">
 </head>
 <body>
-<div class="home" id="home">
-  <h1>今夜のスタメン</h1>
-  <p class="lead">遊べる版（案I：流れる会話＋気づき）。合コン1回を最後まで遊べます。見た目は下の「見た目」で、灰色と案A〜Cを切り替えられます（10/10 の3案。どれにするか選ぶ用）。台詞と数値は仮のものです。</p>
-  <h2>今日の自分</h2>
-  <div class="mcard"><div class="go prof" id="profiles"></div></div>
+<div class="home" id="home"><div class="hwrap">
+  <div class="hl-col">
+    <h1>今夜のスタメン！</h1>
+    <p class="pitch">金曜の夜、友達に誘われて3対3の合コンへ。<br>居酒屋の2時間で、だれと話が合うか。</p>
+    <ul class="how">
+      <li>会話は勝手に流れる。<b>卓の上に吹き出し</b>が出ている間だけ、口を挟める</li>
+      <li>黙っていても話は進む。喋りすぎも、黙りすぎも損</li>
+      <li><b>話のネタ</b>（自分の経験）は何度でも使える。ただ、同じ話をくり返すと飽きられる</li>
+      <li>空いたグラスや、困っている子に気づくと<b>札</b>が出る。出ている間に押す</li>
+      <li><b>会話の帯を長押し</b>すると、早く進む</li>
+    </ul>
+    <div class="meta"><span>試遊版（合コン1回ぶん）・スマホは横向きで</span><label><input type="checkbox" id="opt-tips-ck" checked>はじめてのヒントを出す</label><label>どの夜を遊ぶ <select id="opt-night"><option value="may">5月の夜（ふつう）</option><option value="oct">10月の夜（二人の世界）</option></select></label><button type="button" class="fsbtn" id="btn-fs" hidden>全画面で遊ぶ</button></div>
+  </div>
+  <div class="pick-col">
+    <h2>今夜の自分を選ぶ<small>ネタと、話が合う子が変わる</small></h2>
+    <div class="mcard"><div class="go prof" id="profiles"></div></div>
+  </div>
   <div class="opts">
     <label>チュートリアル <select id="opt-tips"><option value="1" selected>あり（けんたのLINE＋ヒント）</option><option value="0">なし（居酒屋から）</option></select></label>
+    <label>席 <select id="opt-seat"><option value="">真ん中</option><option value="L">左端</option><option value="R">右端</option></select></label>
+    <label>選択肢 <select id="opt-choice"><option value="bubble">卓の上に吹き出し</option><option value="row">帯の中に横並び</option></select></label>
+    <label>早送り <select id="opt-skip"><option value="band">会話の帯を長押し</option><option value="bar">長押しのバー</option></select></label>
+    <label>女子の大きさ <select id="opt-g"><option value="80">大きめ</option><option value="70">少し小さめ</option></select></label>
+    <label>隠れた子が話すとき <select id="opt-hide"><option value="1">①声だけ</option><option value="2">②友達がよける</option><option value="3">③身を乗り出す</option></select></label>
+    <label>隠れた子の位置 <select id="opt-far"><option value="p">ギリ見える</option><option value="3">ギリ見える・全体をずらす</option><option value="0">前の位置</option><option value="1">もっと奥</option><option value="2">ほぼ隠れる</option></select></label>
+    <label>女子の距離 <select id="opt-near"><option value="0">今</option><option value="1">近め</option><option value="2">もっと近め</option></select></label>
+    <label>顔の小窓 <select id="opt-face"><option value="0">なし</option><option value="1">あり</option></select></label>
+    <label>友達が話すとき <select id="opt-still"><option value="0">女子が向く</option><option value="1">動かない</option></select></label>
+    <label>話のネタ <select id="opt-deal"><option value="fan">配る</option><option value="deck">デッキから引く</option></select></label>
+    <label>女子のポーズ <select id="opt-pose"><option value="pose">ジョッキ・カシオレなど</option><option value="front">手を卓の上</option></select></label>
     <label>見た目 <select id="opt-theme"><option value="">灰色（今まで）</option><option value="A">案A 金曜の夜・ネオン（基本）</option><option value="B">案B 木の卓・提灯</option><option value="C">案C スマホ・放課後</option></select></label>
     <label>空気読み <select id="opt-yomi"><option value="30">30</option><option value="50" selected>50</option><option value="70">70</option></select></label>
-  </div>
-  <p class="foot">会話は勝手に流れます。口を挟めるのは、下に吹き出しが出ている間だけ。黙っていても話は進みます。<br>自分の設定（バイト・サークル・住まい）で、使える話のネタと、話が合う子が変わります。</p>
-</div>
+    </div>
+</div></div>
 
 <div class="app" id="play" hidden>
   <div class="top">
-    <button type="button" class="back" id="btn-back">‹ 設定</button>
+    <button type="button" class="back" id="btn-back">‹ もどる</button>
     <div class="ttl" id="ttl"></div>
     <div class="dots" id="dots"></div>
     <div class="tools">
@@ -349,22 +380,91 @@
 </script>
 <script src="../design/inject.js"></script>
 <script>
+// 横画面版（10/12）：台詞の相手を舞台に伝える（→あなた のときだけ友達がこっちを見る。言い終わったら向こうを向く）／UIの切り替え
+(() => {
+  const st = document.getElementById('stage'), pl = document.getElementById('plate'), tx = document.getElementById('text');
+  if (!st.querySelector('.desk')) { const d = document.createElement('div'); d.className = 'desk'; st.insertBefore(d, document.getElementById('shade')); }
+  // 絵の先読み：差し替えのたびに一瞬人が消えないよう、最初に全部読み込んで描ける状態にしておく
+  const SIT = ['h101_front','h102_front','h103_front','h101_slantL','h101_slantR','h102_slantL','h102_slantR','h103_slantL','h103_slantR','h101_pose','h102_pose','h103_pose','h101_poseL','h101_poseR','h102_poseL','h102_poseR','h103_poseL','h103_poseR','h101_komari','h102_komari','h104_front','h104_pose','m1_back','m1_look','m1_back_r2','m1_look_r2','m4_back_l','m4_look_l','m4_back_r3','m4_look_r2','m1_side','m4_side'];
+  window.__keep = SIT.map(n => { const im = new Image(); im.src = '../design/img_sit/' + n + '.png'; if (im.decode) im.decode().catch(() => {}); return im; });
+  // 飲み物は乾杯から（ゆな＝ジョッキ、めい＝カシオレ）。居酒屋を出たら戻す
+  new MutationObserver(() => { if (st.dataset.scene !== 'izakaya') document.body.classList.remove('drinks'); else if (/乾杯/.test(tx.textContent) && !document.body.classList.contains('drinks')) { document.body.classList.add('drinks'); document.body.classList.remove('yunadown'); clearTimeout(window.__yd); window.__yd = setTimeout(() => { if (document.body.classList.contains('drinks')) document.body.classList.add('yunadown'); }, 40000); } }).observe(tx, { childList: true, subtree: true, characterData: true });
+  new MutationObserver(() => { if (st.dataset.scene !== 'izakaya') document.body.classList.remove('drinks', 'yunadown'); }).observe(st, { attributes: true, attributeFilter: ['data-scene'] });
+  let tm = null; const endLook = () => { clearTimeout(tm); tm = setTimeout(() => { if (st.dataset.to === 'あなた') st.dataset.to = ''; }, 1300); };
+  new MutationObserver(() => { const t = pl.querySelector('.to'); st.dataset.to = t ? t.textContent.trim() : ''; if (st.dataset.to === 'あなた') endLook(); }).observe(pl, { childList: true, subtree: true, characterData: true });
+  new MutationObserver(() => { if (st.dataset.to === 'あなた') endLook(); }).observe(tx, { childList: true, subtree: true, characterData: true });
+  const q = new URLSearchParams(location.search), $ = id => document.getElementById(id);
+  const sets = [
+    ['opt-seat', 'seat', v => { if (v) document.body.dataset.seat = v; else delete document.body.dataset.seat; }],
+    ['opt-choice', 'choice', v => { $('css-choice').href = v === 'row' ? '../design/land_row.css' : '../design/land_bubble.css'; }],
+    ['opt-skip', 'skip', v => { $('css-skip').disabled = v === 'bar'; }],
+    ['opt-g', 'g', v => { $('css-g70').disabled = v !== '70'; }],
+    ['opt-pose', 'pose', v => { $('css-pose').disabled = v === 'front'; }],
+    ['opt-hide', 'hide', v => { const c = document.documentElement.classList; c.remove('hide1', 'hide2'); if (v !== '3') c.add('hide' + v); }],
+    ['opt-far', 'far', v => { const c = document.documentElement.classList; c.remove('far0', 'far1', 'far2', 'far3'); if (v !== 'p') c.add('far' + v); }],
+    ['opt-near', 'near', v => { const c = document.documentElement.classList; c.remove('near1', 'near2'); if (v !== '0') c.add('near' + v); }],
+    ['opt-face', 'face', v => { document.documentElement.classList.toggle('face', v === '1'); }],
+    ['opt-still', 'still', v => { document.documentElement.classList.toggle('still', v === '1'); }],
+    ['opt-deal', 'deal', v => { document.documentElement.classList.toggle('deck', v === 'deck'); }]];
+  sets.forEach(([id, key, fn]) => { const el = $(id); const v = q.get(key); if (v !== null && [...el.options].some(o => o.value === v)) el.value = v; fn(el.value); el.addEventListener('change', () => fn(el.value)); });
+  const r = document.createElement('div'); r.className = 'rotate'; r.innerHTML = 'スマホを横にしてください<br><small>この版は横画面で作っています</small>'; document.body.appendChild(r);
+})();
+</script>
+<script>
 (() => {
   'use strict';
-  const WHO = { A: 'あおいと話が合う', B: 'ゆなと話が合う', C: 'めいと話が合う' };
+  const WHO = { A: 'あおい', B: 'ゆな', C: 'めい' }, MATE = { A: 101, B: 102, C: 103 };
+  // 試遊版：開発用の切り替えは ?dev=1 のときだけ出す
+  if (new URLSearchParams(location.search).get('dev') === '1') document.documentElement.classList.add('dev');
+  const ck = document.getElementById('opt-tips-ck'), ts = document.getElementById('opt-tips');
+  ck.addEventListener('change', () => { ts.value = ck.checked ? '1' : '0'; });
+  // 全画面（使える環境でだけボタンを出す。iPhone の Safari や、全画面を許していない埋め込みでは出ない）
+  const de = document.documentElement, fsOn = document.fullscreenEnabled || document.webkitFullscreenEnabled, fsBtn = document.getElementById('btn-fs');
+  if (fsOn) { fsBtn.hidden = false; fsBtn.addEventListener('click', () => { try { const r = (de.requestFullscreen || de.webkitRequestFullscreen).call(de); if (r && r.catch) r.catch(() => {}); if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }); }
   const box = document.getElementById('profiles');
-  const go = p => NightI.start({ profile: p, tips: document.getElementById('opt-tips').value === '1', yomi: document.getElementById('opt-yomi').value });
+  const go = p => NightI.start({ profile: p, tips: document.getElementById('opt-tips').value === '1', yomi: document.getElementById('opt-yomi').value, night: document.getElementById('opt-night').value });
   Object.entries(NightI.PROFILES).forEach(([k, pr]) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'pbtn';
-    b.innerHTML = `<b>設定${k}</b><span>${pr.name}</span><small>話のネタ：${pr.cards.map(c => NightI.CARDS[c].replace(/^#/, '')).join('・')}　／　${WHO[k] || ''}</small>`;
+    const fl = (pr.intro || '').replace(/^（今日の自分：/, '').replace(/）$/, '');
+    b.setAttribute('aria-label', '設定' + k);
+    b.innerHTML = `<span class="tags">${pr.cards.map(c => `<i>${NightI.CARDS[c].replace(/^#/, '')}</i>`).join('')}</span><span class="fl">${fl}</span><span class="mate"><img src="../design/img/av${MATE[k]}.png" alt=""><b>${WHO[k]}</b><small>と合いそう</small></span>`;
     b.addEventListener('click', () => go(k));
     box.appendChild(b);
   });
   document.getElementById('btn-back').addEventListener('click', () => Stage.home());
   const q = new URLSearchParams(location.search);
-  if (q.get('tips') === '0') document.getElementById('opt-tips').value = '0';
+  if (q.get('tips') === '0') { document.getElementById('opt-tips').value = '0'; ck.checked = false; }
   if (['30', '50', '70'].includes(q.get('yomi'))) document.getElementById('opt-yomi').value = q.get('yomi');
+  if (q.get('night') === 'oct') document.getElementById('opt-night').value = 'oct';
   if (NightI.PROFILES[q.get('p')]) go(q.get('p'));
+})();
+</script>
+<script>
+// 10/15 GDD §13：一周（year.html）から来たとき（?loop=1）だけ。最初の画面は出さず、stamen_year を読んで夜を始める。
+// 夜が終わって「次へ」を押したら、結果を stamen_year.lastNight に書き、at を 'month' にして year.html へ戻る。?loop が無ければ何もしない（試遊版のまま）
+(() => {
+  'use strict';
+  if (new URLSearchParams(location.search).get('loop') !== '1') return;
+  const KEY = 'stamen_year', NIGHT = { 5: 'may', 7: 'may', 10: 'oct', 2: 'may' };
+  const ORDER = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
+  const toYear = () => location.replace('year.html');
+  let sv = null; try { sv = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!sv || sv.at !== 'night' || !NIGHT[sv.month]) { toYear(); return; }   // 夜の途中でない（戻るボタンで来た・セーブが無い）なら夜を始めない＝二重に結果を書かない
+  document.getElementById('home').hidden = true;
+  const me = sv.me || {};
+  let done = false;
+  NightI.start({
+    night: NIGHT[sv.month], month: sv.month, tips: sv.month === 5,
+    yomi: me.params && me.params.air, profile: me.living === 'home' ? 'A' : 'B', cards: me.cards,
+    // 10/17：誕生日の月（キャラクリ）までは19歳。夜は月末とみて、誕生日の月の夜は20歳（docs/heroine-bible/README.md の誕生日の表と同じ数え方）
+    adult: me.bmonth == null || ORDER.indexOf(+me.bmonth) <= ORDER.indexOf(sv.month),
+    onDone: res => {
+      if (done) return; done = true;
+      let cur = sv; try { cur = JSON.parse(localStorage.getItem(KEY)) || sv; } catch (e) {}
+      cur.lastNight = res; cur.at = 'month';
+      try { localStorage.setItem(KEY, JSON.stringify(cur)); } catch (e) {}
+      toYear();
+    } });
 })();
 </script>
 </body>

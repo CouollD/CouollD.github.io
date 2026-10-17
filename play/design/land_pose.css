@@ -1,0 +1,16 @@
+/* LPOSE 女子のふだんのポーズ（10/12 夜、ユーザー：手を卓の上で固定でなく）。あおい＝警戒して手は卓の下、ゆな＝ジョッキ、めい＝カシオレ。
+   友達が話すとそちらへ顔を向ける（L/R）。気づきの札が出ている間は困り顔（トング＝あおい、店員を探してる＝ゆな。グラス空は本人が気づいていないのでそのまま） */
+.stage .fig#fig-101 .sprite { content: url(img_sit/h101_pose.png) !important; }
+body.drinks .stage .fig#fig-102 .sprite { content: url(img_sit/h102_pose.png) !important; }
+body.drinks .stage .fig#fig-103 .sprite { content: url(img_sit/h103_pose.png) !important; }
+/* ゆな・めいの飲み物は乾杯から（body.drinks。乾杯の前は手を卓の上）。あおいは最初から手を卓の下 */
+/* 友達が話す：画面の左にいる友達なら L、右なら R */
+body:not([data-seat]) .stage:has(#fig-1.speak) #fig-101 .sprite, body[data-seat="R"] .stage:has(.fig.f.speak) #fig-101 .sprite { content: url(img_sit/h101_poseL.png) !important; }
+body.drinks:not([data-seat]) .stage:has(#fig-1.speak) #fig-102 .sprite, body.drinks[data-seat="R"] .stage:has(.fig.f.speak) #fig-102 .sprite { content: url(img_sit/h102_poseL.png) !important; }
+body.drinks:not([data-seat]) .stage:has(#fig-1.speak) #fig-103 .sprite, body.drinks[data-seat="R"] .stage:has(.fig.f.speak) #fig-103 .sprite { content: url(img_sit/h103_poseL.png) !important; }
+body:not([data-seat]) .stage:has(#fig-4.speak) #fig-101 .sprite, body[data-seat="L"] .stage:has(.fig.f.speak) #fig-101 .sprite { content: url(img_sit/h101_poseR.png) !important; }
+body.drinks:not([data-seat]) .stage:has(#fig-4.speak) #fig-102 .sprite, body.drinks[data-seat="L"] .stage:has(.fig.f.speak) #fig-102 .sprite { content: url(img_sit/h102_poseR.png) !important; }
+body.drinks:not([data-seat]) .stage:has(#fig-4.speak) #fig-103 .sprite, body.drinks[data-seat="L"] .stage:has(.fig.f.speak) #fig-103 .sprite { content: url(img_sit/h103_poseR.png) !important; }
+/* 気づきの札：困り顔 */
+body .stage:has(.cue[data-cue="tong"]:not(.done)) .fig#fig-101 .sprite { content: url(img_sit/h101_komari.png) !important; }
+body .stage:has(.cue[data-cue="glass102"]:not(.done)) .fig#fig-102 .sprite { content: url(img_sit/h102_komari.png) !important; }

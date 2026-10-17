@@ -1,0 +1,99 @@
+/* land_opts.css — 比べるための切り替え（10/12 夜）。html のクラスで効く。比較ページ・?dev=1 で選べる
+   still：友達が話しても、女子は動かず向きも変えない／友達も前へ出ない
+   far1・far2：端の席で、友達の陰の子をもっと奥へ（far2 はほとんど隠れる）
+   face：隠れた子が話すとき、帯の名前の横に小さな顔を出す
+   yunadown（body）：ゆなが、乾杯からしばらくしてジョッキを置く */
+
+/* ── 動かない版 ── */
+html.still .stage .fig.h { translate: none !important; }
+html.still #fig-1.speak { left: -16% !important; top: -3% !important; }
+html.still #fig-4.speak { left: 80% !important; top: -3% !important; }
+html.still body[data-seat="L"] #fig-1.speak { left: 66% !important; top: -3% !important; }
+html.still body[data-seat="L"] #fig-4.speak { left: 84% !important; top: 4% !important; }
+html.still body[data-seat="R"] #fig-4.speak { left: -3% !important; top: -3% !important; }
+html.still body[data-seat="R"] #fig-1.speak { left: -12% !important; top: 4% !important; }
+html.still body:not([data-seat]) .stage[data-scene="izakaya"] { background-position: 50% 30% !important; }
+html.still #play #stage .fig#fig-101 .sprite { content: url(img_sit/h101_pose.png) !important; }
+html.still #play #stage .fig#fig-102 .sprite { content: url(img_sit/h102_front.png) !important; }
+html.still body.drinks #play #stage .fig#fig-102 .sprite { content: url(img_sit/h102_pose.png) !important; }
+html.still #play #stage .fig#fig-103 .sprite { content: url(img_sit/h103_front.png) !important; }
+html.still body.drinks #play #stage .fig#fig-103 .sprite { content: url(img_sit/h103_pose.png) !important; }
+
+/* ── ゆながジョッキを置く（乾杯から40秒ほどで。置いたあとは手を卓の上、聞くときは斜め） ── */
+body.drinks.yunadown #play #stage .fig#fig-102 .sprite { content: url(img_sit/h102_front.png) !important; }
+body.drinks.yunadown:not([data-seat]) #play #stage:has(#fig-1.speak) .fig#fig-102 .sprite, body.drinks.yunadown[data-seat="R"] #play #stage:has(.fig.f.speak) .fig#fig-102 .sprite { content: url(img_sit/h102_slantL.png) !important; }
+body.drinks.yunadown:not([data-seat]) #play #stage:has(#fig-4.speak) .fig#fig-102 .sprite, body.drinks.yunadown[data-seat="L"] #play #stage:has(.fig.f.speak) .fig#fig-102 .sprite { content: url(img_sit/h102_slantR.png) !important; }
+html.still body.drinks.yunadown #play #stage .fig#fig-102 .sprite { content: url(img_sit/h102_front.png) !important; }
+
+/* 困り顔は、どの切り替えより優先 */
+html body #play #stage:has(.cue[data-cue="tong"]:not(.done)) .fig#fig-101 .sprite { content: url(img_sit/h101_komari.png) !important; }
+html body #play #stage:has(.cue[data-cue="glass102"]:not(.done)) .fig#fig-102 .sprite { content: url(img_sit/h102_komari.png) !important; }
+
+/* ── 端の席の並び（10/12 夜、ユーザー：奥の子はギリ隠れない・少しだけ重なる位置に）。既定。far0＝前の位置 ── */
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] #stage #fig-101 { left: calc(36.5% - var(--gw) / 2) !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] #stage #fig-102 { left: calc(53.5% - var(--gw) / 2) !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] #stage #fig-103 { left: calc(70.5% - var(--gw) / 2) !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] #stage #fig-101 { left: calc(29.5% - var(--gw) / 2) !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] #stage #fig-102 { left: calc(46.5% - var(--gw) / 2) !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] #stage #fig-103 { left: calc(63.5% - var(--gw) / 2) !important; }
+/* ── 女子の距離（near1＝近め、near2＝もっと近め）。頭が大きくなり、卓に体が隠れる ── */
+html.near1 { --gh: 90%; --gtop: -3%; --gw: 23.5%; }
+html.near2 { --gh: 100%; --gtop: -8%; --gw: 26%; }
+html.near2 body:not([data-seat]) #stage #fig-101 { left: calc(25% - var(--gw) / 2) !important; }
+html.near2 body:not([data-seat]) #stage #fig-103 { left: calc(75% - var(--gw) / 2) !important; }
+/* ── 隠れた子をもっと奥へ ── */
+html.far1 body[data-seat="L"] #stage #fig-103 { left: 77% !important; }  html.far2 body[data-seat="L"] #stage #fig-103 { left: 82% !important; }
+html.far1 body[data-seat="R"] #stage #fig-101 { left: 2% !important; }   html.far2 body[data-seat="R"] #stage #fig-101 { left: -3% !important; }
+
+/* ── 隠れた子の気づきの札は、友達の陰で見えにくい ── */
+body[data-seat="L"] #stage .cue[data-cue$="103"] { opacity: .5; z-index: 5 !important; }
+body[data-seat="R"] #stage .cue[data-cue="tong"] { opacity: .5; z-index: 5 !important; }
+
+/* ── 顔の小窓：隠れた子が話すとき、名前の横に顔 ── */
+html.face body[data-seat="L"] .stage:has(#fig-103.speak) .plate .who::before,
+html.face body[data-seat="R"] .stage:has(#fig-101.speak) .plate .who::before { content: ""; display: inline-block; width: 30px; height: 30px; border-radius: 50%; margin: -6px 6px -8px -4px; vertical-align: middle;
+  background: #fff1 center 15% / cover no-repeat; box-shadow: 0 0 0 2px rgba(255,255,255,.8), 0 2px 8px rgba(0,0,0,.5); }
+html.face body[data-seat="L"] .stage:has(#fig-103.speak) .plate .who::before { background-image: url(img/av103.png); }
+html.face body[data-seat="R"] .stage:has(#fig-101.speak) .plate .who::before { background-image: url(img/av101.png); }
+
+/* ── 話のネタ：デッキから1枚ずつ引いて、めくる ── */
+html.deck #stage .deal .dcards { position: relative; }
+html.deck #stage .deal .dcard { position: relative; animation: deckMove .75s ease forwards; animation-delay: calc(var(--i) * .5s + .3s); }
+html.deck #stage .deal .dcard::after { content: ""; position: absolute; inset: 0; border-radius: 10px; background: repeating-linear-gradient(45deg, #8E3B4F 0 8px, #6E2A3D 8px 16px); box-shadow: 0 0 0 2px rgba(255,255,255,.55) inset; animation: deckBack .75s forwards; animation-delay: calc(var(--i) * .5s + .3s); }
+html.deck #stage .deal .dpile { position: absolute; left: -128px; top: 0; bottom: 0; width: 92px; border-radius: 10px; background: repeating-linear-gradient(45deg, #8E3B4F 0 8px, #6E2A3D 8px 16px);
+  box-shadow: 3px 3px 0 #4a1c29, 6px 6px 0 #3a1520, 0 10px 20px rgba(0,0,0,.5); animation: pileIn .3s ease forwards; }
+@keyframes deckMove { 0% { opacity: 1; transform: translateX(calc(-128px - var(--i) * 102px)) rotate(0) scaleX(1); } 55% { transform: translateX(0) rotate(calc((var(--i) - 1) * 5deg)) scaleX(1); } 77% { transform: rotate(calc((var(--i) - 1) * 5deg)) scaleX(0); } 100% { opacity: 1; transform: rotate(calc((var(--i) - 1) * 5deg)) scaleX(1); } }
+@keyframes deckBack { 0%, 76% { opacity: 1; } 77%, 100% { opacity: 0; } }
+@keyframes pileIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+/* 気づきの札も、端の席の新しい並びに合わせる */
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] .stage .cue[data-cue="tong"] { left: 36.5% !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] .stage .cue[data-cue="glass102"] { left: 53.5% !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] .stage .cue[data-cue="glass103"], html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="L"] .stage .cue[data-cue="chaser103"] { left: 70.5% !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] .stage .cue[data-cue="tong"] { left: 29.5% !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] .stage .cue[data-cue="glass102"] { left: 46.5% !important; }
+html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] .stage .cue[data-cue="glass103"], html:not(.far0):not(.far1):not(.far2):not(.far3) body[data-seat="R"] .stage .cue[data-cue="chaser103"] { left: 63.5% !important; }
+html.near2 body:not([data-seat]) .stage .cue[data-cue="tong"] { left: 25% !important; } html.near2 body:not([data-seat]) .stage .cue[data-cue="glass103"], html.near2 body:not([data-seat]) .stage .cue[data-cue="chaser103"] { left: 75% !important; }
+/* ── 10月の夜：101 の席に ゆうき（乾杯からハイボール） ── */
+html body.oct #play #stage .fig#fig-101 .sprite { content: url(img_sit/h104_front.png) !important; }
+html body.oct.drinks #play #stage .fig#fig-101 .sprite { content: url(img_sit/h104_pose.png) !important; }
+/* ── 二人の世界：話し込んだ2人だけが明るく、ほかは置いていかれる ── */
+#stage.two .fig:not(.tw) .sprite { filter: brightness(.42) saturate(.55) !important; transition: filter .5s ease; }
+#stage.two .fig.tw .sprite { filter: drop-shadow(0 0 14px rgba(255,127,166,.55)) brightness(1.05) !important; transition: filter .5s ease; }
+#stage.two::after { content: "二人の世界"; position: absolute; left: 14%; top: 8%; z-index: 9; padding: 2px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .08em;
+  color: #2A0716; background: #FF9DBC; box-shadow: 0 0 14px rgba(255,127,166,.7); pointer-events: none; animation: twoIn .5s ease; }
+@keyframes twoIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.home .meta select { font: inherit; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+
+/* ── 端の席・全体をずらす（10/12 夜、ユーザー：ギリ見えるとき全体を少しずらす版。女子の間かくは真ん中の席と同じ） ── */
+html.far3 body[data-seat="L"] #stage #fig-101 { left: calc(26% - var(--gw) / 2) !important; }
+html.far3 body[data-seat="L"] #stage #fig-102 { left: calc(49% - var(--gw) / 2) !important; }
+html.far3 body[data-seat="L"] #stage #fig-103 { left: calc(72% - var(--gw) / 2) !important; }
+html.far3 body[data-seat="R"] #stage #fig-101 { left: calc(28% - var(--gw) / 2) !important; }
+html.far3 body[data-seat="R"] #stage #fig-102 { left: calc(51% - var(--gw) / 2) !important; }
+html.far3 body[data-seat="R"] #stage #fig-103 { left: calc(74% - var(--gw) / 2) !important; }
+html.far3 body[data-seat="L"] .stage .cue[data-cue="tong"] { left: 26% !important; }
+html.far3 body[data-seat="L"] .stage .cue[data-cue="glass102"] { left: 49% !important; }
+html.far3 body[data-seat="L"] .stage .cue[data-cue="glass103"], html.far3 body[data-seat="L"] .stage .cue[data-cue="chaser103"] { left: 72% !important; }
+html.far3 body[data-seat="R"] .stage .cue[data-cue="tong"] { left: 28% !important; }
+html.far3 body[data-seat="R"] .stage .cue[data-cue="glass102"] { left: 51% !important; }
+html.far3 body[data-seat="R"] .stage .cue[data-cue="glass103"], html.far3 body[data-seat="R"] .stage .cue[data-cue="chaser103"] { left: 74% !important; }
